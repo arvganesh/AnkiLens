@@ -332,9 +332,15 @@ def _study_material_card(
         if exclude_target is not None
         else (("Check first", _target_label(top_target)), ("Evidence", _target_summary(top_target)))
     ) + tuple(("Also check", _target_summary(target)) for target in visible_targets[1:3])
+    actions = ()
+    if open_material and top_target.related_card_ids:
+        button = secondary_button(_material_button_text(top_target))
+        button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(top_target)))
+        actions = (button,)
     return panel_card(
         "Also check related material",
         rows=rows,
+        actions=actions,
         quiet=True,
     )
 

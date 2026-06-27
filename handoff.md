@@ -81,6 +81,7 @@ Recent UI simplifications:
 - Kept the debrief action button compact and left-aligned.
 - Removed the high-Again-rate session note because it duplicated the main signal.
 - Changed material actions to open exact missed examples when possible.
+- Let secondary related-material panels open exact missed examples when Bonsai has those card IDs.
 
 ## Latest Completed Slice
 

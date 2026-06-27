@@ -509,6 +509,60 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertIn("Mitral regurgitation", calls[0][1]["rows"][0][1])
         self.assertNotIn("Murmur?", calls[0][1]["rows"][0][1])
 
+    def test_study_support_panel_can_open_exact_missed_examples(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        original_secondary_button = debrief_dialog.secondary_button
+        calls = []
+        button_calls = []
+        target = StudyTarget(
+            "AnKing::Cardiology::Valves",
+            "tag",
+            2,
+            5,
+            ("Murmur?",),
+            related_card_ids=(10, 11),
+        )
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        debrief_dialog.secondary_button = lambda text: button_calls.append(text) or _FakeButton(text)
+        try:
+            widget = debrief_dialog._study_material_card(
+                (target,),
+                dialog=None,
+                open_material=lambda _target: None,
+            )
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+            debrief_dialog.secondary_button = original_secondary_button
+
+        self.assertEqual(widget, "panel")
+        self.assertEqual(button_calls, ["Show missed examples"])
+        self.assertEqual(calls[0][1]["actions"][0].text, "Show missed examples")
+
+    def test_study_support_panel_does_not_add_broad_search_action(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        original_secondary_button = debrief_dialog.secondary_button
+        calls = []
+        button_calls = []
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        debrief_dialog.secondary_button = lambda text: button_calls.append(text) or _FakeButton(text)
+        try:
+            widget = debrief_dialog._study_material_card(
+                (StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",)),),
+                dialog=None,
+                open_material=lambda _target: None,
+            )
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+            debrief_dialog.secondary_button = original_secondary_button
+
+        self.assertEqual(widget, "panel")
+        self.assertEqual(button_calls, [])
+        self.assertEqual(calls[0][1]["actions"], ())
+
     def test_study_recommendation_uses_maturity_specific_next_step(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")
