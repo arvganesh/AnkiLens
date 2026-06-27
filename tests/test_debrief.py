@@ -70,20 +70,49 @@ class DebriefTest(unittest.TestCase):
 
         self.assertEqual(debrief.study_next[0].related_cards, ("Fourth", "Third", "Duplicate"))
 
-    def test_deck_and_tag_targets_include_matching_examples(self) -> None:
+    def test_study_targets_use_repeated_tags_instead_of_raw_terms_when_available(self) -> None:
         debrief = build_debrief(
             [
-                _entry(1, 1, 0, deck="Cardiology", text="alpha beta", tags=("murmurs",)),
-                _entry(1, 1, 1, deck="Cardiology", text="alpha beta", tags=("murmurs",)),
-                _entry(2, 1, 2, deck="Renal", text="gamma delta", tags=("electrolytes",)),
-                _entry(2, 1, 3, deck="Renal", text="gamma delta", tags=("electrolytes",)),
+                _entry(1, 1, 0, text="aortic stenosis", tags=("AnKing_Cardiology_Valves",)),
+                _entry(1, 1, 1, text="aortic stenosis", tags=("AnKing_Cardiology_Valves",)),
+                _entry(2, 1, 2, text="aortic murmur", tags=("AnKing_Cardiology_Valves",)),
+                _entry(2, 1, 3, text="aortic murmur", tags=("AnKing_Cardiology_Valves",)),
+            ]
+        )
+
+        self.assertEqual(len(debrief.study_next), 1)
+        self.assertEqual(debrief.study_next[0].kind, "tag")
+        self.assertEqual(debrief.study_next[0].label, "AnKing_Cardiology_Valves")
+
+    def test_study_targets_prefer_repeated_tags_over_deck_fallback(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, deck="AnKing", text="alpha beta", tags=("cardiology", "murmurs")),
+                _entry(1, 1, 1, deck="AnKing", text="alpha beta", tags=("cardiology", "murmurs")),
+                _entry(2, 1, 2, deck="AnKing", text="gamma delta", tags=("cardiology",)),
+                _entry(2, 1, 3, deck="AnKing", text="gamma delta", tags=("cardiology",)),
             ],
             study_limit=5,
         )
 
         by_kind_label = {(target.kind, target.label): target for target in debrief.study_next}
-        self.assertEqual(by_kind_label[("deck", "Cardiology")].related_cards, ("Card 1",))
-        self.assertEqual(by_kind_label[("tag", "murmurs")].related_cards, ("Card 1",))
+        self.assertNotIn(("deck", "AnKing"), by_kind_label)
+        self.assertEqual(by_kind_label[("tag", "cardiology")].related_cards, ("Card 2", "Card 1"))
+
+    def test_study_targets_fall_back_to_deck_when_no_content_pattern_exists(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, deck="Cardiology", text="alpha beta", tags=("murmurs",)),
+                _entry(1, 1, 1, deck="Cardiology", text="alpha beta", tags=("murmurs",)),
+                _entry(2, 1, 2, deck="Cardiology", text="gamma delta", tags=("valves",)),
+                _entry(2, 1, 3, deck="Cardiology", text="gamma delta", tags=("valves",)),
+            ],
+            study_limit=5,
+        )
+
+        self.assertEqual(debrief.study_next[0].kind, "deck")
+        self.assertEqual(debrief.study_next[0].label, "Cardiology")
+        self.assertEqual(debrief.study_next[0].related_cards, ("Card 2", "Card 1"))
 
     def test_cards_to_fix_only_counts_cards_with_content_clues(self) -> None:
         debrief = build_debrief(

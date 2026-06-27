@@ -78,12 +78,22 @@ def build_debrief(
 
 
 def _study_targets(summaries: list[MissedCardSummary], *, limit: int) -> list[StudyTarget]:
-    targets: list[StudyTarget] = []
-    targets.extend(
+    tag_targets = [
+        StudyTarget(tag.tag, "tag", tag.missed_cards, _related_cards(summaries, lambda summary, tag=tag.tag: tag in summary.tags))
+        for tag in summarize_tag_misses(summaries)
+        if tag.missed_cards >= 2
+    ]
+    if tag_targets:
+        return sorted(tag_targets, key=lambda target: (-target.count, _kind_priority(target.kind), target.label))[:limit]
+
+    term_targets = [
         StudyTarget(term, "term", count, _related_cards(summaries, lambda summary, term=term: term in summary.source_text.lower()))
         for term, count in summarize_terms(summaries)
-    )
-    targets.extend(
+    ]
+    if term_targets:
+        return sorted(term_targets, key=lambda target: (-target.count, _kind_priority(target.kind), target.label))[:limit]
+
+    targets = [
         StudyTarget(
             deck.deck_name,
             "deck",
@@ -91,11 +101,7 @@ def _study_targets(summaries: list[MissedCardSummary], *, limit: int) -> list[St
             _related_cards(summaries, lambda summary, deck_name=deck.deck_name: summary.deck_name == deck_name),
         )
         for deck in summarize_deck_misses(summaries)
-    )
-    targets.extend(
-        StudyTarget(tag.tag, "tag", tag.missed_cards, _related_cards(summaries, lambda summary, tag=tag.tag: tag in summary.tags))
-        for tag in summarize_tag_misses(summaries)
-    )
+    ]
     return sorted(targets, key=lambda target: (-target.count, _kind_priority(target.kind), target.label))[:limit]
 
 
@@ -106,7 +112,7 @@ def _cards_to_fix(summaries: list[MissedCardSummary]) -> CardsToFix:
 
 
 def _kind_priority(kind: str) -> int:
-    return {"term": 0, "deck": 1, "tag": 2}.get(kind, 3)
+    return {"tag": 0, "term": 1, "deck": 2}.get(kind, 3)
 
 
 def _related_cards(summaries: list[MissedCardSummary], matches) -> tuple[str, ...]:

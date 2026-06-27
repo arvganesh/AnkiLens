@@ -8,8 +8,8 @@ except ImportError:
 
 def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
     if not targets:
-        return "Study material:\n- No repeated material pattern found in this window."
-    lines = ["Study material if the cards look okay:"]
+        return "If the card looks clear, review this material:\n- No repeated material pattern in this window."
+    lines = ["If the card looks clear, review this material:"]
     for target in targets:
         related = f"; examples: {', '.join(target.related_cards)}" if target.related_cards else ""
         lines.append(f"- {target.label} ({target.kind}, {target.count} cards{related})")
@@ -19,17 +19,16 @@ def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
 def cards_to_fix_caption(cards_to_fix: CardsToFix) -> str:
     if cards_to_fix.count == 0:
         return (
-            "Check first: card issue or unstudied material?\n"
-            "- No repeated-miss cards with obvious construction clues found.\n"
+            "No card repair stands out:\n"
             "- If this material is new, review the source material before doing more cards."
         )
     card = cards_to_fix.cards[0] if cards_to_fix.cards else None
     lines = [
-        "Check first: card issue or unstudied material?",
-        f"- {cards_to_fix.count} card{_plural(cards_to_fix.count)} may be worth fixing before studying more.",
+        "Open this card first:",
+        f"- {cards_to_fix.count} card{_plural(cards_to_fix.count)} may be worth checking before studying more.",
     ]
     if card:
-        lines.append(f"- Start with: {card.card_label}")
+        lines.append(f"- Card: {card.card_label}")
         lines.append(f"- Why: {', '.join(card.content_labels)}; missed {card.misses}/{card.total_reviews} reviews")
         lines.append(f"- Next: open the card and check whether the prompt is specific enough.")
     if cards_to_fix.clues:

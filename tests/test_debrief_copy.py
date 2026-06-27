@@ -11,7 +11,7 @@ class DebriefCopyTest(unittest.TestCase):
     def test_study_next_caption_lists_targets_without_scheduler_language(self) -> None:
         caption = study_next_caption((StudyTarget("mitral", "term", 2, ("Card 1", "Card 2")),))
 
-        self.assertIn("Study material if the cards look okay", caption)
+        self.assertIn("If the card looks clear, review this material", caption)
         self.assertIn("mitral", caption)
         self.assertIn("examples: Card 1, Card 2", caption)
         self.assertNotIn("due", caption.lower())
@@ -30,16 +30,16 @@ class DebriefCopyTest(unittest.TestCase):
 
         caption = cards_to_fix_caption(CardsToFix(1, (("Weak cue", 1),), (card,)))
 
-        self.assertIn("card issue or unstudied material", caption)
-        self.assertIn("1 card may be worth fixing", caption)
-        self.assertIn("Start with: Mitral regurgitation", caption)
+        self.assertIn("Open this card first", caption)
+        self.assertIn("1 card may be worth checking", caption)
+        self.assertIn("Card: Mitral regurgitation", caption)
         self.assertIn("Why: Weak cue, Comparison; missed 3/4 reviews", caption)
         self.assertIn("prompt is specific enough", caption)
 
     def test_cards_to_fix_caption_handles_no_construction_clues(self) -> None:
         caption = cards_to_fix_caption(CardsToFix(0, (), ()))
 
-        self.assertIn("No repeated-miss cards with obvious construction clues", caption)
+        self.assertIn("No card repair stands out", caption)
         self.assertIn("If this material is new", caption)
 
     def test_session_habits_caption_reports_observed_facts(self) -> None:
