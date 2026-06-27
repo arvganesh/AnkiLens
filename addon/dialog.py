@@ -62,6 +62,7 @@ class MissedCardsDialog(QDialog):
             table.setItem(row, 5, SortItem(f"{summary.miss_rate:.0%}", summary.miss_rate))
             table.setItem(row, 6, SortItem(format_review_date(summary.last_missed_at), summary.last_missed_at or 0))
         table.setSortingEnabled(True)
+        table.selectRow(0)
         table.resizeColumnsToContents()
 
         layout.addWidget(table)
@@ -85,9 +86,8 @@ class SortItem(QTableWidgetItem):
 
 def _open_selected_card(table: QTableWidget, on_open_card: Callable[[int], None]) -> None:
     selected_rows = table.selectionModel().selectedRows()
-    if not selected_rows:
-        return
-    item = table.item(selected_rows[0].row(), 0)
+    row = selected_rows[0].row() if selected_rows else 0
+    item = table.item(row, 0)
     if item is None:
         return
     on_open_card(int(item.data(Qt.ItemDataRole.UserRole)))
