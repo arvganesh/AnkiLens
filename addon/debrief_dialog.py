@@ -159,7 +159,7 @@ def _next_step_card(
             study_target_title(_target_label(target)),
             rows=(
                 ("Evidence", _target_evidence(target, _target_label(target))),
-                ("Next", study_next_step()),
+                ("Next", study_next_step(target.kind)),
                 ("Check", no_repair_signal_text()),
             ),
             actions=actions,

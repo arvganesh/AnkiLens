@@ -38,8 +38,14 @@ def repair_next_step() -> str:
     return "Inspect the prompt first. If it is clear, study the source instead of editing."
 
 
-def study_next_step() -> str:
-    return "Review this source topic, then retry the related cards."
+def study_next_step(kind: str) -> str:
+    if kind == "tag":
+        return "Review this tagged topic, then retry the related cards."
+    if kind == "term":
+        return "Skim the related cards for the shared concept, then review the source if they still feel unclear."
+    if kind == "deck":
+        return "Treat this as a broad deck signal: sample the related cards before deciding what to study."
+    return "Review the related cards, then decide whether the source material needs another pass."
 
 
 def no_repair_signal_text() -> str:

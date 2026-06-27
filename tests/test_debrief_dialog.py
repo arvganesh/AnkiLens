@@ -50,7 +50,12 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertEqual(repair_evidence(summary), "Missed 3/5 recent reviews; clues: Long card, Dense card.")
         self.assertIn("Inspect the prompt first", repair_next_step())
-        self.assertEqual(study_next_step(), "Review this source topic, then retry the related cards.")
+        self.assertEqual(study_next_step("tag"), "Review this tagged topic, then retry the related cards.")
+
+    def test_study_next_step_matches_target_kind(self) -> None:
+        self.assertIn("shared concept", study_next_step("term"))
+        self.assertIn("broad deck signal", study_next_step("deck"))
+        self.assertIn("related cards", study_next_step("unknown"))
 
     def test_repair_action_summary_names_evidence_and_uncertainty(self) -> None:
         summary = MissedCardSummary(
