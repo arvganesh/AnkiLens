@@ -27,7 +27,7 @@ class DebriefDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Bonsai Recent Misses Debrief")
-        self.resize(620, 460)
+        self.resize(620, 360)
         self.setStyleSheet("QDialog { background: #f5f2ea; }")
 
         layout = QVBoxLayout()
@@ -36,6 +36,7 @@ class DebriefDialog(QDialog):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addWidget(title_label("Recent Misses Debrief"))
         layout.addWidget(body_label(_intro_text(lookback_days)))
+        layout.addSpacing(3)
         layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
         if debrief.cards_to_fix.cards:
             layout.addWidget(_cards_to_fix_card(debrief.cards_to_fix, dialog=self, open_card=None))
@@ -49,6 +50,7 @@ class DebriefDialog(QDialog):
             actions.addStretch(1)
             actions.addWidget(button)
             layout.addLayout(actions)
+        layout.addStretch(1)
         self.setLayout(layout)
 
 
@@ -120,15 +122,17 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
         button.clicked.connect(lambda _checked=False: _run_then_accept(dialog, lambda: open_card(card.card_id)))
         actions = (button,)
     rows = tuple(
-        (summary.card_label, f"{', '.join(summary.content_labels)}; missed {summary.misses}/{summary.total_reviews} reviews")
-        for summary in cards_to_fix.cards[:3]
+        (
+            "Top card" if index == 0 else "Also",
+            f"{summary.card_label}: {', '.join(summary.content_labels)}; missed {summary.misses}/{summary.total_reviews} reviews",
+        )
+        for index, summary in enumerate(cards_to_fix.cards[:3])
     )
     return panel_card(
-        "Cards worth checking",
+        "Why this recommendation",
         _cards_to_fix_body(cards_to_fix),
         rows=rows,
         actions=actions,
-        featured=True,
     )
 
 
@@ -151,7 +155,12 @@ def _study_material_card(
         button = secondary_button("Browse related cards")
         button.clicked.connect(lambda _checked=False: _run_then_accept(dialog, lambda: open_material(top_target)))
         actions = (button,)
-    return panel_card(f"Study next: {_target_label(top_target)}", _target_summary(top_target), rows=rows, actions=actions)
+    return panel_card(
+        f"Related study signal: {_target_label(top_target)}",
+        _target_summary(top_target),
+        rows=rows,
+        actions=actions,
+    )
 
 
 def _review_habits_card(habits: SessionHabits):

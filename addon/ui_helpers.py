@@ -63,13 +63,15 @@ def panel_card(
         "}"
     )
     layout = QVBoxLayout()
-    layout.setContentsMargins(14, 12, 14, 12)
-    layout.setSpacing(5)
+    margin_x = 16 if featured else 14
+    margin_y = 14 if featured else 12
+    layout.setContentsMargins(margin_x, margin_y, margin_x, margin_y)
+    layout.setSpacing(8 if featured else 6)
 
     heading = QLabel(title)
     heading.setWordWrap(True)
     heading.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-    heading_size = "13px" if quiet else "15px"
+    heading_size = "13px" if quiet else "16px" if featured else "15px"
     heading.setStyleSheet(f"border: none; color: #1f2a20; font-size: {heading_size}; font-weight: 700;")
     layout.addWidget(heading)
 
@@ -84,7 +86,7 @@ def panel_card(
         layout.addLayout(_detail_row(label, value))
     if actions:
         action_row = QHBoxLayout()
-        action_row.setContentsMargins(0, 4, 0, 0)
+        action_row.setContentsMargins(0, 8 if featured else 6, 0, 0)
         action_row.addStretch(1)
         for action in actions:
             action_row.addWidget(action)
@@ -95,11 +97,11 @@ def panel_card(
 
 def _detail_row(label: str, value: str) -> QHBoxLayout:
     row = QHBoxLayout()
-    row.setSpacing(10)
+    row.setSpacing(12)
     row.setContentsMargins(0, 0, 0, 0)
 
     label_widget = QLabel(label)
-    label_widget.setMinimumWidth(82)
+    label_widget.setFixedWidth(76)
     label_widget.setAlignment(Qt.AlignmentFlag.AlignTop)
     label_widget.setStyleSheet("border: none; color: #667064; font-size: 12px; font-weight: 600;")
     row.addWidget(label_widget)
