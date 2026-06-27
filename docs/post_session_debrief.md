@@ -9,8 +9,9 @@ notes, cards, decks, or review history.
 
 The debrief has three distinct buckets.
 
-1. Study next
-   - Purpose: identify content that may need more review.
+1. Study material
+   - Purpose: identify content that may need more review after card quality has
+     been checked.
    - Inputs: repeated terms, deck concentration, tag concentration, and related
      missed cards.
    - Initial output: top 3 study targets, expandable later into related cards.
@@ -37,13 +38,24 @@ Repeated misses can mean the card needs editing, the content needs more study,
 or both. Bonsai should help the user check card quality before concluding that
 they simply need to study harder.
 
+For tag-driven decks such as AnKing, repeated misses can also mean the user
+unsuspended material that matches class tags but has not actually learned the
+underlying lecture/topic yet. Bonsai should frame the debrief as a decision:
+
+- If construction clues are present, check the specific card first.
+- If construction clues are absent and misses cluster around a tag/deck/topic,
+  treat the cluster as material to study, not a card-edit diagnosis.
+- If the cards are new or recently unsuspended, avoid over-interpreting early
+  misses as either bad cards or weak knowledge.
+
 ## Initial Semantics
 
 For the first implementation, "post-session" means a recent review window, not a
 true Anki session boundary. Bonsai should label this clearly as a debrief for
 recent/today's reviews until session boundaries are modeled.
 
-- Study next means "content areas worth reviewing," not a scheduler override.
+- Study material means "content areas worth reviewing if the cards look okay,"
+  not a scheduler override.
 - Fix cards means repeated-miss cards with construction clues, not an edit
   workflow.
 - Session habits means observed facts only, not advice or judgment.

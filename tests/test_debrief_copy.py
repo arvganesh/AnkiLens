@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 
+from analytics import MissedCardSummary
 from debrief import CardsToFix, SessionHabits, StudyTarget
 from debrief_copy import cards_to_fix_caption, review_habits_caption, study_next_caption
 
@@ -10,17 +11,36 @@ class DebriefCopyTest(unittest.TestCase):
     def test_study_next_caption_lists_targets_without_scheduler_language(self) -> None:
         caption = study_next_caption((StudyTarget("mitral", "term", 2, ("Card 1", "Card 2")),))
 
-        self.assertIn("Study next", caption)
+        self.assertIn("Study material if the cards look okay", caption)
         self.assertIn("mitral", caption)
         self.assertIn("examples: Card 1, Card 2", caption)
         self.assertNotIn("due", caption.lower())
         self.assertNotIn("must", caption.lower())
 
-    def test_cards_to_fix_caption_is_conditional(self) -> None:
-        caption = cards_to_fix_caption(CardsToFix(1, (("Weak cue", 1),), ()))
+    def test_cards_to_fix_caption_starts_with_next_card_to_inspect(self) -> None:
+        card = MissedCardSummary(
+            123,
+            "Deck",
+            "Mitral regurgitation",
+            3,
+            4,
+            None,
+            content_labels=("Weak cue", "Comparison"),
+        )
 
-        self.assertIn("1 card may need editing", caption)
-        self.assertIn("Weak cue", caption)
+        caption = cards_to_fix_caption(CardsToFix(1, (("Weak cue", 1),), (card,)))
+
+        self.assertIn("card issue or unstudied material", caption)
+        self.assertIn("1 card may be worth fixing", caption)
+        self.assertIn("Start with: Mitral regurgitation", caption)
+        self.assertIn("Why: Weak cue, Comparison; missed 3/4 reviews", caption)
+        self.assertIn("prompt is specific enough", caption)
+
+    def test_cards_to_fix_caption_handles_no_construction_clues(self) -> None:
+        caption = cards_to_fix_caption(CardsToFix(0, (), ()))
+
+        self.assertIn("No repeated-miss cards with obvious construction clues", caption)
+        self.assertIn("If this material is new", caption)
 
     def test_session_habits_caption_reports_observed_facts(self) -> None:
         caption = review_habits_caption(SessionHabits(10, 2, 0.2, "Evening", 10, 75.0, 7.5))

@@ -34,8 +34,8 @@ class DebriefDialog(QDialog):
         layout.setSpacing(10)
         layout.addWidget(title_label("Recent Debrief"))
         layout.addWidget(body_label(_intro_text(lookback_days)))
-        layout.addWidget(section_label(study_next_caption(debrief.study_next)))
         layout.addWidget(section_label(cards_to_fix_caption(debrief.cards_to_fix)))
+        layout.addWidget(section_label(study_next_caption(debrief.study_next)))
         layout.addWidget(section_label(review_habits_caption(debrief.session_habits)))
         if open_full_analytics:
             button = QPushButton("Open full analytics")
@@ -51,4 +51,3 @@ def _intro_text(lookback_days: int) -> str:
     if lookback_days <= 0:
         return "A read-only debrief across all available reviews. Bonsai does not change scheduling."
     return f"A read-only debrief for the last {lookback_days} days. Bonsai does not change scheduling."
-
