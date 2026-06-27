@@ -468,6 +468,9 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(calls[0][1]["rows"][0][0], "Also check")
         self.assertEqual(calls[0][1]["rows"][1][0], "Why")
         self.assertEqual(calls[0][1]["rows"][2][0], "Also check")
+        self.assertIn("Cardiology Valves", calls[0][1]["rows"][1][1])
+        self.assertIn("mitral", calls[0][1]["rows"][2][1])
+        self.assertNotIn(" in word", calls[0][1]["rows"][2][1])
         self.assertTrue(calls[0][1]["quiet"])
         self.assertNotIn("signal", calls[0][0][0].lower())
 
@@ -567,6 +570,70 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertIn("Mitral regurgitation", calls[0][1]["rows"][0][1])
         self.assertNotIn("Murmur?", calls[0][1]["rows"][0][1])
 
+    def test_study_support_panel_hides_duplicate_missed_examples(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        primary = StudyTarget(
+            "AnKing::Cardiology::Valves",
+            "tag",
+            2,
+            5,
+            ("Murmur?", "Aortic stenosis murmur"),
+            related_card_ids=(10, 11),
+        )
+        duplicate = StudyTarget(
+            "stenosis",
+            "term",
+            2,
+            4,
+            ("Murmur?", "Aortic stenosis murmur"),
+            related_card_ids=(10, 11),
+        )
+
+        widget = debrief_dialog._study_material_card(
+            (primary, duplicate),
+            dialog=None,
+            open_material=None,
+            exclude_target=primary,
+        )
+
+        self.assertIsNone(widget)
+
+    def test_study_support_panel_keeps_distinct_missed_examples(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        calls = []
+        primary = StudyTarget(
+            "AnKing::Cardiology::Valves",
+            "tag",
+            2,
+            5,
+            ("Murmur?", "Aortic stenosis murmur"),
+            related_card_ids=(10, 11),
+        )
+        distinct = StudyTarget(
+            "mitral",
+            "term",
+            2,
+            6,
+            ("Mitral regurgitation",),
+            related_card_ids=(12,),
+        )
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        try:
+            widget = debrief_dialog._study_material_card(
+                (primary, distinct),
+                dialog=None,
+                open_material=None,
+                exclude_target=primary,
+            )
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+
+        self.assertEqual(widget, "panel")
+        self.assertIn("Mitral regurgitation", calls[0][1]["rows"][0][1])
+
     def test_study_support_panel_can_open_exact_missed_examples(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")
@@ -659,7 +726,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "recommendation")
-        self.assertEqual(calls[0][1]["confidence"], "4 of 8 related cards needed another pass; worth a quick check.")
+        self.assertEqual(calls[0][1]["confidence"], "4 of 8 related cards needed another pass.")
         self.assertIn("revisit the surrounding concept", calls[0][1]["next_step"])
         self.assertIn("3 mature", calls[0][1]["evidence"])
         self.assertNotIn("4 of 8", calls[0][1]["evidence"])

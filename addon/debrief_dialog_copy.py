@@ -80,7 +80,10 @@ def target_signal_text(
     card_label = "card" if reviewed_count == 1 else "cards"
     scope = "related " if active_cards else ""
     confidence = evidence_confidence_text(count, reviewed_count, mixed_signals=mixed_signals)
-    return f"{count} of {reviewed_count} {scope}{card_label} needed another pass; {confidence.lower()}."
+    signal = f"{count} of {reviewed_count} {scope}{card_label} needed another pass"
+    if confidence == "Worth a quick check":
+        return f"{signal}."
+    return f"{signal}; {confidence.lower()}."
 
 
 def target_detail_text(

@@ -323,7 +323,7 @@ def _study_material_card(
     open_material: Callable[[StudyTarget], None] | None,
     exclude_target: StudyTarget | None = None,
 ):
-    visible_targets = tuple(target for target in targets if target != exclude_target)
+    visible_targets = _visible_study_targets(targets, exclude_target=exclude_target)
     if not visible_targets:
         return panel_card(
             "No study pattern yet",
@@ -349,6 +349,28 @@ def _study_material_card(
     )
 
 
+def _visible_study_targets(
+    targets: tuple[StudyTarget, ...],
+    *,
+    exclude_target: StudyTarget | None = None,
+) -> tuple[StudyTarget, ...]:
+    return tuple(
+        target
+        for target in targets
+        if target != exclude_target and not _duplicates_target_examples(target, exclude_target)
+    )
+
+
+def _duplicates_target_examples(target: StudyTarget, primary: StudyTarget | None) -> bool:
+    if primary is None:
+        return False
+    if target.related_card_ids and primary.related_card_ids:
+        return set(target.related_card_ids).issubset(set(primary.related_card_ids))
+    if target.related_cards and primary.related_cards:
+        return set(target.related_cards).issubset(set(primary.related_cards))
+    return False
+
+
 def _early_learning_card(debrief: Debrief):
     rows = tuple(
         (
@@ -361,7 +383,7 @@ def _early_learning_card(debrief: Debrief):
 
 
 def _target_summary(target: StudyTarget) -> str:
-    return _target_evidence(target, _target_kind_label(target.kind))
+    return _target_evidence(target, _target_label(target))
 
 
 def _early_learning_body(debrief: Debrief) -> str:
@@ -426,10 +448,6 @@ def _study_check_text(debrief: Debrief, target: StudyTarget) -> str:
     if target.related_card_ids:
         return "No obvious card-format issue stood out, so inspect these examples before deciding to study more."
     return no_repair_signal_text()
-
-
-def _target_kind_label(kind: str) -> str:
-    return {"tag": "tag", "term": "word", "deck": "deck"}.get(kind, "pattern")
 
 
 def _material_button_text(target: StudyTarget) -> str:

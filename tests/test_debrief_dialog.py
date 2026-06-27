@@ -115,11 +115,15 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertNotIn("In this window", target_evidence_text(4, 12, "Cardiology Valves", active_cards=True))
         self.assertEqual(
             target_signal_text(2, 5, active_cards=True),
-            "2 of 5 related cards needed another pass; worth a quick check.",
+            "2 of 5 related cards needed another pass.",
         )
         self.assertEqual(
             target_signal_text(4, 10),
             "4 of 10 cards needed another pass; consistent enough to check.",
+        )
+        self.assertEqual(
+            target_signal_text(2, 5, mixed_signals=True),
+            "2 of 5 cards needed another pass; check both causes.",
         )
         self.assertEqual(
             target_detail_text(("Murmur?",), early_count=2, mature_count=1, lapsed_count=1),

@@ -21,7 +21,7 @@ def _target_summary(target: StudyTarget) -> str:
     sample = "In this window, " if _is_small_sample(target.reviewed_count) else ""
     detail = (
         f"{sample}{target.count} of {target.reviewed_count} reviewed{scope} card{_plural(target.reviewed_count)} "
-        f"needed another pass in {_target_kind_label(target.kind)}."
+        f"needed another pass in {_target_label(target)}."
     )
     if target.related_cards:
         detail += f" Examples: {', '.join(target.related_cards)}."
@@ -32,10 +32,6 @@ def _target_label(target: StudyTarget) -> str:
     if target.kind != "tag":
         return target.label
     return target.label.replace("::", " / ").replace("_", " ")
-
-
-def _target_kind_label(kind: str) -> str:
-    return {"tag": "tag", "term": "word", "deck": "deck"}.get(kind, "pattern")
 
 
 def cards_to_fix_caption(cards_to_fix: CardsToFix) -> str:

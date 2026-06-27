@@ -13,8 +13,9 @@ class DebriefCopyTest(unittest.TestCase):
 
         self.assertIn("Material to check: mitral", caption)
         self.assertIn("Why:", caption)
-        self.assertIn("In this window, 2 of 6 reviewed cards needed another pass in word", caption)
+        self.assertIn("In this window, 2 of 6 reviewed cards needed another pass in mitral", caption)
         self.assertIn("Examples: Card 1, Card 2", caption)
+        self.assertNotIn("in word", caption)
         self.assertNotIn("sample", caption.lower())
         self.assertNotIn("if the card", caption.lower())
         self.assertNotIn("due", caption.lower())
@@ -36,12 +37,13 @@ class DebriefCopyTest(unittest.TestCase):
     def test_tag_study_next_caption_names_active_cards(self) -> None:
         caption = study_next_caption((StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",)),))
 
-        self.assertIn("In this window, 2 of 5 reviewed active cards needed another pass in tag", caption)
+        self.assertIn("In this window, 2 of 5 reviewed active cards needed another pass in AnKing / Cardiology / Valves", caption)
+        self.assertNotIn("in tag", caption)
 
     def test_study_next_caption_omits_sample_warning_for_larger_windows(self) -> None:
         caption = study_next_caption((StudyTarget("cardiology", "deck", 4, 12, ("Card 1",)),))
 
-        self.assertIn("4 of 12 reviewed cards needed another pass in deck", caption)
+        self.assertIn("4 of 12 reviewed cards needed another pass in cardiology", caption)
         self.assertNotIn("In this window", caption)
 
     def test_cards_to_fix_caption_lists_capped_cards_to_inspect(self) -> None:
