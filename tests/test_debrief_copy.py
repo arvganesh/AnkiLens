@@ -17,7 +17,7 @@ class DebriefCopyTest(unittest.TestCase):
         self.assertNotIn("due", caption.lower())
         self.assertNotIn("must", caption.lower())
 
-    def test_cards_to_fix_caption_starts_with_next_card_to_inspect(self) -> None:
+    def test_cards_to_fix_caption_lists_capped_cards_to_inspect(self) -> None:
         card = MissedCardSummary(
             123,
             "Deck",
@@ -30,17 +30,15 @@ class DebriefCopyTest(unittest.TestCase):
 
         caption = cards_to_fix_caption(CardsToFix(1, (("Weak cue", 1),), (card,)))
 
-        self.assertIn("Open this card first", caption)
+        self.assertIn("Cards worth checking", caption)
         self.assertIn("1 card may be worth checking", caption)
-        self.assertIn("Card: Mitral regurgitation", caption)
-        self.assertIn("Why: Weak cue, Comparison; missed 3/4 reviews", caption)
-        self.assertIn("prompt is specific enough", caption)
+        self.assertIn("Mitral regurgitation: Weak cue, Comparison; missed 3/4 reviews", caption)
 
     def test_cards_to_fix_caption_handles_no_construction_clues(self) -> None:
         caption = cards_to_fix_caption(CardsToFix(0, (), ()))
 
         self.assertIn("No card repair stands out", caption)
-        self.assertIn("If this material is new", caption)
+        self.assertIn("choose what to study", caption)
 
     def test_session_habits_caption_reports_observed_facts(self) -> None:
         caption = review_habits_caption(SessionHabits(10, 2, 0.2, "Evening", 10, 75.0, 7.5))

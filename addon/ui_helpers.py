@@ -44,6 +44,7 @@ def panel_card(
     body: str = "",
     *,
     rows: tuple[tuple[str, str], ...] = (),
+    actions: tuple[QPushButton, ...] = (),
     featured: bool = False,
     quiet: bool = False,
 ) -> QFrame:
@@ -76,6 +77,13 @@ def panel_card(
         layout.addWidget(content)
     for label, value in rows:
         layout.addLayout(_detail_row(label, value))
+    if actions:
+        action_row = QHBoxLayout()
+        action_row.setContentsMargins(0, 4, 0, 0)
+        action_row.addStretch(1)
+        for action in actions:
+            action_row.addWidget(action)
+        layout.addLayout(action_row)
     frame.setLayout(layout)
     return frame
 
@@ -112,6 +120,24 @@ def primary_button(text: str) -> QPushButton:
         "}"
         "QPushButton:hover { background: #285f35; }"
         "QPushButton:pressed { background: #214f2c; }"
+    )
+    return button
+
+
+def secondary_button(text: str) -> QPushButton:
+    button = QPushButton(text)
+    button.setStyleSheet(
+        "QPushButton {"
+        "background: #fbfaf5;"
+        "border: 1px solid #d8d0c2;"
+        "border-radius: 8px;"
+        "color: #2f382f;"
+        "font-size: 13px;"
+        "font-weight: 600;"
+        "padding: 7px 14px;"
+        "}"
+        "QPushButton:hover { background: #f0eadf; }"
+        "QPushButton:pressed { background: #e5ddcf; }"
     )
     return button
 

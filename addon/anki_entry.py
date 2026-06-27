@@ -4,13 +4,17 @@ from datetime import datetime
 
 try:
     from .analytics import filter_review_entries_by_lookback, summarize_missed_cards
+    from .anki_browser import open_card_in_browser
     from .anki_gateway import load_review_entries
+    from .browser_search import browser_search_for_card
     from .config import load_config
     from .deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, deck_button_html
     from .debrief import build_debrief
 except ImportError:
     from analytics import filter_review_entries_by_lookback, summarize_missed_cards
+    from anki_browser import open_card_in_browser
     from anki_gateway import load_review_entries
+    from browser_search import browser_search_for_card
     from config import load_config
     from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, deck_button_html
     from debrief import build_debrief
@@ -81,10 +85,24 @@ def show_session_debrief() -> None:
     dialog = DebriefDialog(
         build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
         lookback_days=config.lookback_days,
+        open_card=_open_card_from_debrief,
         open_full_analytics=show_missed_card_analytics,
         parent=mw,
     )
     dialog.exec()
+
+
+def _open_card_from_debrief(card_id: int) -> None:
+    from aqt import mw
+    from aqt.qt import QApplication
+    from aqt.utils import showInfo
+
+    query = browser_search_for_card(card_id)
+    try:
+        open_card_in_browser(mw, card_id)
+    except Exception:
+        QApplication.clipboard().setText(query)
+        showInfo(f"Could not open Browse. Copied this search instead: {query}")
 
 
 def show_missed_card_analytics() -> None:

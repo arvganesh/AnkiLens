@@ -20,17 +20,14 @@ def cards_to_fix_caption(cards_to_fix: CardsToFix) -> str:
     if cards_to_fix.count == 0:
         return (
             "No card repair stands out:\n"
-            "- If this material is new, review the source material before doing more cards."
+            "- Use the material patterns below to choose what to study."
         )
-    card = cards_to_fix.cards[0] if cards_to_fix.cards else None
     lines = [
-        "Open this card first:",
+        "Cards worth checking:",
         f"- {cards_to_fix.count} card{_plural(cards_to_fix.count)} may be worth checking before studying more.",
     ]
-    if card:
-        lines.append(f"- Card: {card.card_label}")
-        lines.append(f"- Why: {', '.join(card.content_labels)}; missed {card.misses}/{card.total_reviews} reviews")
-        lines.append(f"- Next: open the card and check whether the prompt is specific enough.")
+    for card in cards_to_fix.cards[:3]:
+        lines.append(f"- {card.card_label}: {', '.join(card.content_labels)}; missed {card.misses}/{card.total_reviews} reviews")
     if cards_to_fix.clues:
         clues = ", ".join(f"{label}: {count}" for label, count in cards_to_fix.clues)
         lines.append(f"- Common clues: {clues}")
