@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
-from aqt.qt import QAbstractItemView, QDialog, QLabel, QTableWidget, QTableWidgetItem, QVBoxLayout
+from aqt.qt import QAbstractItemView, QDialog, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, Qt
 
 from .analytics import MissedCardSummary, summarize_deck_misses, summarize_tag_misses
 from .copy_text import analytics_caption, deck_concentration_caption, tag_concentration_caption
@@ -17,6 +18,7 @@ class MissedCardsDialog(QDialog):
         minimum_misses: int,
         result_limit: int,
         lookback_days: int,
+        on_open_card: Callable[[int], None] | None = None,
         parent=None,
     ) -> None:
         super().__init__(parent)
@@ -50,7 +52,9 @@ class MissedCardsDialog(QDialog):
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         for row, summary in enumerate(summaries):
-            table.setItem(row, 0, QTableWidgetItem(summary.card_label))
+            card_item = QTableWidgetItem(summary.card_label)
+            card_item.setData(Qt.ItemDataRole.UserRole, summary.card_id)
+            table.setItem(row, 0, card_item)
             table.setItem(row, 1, QTableWidgetItem(summary.deck_name))
             table.setItem(row, 2, QTableWidgetItem(priority_label(summary)))
             table.setItem(row, 3, SortItem(str(summary.misses), summary.misses))
@@ -61,6 +65,10 @@ class MissedCardsDialog(QDialog):
         table.resizeColumnsToContents()
 
         layout.addWidget(table)
+        if on_open_card:
+            button = QPushButton("Open selected card in Browser")
+            button.clicked.connect(lambda: _open_selected_card(table, on_open_card))
+            layout.addWidget(button)
         self.setLayout(layout)
 
 
@@ -73,3 +81,13 @@ class SortItem(QTableWidgetItem):
         if isinstance(other, SortItem):
             return self.sort_value < other.sort_value
         return super().__lt__(other)
+
+
+def _open_selected_card(table: QTableWidget, on_open_card: Callable[[int], None]) -> None:
+    selected_rows = table.selectionModel().selectedRows()
+    if not selected_rows:
+        return
+    item = table.item(selected_rows[0].row(), 0)
+    if item is None:
+        return
+    on_open_card(int(item.data(Qt.ItemDataRole.UserRole)))

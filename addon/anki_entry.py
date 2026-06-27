@@ -4,6 +4,7 @@ from datetime import datetime
 
 from .analytics import filter_review_entries_by_lookback, summarize_missed_cards
 from .anki_gateway import load_review_entries
+from .browser_actions import open_card_in_browser
 from .config import load_config
 
 
@@ -37,6 +38,7 @@ def show_missed_card_analytics() -> None:
         minimum_misses=config.minimum_misses,
         result_limit=config.result_limit,
         lookback_days=config.lookback_days,
+        on_open_card=lambda card_id: open_card_in_browser(mw, card_id),
         parent=mw,
     )
     dialog.exec()
