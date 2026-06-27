@@ -99,7 +99,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("Inspect the prompt first", repair_next_step())
         self.assertEqual(
             study_next_step("tag"),
-            "Do a short source refresh for this topic, then retry the related cards.",
+            "Sample the related cards. If they feel unfamiliar, do a short source refresh before retrying.",
         )
 
     def test_evidence_confidence_copy_does_not_overclaim_thin_signals(self) -> None:
@@ -111,6 +111,7 @@ class DebriefDialogTest(unittest.TestCase):
 
     def test_study_next_step_matches_target_kind(self) -> None:
         self.assertIn("repeated wording", study_next_step("term"))
+        self.assertIn("still feel unfamiliar", study_next_step("term"))
         self.assertIn("broad deck signal", study_next_step("deck"))
         self.assertIn("related cards", study_next_step("unknown"))
 

@@ -94,9 +94,9 @@ def repair_next_step() -> str:
 
 def study_next_step(kind: str) -> str:
     if kind == "tag":
-        return "Do a short source refresh for this topic, then retry the related cards."
+        return "Sample the related cards. If they feel unfamiliar, do a short source refresh before retrying."
     if kind == "term":
-        return "Skim the examples with this repeated wording, then review the source if they still feel unclear."
+        return "Skim the examples with this repeated wording, then review the source if they still feel unfamiliar."
     if kind == "deck":
         return "Treat this as a broad deck signal: sample the related cards before deciding what to study."
     return "Review the related cards, then decide whether the source material needs another pass."
