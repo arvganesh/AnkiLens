@@ -241,15 +241,19 @@ class DebriefTest(unittest.TestCase):
     def test_early_learning_dominates_only_when_all_repeated_misses_are_early(self) -> None:
         debrief = build_debrief(
             [
-                _entry(1, 1, 0, text="aortic stenosis murmur", card_reps=3, card_lapses=0),
-                _entry(1, 1, 1, text="aortic stenosis murmur", card_reps=3, card_lapses=0),
-                _entry(2, 1, 2, text="mitral regurgitation murmur", card_reps=4, card_lapses=0),
-                _entry(2, 1, 3, text="mitral regurgitation murmur", card_reps=4, card_lapses=0),
+                _entry(1, 1, 0, text="aortic stenosis murmur", tags=("AnKing_Cardiology_Valves",), card_reps=3, card_lapses=0),
+                _entry(1, 1, 1, text="aortic stenosis murmur", tags=("AnKing_Cardiology_Valves",), card_reps=3, card_lapses=0),
+                _entry(2, 1, 2, text="mitral regurgitation murmur", tags=("AnKing_Cardiology_Valves",), card_reps=4, card_lapses=0),
+                _entry(2, 1, 3, text="mitral regurgitation murmur", tags=("AnKing_Cardiology_Valves",), card_reps=4, card_lapses=0),
+                _entry(3, 3, 4, text="tricuspid regurgitation murmur", tags=("AnKing_Cardiology_Valves",), card_reps=3, card_lapses=0),
+                _entry(4, 3, 5, text="pulmonic stenosis murmur", tags=("AnKing_Cardiology_Valves",), card_reps=3, card_lapses=0),
+                _entry(5, 3, 6, text="mitral stenosis murmur", tags=("AnKing_Cardiology_Valves",), card_reps=3, card_lapses=0),
             ]
         )
 
         self.assertEqual(debrief.early_learning.count, 2)
         self.assertTrue(debrief.early_learning_is_dominant)
+        self.assertEqual(debrief.study_next[0].label, "AnKing_Cardiology_Valves")
 
     def test_lapsed_cards_are_not_treated_as_new_material(self) -> None:
         debrief = build_debrief(

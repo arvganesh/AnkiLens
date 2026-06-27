@@ -90,9 +90,16 @@ def _next_step_card(
             featured=True,
         )
     if _early_learning_cards(debrief) and getattr(debrief, "early_learning_is_dominant", False):
+        actions = ()
+        if open_material and debrief.study_next:
+            target = debrief.study_next[0]
+            button = primary_button("Copy related search")
+            button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
+            actions = (button,)
         return panel_card(
             "Best next step: give early material another pass",
             _early_learning_body(debrief),
+            actions=actions,
             featured=True,
         )
     if debrief.study_next:
