@@ -32,6 +32,7 @@ from .copy_text import (
     content_pattern_caption,
     deck_concentration_caption,
     study_content_caption,
+    supporting_metric_labels,
     tag_concentration_caption,
     term_caption,
     workflow_caption,
@@ -74,9 +75,10 @@ class MissedCardsDialog(QDialog):
 
         metrics = QHBoxLayout()
         metrics.setSpacing(10)
-        metrics.addWidget(metric_card("cards needing attention", str(len(summaries))))
-        metrics.addWidget(metric_card("Again ratings", str(sum(summary.misses for summary in summaries))))
-        metrics.addWidget(metric_card("review window", "all time" if lookback_days <= 0 else f"{lookback_days} days"))
+        card_label, miss_label, window_label = supporting_metric_labels()
+        metrics.addWidget(metric_card(card_label, str(len(summaries))))
+        metrics.addWidget(metric_card(miss_label, str(sum(summary.misses for summary in summaries))))
+        metrics.addWidget(metric_card(window_label, "all time" if lookback_days <= 0 else f"{lookback_days} days"))
         layout.addLayout(metrics)
 
         layout.addWidget(body_label(workflow_caption()))

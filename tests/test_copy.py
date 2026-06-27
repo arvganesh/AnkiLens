@@ -11,6 +11,7 @@ from copy_text import (
     content_pattern_caption,
     deck_concentration_caption,
     study_content_caption,
+    supporting_metric_labels,
     tag_concentration_caption,
     term_caption,
     workflow_caption,
@@ -74,6 +75,12 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("inspect the cards behind the recommendation", workflow_caption())
         self.assertEqual(check_cards_caption(), "Inspect card quality")
         self.assertEqual(study_content_caption(), "Review material if the cards look clear")
+
+    def test_supporting_metric_labels_are_evidence_oriented(self) -> None:
+        self.assertEqual(
+            supporting_metric_labels(),
+            ("cards to inspect", "repeated misses", "evidence window"),
+        )
 
     def test_card_detail_caption_explains_selected_card(self) -> None:
         summary = MissedCardSummary(

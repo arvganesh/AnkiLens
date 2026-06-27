@@ -39,6 +39,10 @@ def study_content_caption() -> str:
     return "Review material if the cards look clear"
 
 
+def supporting_metric_labels() -> tuple[str, str, str]:
+    return ("cards to inspect", "repeated misses", "evidence window")
+
+
 def card_detail_caption(summary: MissedCardSummary) -> str:
     clues = ", ".join(summary.content_labels) if summary.content_labels else "No obvious clue"
     text = _preview_text(summary.source_text)
