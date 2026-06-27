@@ -76,7 +76,7 @@ class Debrief:
 
     @property
     def early_learning_is_dominant(self) -> bool:
-        return self.early_learning.count >= 2 and self.early_learning.count == len(self.missed_cards)
+        return self.early_learning.count >= 2 and all(summary.is_early_exposure for summary in self.missed_cards)
 
 
 _STRONG_REPAIR_LABELS = frozenset(
@@ -99,10 +99,11 @@ def build_debrief(
 ) -> Debrief:
     missed_cards = summarize_missed_cards(entries, minimum_misses=minimum_misses, limit=result_limit)
     all_missed_cards = summarize_missed_cards(entries, minimum_misses=minimum_misses, limit=len(entries))
+    early_candidates = summarize_missed_cards(entries, minimum_misses=1, limit=len(entries))
     return Debrief(
         study_next=tuple(_study_targets(entries, all_missed_cards, limit=study_limit)),
         cards_to_fix=_cards_to_fix(missed_cards),
-        early_learning=_early_learning(missed_cards),
+        early_learning=_early_learning(early_candidates),
         session_habits=_session_habits(entries),
         missed_cards=tuple(missed_cards),
     )

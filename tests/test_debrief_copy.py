@@ -45,7 +45,7 @@ class DebriefCopyTest(unittest.TestCase):
         caption = early_learning_caption(EarlyLearning(2, ()))
 
         self.assertIn("Early material", caption)
-        self.assertIn("2 repeated-miss cards are still early in learning", caption)
+        self.assertIn("2 early cards are still early in learning", caption)
         self.assertIn("weak evidence before editing from it alone", caption)
         self.assertNotIn("unlearned", caption.lower())
         self.assertNotIn("bad card", caption.lower())

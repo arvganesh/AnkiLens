@@ -57,7 +57,7 @@ def early_learning_caption(early_learning: EarlyLearning) -> str:
         return "Early material:\n- No repeated early-learning misses found in this window."
     lines = [
         "Early material:",
-        f"- {early_learning.count} repeated-miss card{_plural(early_learning.count)} "
+        f"- {early_learning.count} early card{_plural(early_learning.count)} "
         f"{_verb(early_learning.count, 'is', 'are')} still early in learning.",
         "- Treat this as weak evidence before editing from it alone; preview the source topic, then retry.",
     ]

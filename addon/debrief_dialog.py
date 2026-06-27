@@ -220,7 +220,7 @@ def _study_action_summary(target: StudyTarget) -> str:
 def _early_learning_body(debrief: Debrief) -> str:
     count = _early_learning_count(debrief)
     return (
-        f"{count} repeated-miss card{_plural(count)} "
+        f"{count} early card{_plural(count)} "
         f"{_verb(count, 'is', 'are')} still early in learning. Treat this as weak evidence before "
         "editing from it alone; preview the source topic, then retry."
     )
