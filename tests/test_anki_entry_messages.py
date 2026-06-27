@@ -42,6 +42,16 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         self.assertEqual(message, "Opened in Browse. Search copied.")
 
+    def test_browse_message_names_exact_missed_examples(self) -> None:
+        message = anki_entry._browse_search_message("cid:10 or cid:11", opened=True)
+
+        self.assertEqual(message, "Opened missed examples in Browse. Search copied.")
+
+    def test_browse_message_names_single_exact_card(self) -> None:
+        message = anki_entry._browse_search_message("cid:10", opened=True)
+
+        self.assertEqual(message, "Opened card in Browse. Search copied.")
+
     def test_browse_message_falls_back_to_copy_instructions(self) -> None:
         message = anki_entry._browse_search_message("tag:cardiology", opened=False)
 

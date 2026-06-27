@@ -206,9 +206,16 @@ def _try_open_browser_search(query: str) -> bool:
 
 
 def _browse_search_message(query: str, *, opened: bool) -> str:
+    if opened and _is_exact_card_search(query):
+        label = "missed examples" if " or " in query else "card"
+        return f"Opened {label} in Browse. Search copied."
     if opened:
         return "Opened in Browse. Search copied."
     return f"Copied search for Anki Browse:\n\n{query}\n\nOpen Browse and paste it into the search field."
+
+
+def _is_exact_card_search(query: str) -> bool:
+    return all(part.strip().startswith("cid:") for part in query.split(" or "))
 
 
 def _copy_search_from_debrief(query: str) -> None:
