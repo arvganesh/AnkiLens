@@ -3,6 +3,9 @@ from __future__ import annotations
 from aqt.qt import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, Qt
 
 
+DETAIL_LABEL_WIDTH = 88
+
+
 def title_label(text: str) -> QLabel:
     label = QLabel(text)
     label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
@@ -162,7 +165,7 @@ def _next_step_callout(text: str) -> QFrame:
     layout.setSpacing(10)
     layout.setContentsMargins(12, 10, 12, 10)
     label = QLabel("Next")
-    label.setFixedWidth(74)
+    label.setFixedWidth(DETAIL_LABEL_WIDTH)
     label.setAlignment(Qt.AlignmentFlag.AlignTop)
     label.setStyleSheet("border: none; color: #4f674a; font-size: 12px; font-weight: 700;")
     layout.addWidget(label)
@@ -173,11 +176,11 @@ def _next_step_callout(text: str) -> QFrame:
 
 def _detail_row(label: str, value: str, *, quiet: bool = False) -> QHBoxLayout:
     row = QHBoxLayout()
-    row.setSpacing(10)
-    row.setContentsMargins(0, 0, 0, 0)
+    row.setSpacing(14)
+    row.setContentsMargins(0, 2, 0, 2)
 
     label_widget = QLabel(label)
-    label_widget.setFixedWidth(74)
+    label_widget.setFixedWidth(DETAIL_LABEL_WIDTH)
     label_widget.setAlignment(Qt.AlignmentFlag.AlignTop)
     label_widget.setStyleSheet("border: none; color: #667064; font-size: 12px; font-weight: 600;")
     row.addWidget(label_widget)

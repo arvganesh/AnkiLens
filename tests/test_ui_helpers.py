@@ -8,6 +8,7 @@ import unittest
 
 class _FakeWidget:
     labels: list[str] = []
+    fixed_widths: list[int] = []
 
     def __init__(self, text: str = "") -> None:
         self.text = text
@@ -17,8 +18,8 @@ class _FakeWidget:
     def setAlignment(self, *_args) -> None:
         pass
 
-    def setFixedWidth(self, *_args) -> None:
-        pass
+    def setFixedWidth(self, width) -> None:
+        self.fixed_widths.append(width)
 
     def setFrameShape(self, *_args) -> None:
         pass
@@ -43,6 +44,8 @@ class _FakeFrame(_FakeWidget):
 
 class _FakeLayout:
     stretch_count = 0
+    margins: list[tuple] = []
+    spacings: list[int] = []
 
     def __init__(self) -> None:
         self.items = []
@@ -59,11 +62,11 @@ class _FakeLayout:
     def addWidget(self, item, *args) -> None:
         self.items.append(("widget", item, args))
 
-    def setContentsMargins(self, *_args) -> None:
-        pass
+    def setContentsMargins(self, *args) -> None:
+        self.margins.append(args)
 
-    def setSpacing(self, *_args) -> None:
-        pass
+    def setSpacing(self, *args) -> None:
+        self.spacings.extend(args)
 
 
 class _FakeSizePolicy:
@@ -74,7 +77,10 @@ class _FakeSizePolicy:
 
 def _install_fake_aqt() -> None:
     _FakeWidget.labels = []
+    _FakeWidget.fixed_widths = []
     _FakeLayout.stretch_count = 0
+    _FakeLayout.margins = []
+    _FakeLayout.spacings = []
     qt = types.ModuleType("aqt.qt")
     qt.QFrame = _FakeFrame
     qt.QHBoxLayout = _FakeLayout
@@ -109,6 +115,22 @@ class UiHelpersTest(unittest.TestCase):
         self.assertIn("Check", _FakeWidget.labels)
         self.assertIn("Open the related cards.", _FakeWidget.labels)
         self.assertEqual(_FakeLayout.stretch_count, 0)
+
+    def test_detail_rows_have_breathing_room(self) -> None:
+        _install_fake_aqt()
+        ui_helpers = importlib.import_module("ui_helpers")
+
+        ui_helpers.recommendation_card(
+            "Study target to sample: Cardiology Valves",
+            confidence="Limited evidence",
+            evidence="2 of 5 active cards reviewed in Cardiology Valves needed another pass.",
+            next_step="Open the related cards.",
+            check="No obvious card-format issue stood out.",
+        )
+
+        self.assertIn(ui_helpers.DETAIL_LABEL_WIDTH, _FakeWidget.fixed_widths)
+        self.assertIn((0, 2, 0, 2), _FakeLayout.margins)
+        self.assertIn(14, _FakeLayout.spacings)
 
 
 if __name__ == "__main__":
