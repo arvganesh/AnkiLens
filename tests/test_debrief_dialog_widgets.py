@@ -466,7 +466,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(widget, "panel")
         self.assertEqual(calls[0][0][0], "Also check related material")
         self.assertEqual(calls[0][1]["rows"][0][0], "Check first")
-        self.assertEqual(calls[0][1]["rows"][1][0], "Why")
+        self.assertEqual(calls[0][1]["rows"][1][0], "Evidence")
         self.assertEqual(calls[0][1]["rows"][2][0], "Also check")
         self.assertTrue(calls[0][1]["quiet"])
         self.assertNotIn("signal", calls[0][0][0].lower())

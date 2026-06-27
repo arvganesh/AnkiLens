@@ -325,7 +325,7 @@ def _study_material_card(
     rows = (
         (("Also check", _target_summary(top_target)),)
         if exclude_target is not None
-        else (("Check first", _target_label(top_target)), ("Why", _target_summary(top_target)))
+        else (("Check first", _target_label(top_target)), ("Evidence", _target_summary(top_target)))
     ) + tuple(("Also check", _target_summary(target)) for target in visible_targets[1:3])
     return panel_card(
         "Also check related material",

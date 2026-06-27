@@ -70,7 +70,7 @@ The Recent Debrief currently leads with a single card:
 
 - Title example: `Relearning signal: Cardiology Valves`.
 - Primary action example: `Show missed examples`.
-- Evidence appears below the action under `Why this came up`, split into short lines.
+- Evidence appears below the action under `What Bonsai saw`, split into short lines.
 - Safety copy appears under `Before studying more`.
 - Secondary cards use ranked language such as `Also check...` or `Ignore for now...`.
 
