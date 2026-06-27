@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import unittest
+from datetime import datetime
 
-from analytics import DeckMissSummary, TagMissSummary
+from analytics import DeckMissSummary, MissedCardSummary, TagMissSummary
 from copy_text import (
     analytics_caption,
+    card_detail_caption,
     check_cards_caption,
     content_pattern_caption,
     deck_concentration_caption,
@@ -72,6 +74,34 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("card needs editing", workflow_caption())
         self.assertIn("Check the cards", check_cards_caption())
         self.assertIn("study the content", study_content_caption())
+
+    def test_card_detail_caption_explains_selected_card(self) -> None:
+        summary = MissedCardSummary(
+            123,
+            "Deck",
+            "Mitral regurgitation",
+            3,
+            4,
+            datetime(2026, 6, 26),
+            source_text="Mitral regurgitation murmur",
+            content_labels=("Comparison",),
+        )
+
+        caption = card_detail_caption(summary)
+
+        self.assertIn("Selected card: Mitral regurgitation", caption)
+        self.assertIn("Clues: Comparison", caption)
+        self.assertIn("Misses: 3/4 reviews (75%)", caption)
+        self.assertIn("Browser search: cid:123", caption)
+        self.assertIn("Text: Mitral regurgitation murmur", caption)
+
+    def test_card_detail_caption_truncates_long_text(self) -> None:
+        summary = MissedCardSummary(123, "Deck", "Card", 2, 3, None, source_text="word " * 80)
+
+        caption = card_detail_caption(summary)
+
+        self.assertLess(len(caption), 320)
+        self.assertIn("...", caption)
 
 
 if __name__ == "__main__":

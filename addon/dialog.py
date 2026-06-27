@@ -27,6 +27,7 @@ from .analytics import (
 from .browser_search import browser_search_for_card
 from .copy_text import (
     analytics_caption,
+    card_detail_caption,
     check_cards_caption,
     content_pattern_caption,
     deck_concentration_caption,
@@ -84,6 +85,7 @@ class MissedCardsDialog(QDialog):
         if pattern_caption:
             layout.addWidget(section_label(pattern_caption))
 
+        summaries_by_card_id = {summary.card_id: summary for summary in summaries}
         table = QTableWidget(len(summaries), 8, self)
         table.setHorizontalHeaderLabels(
             ["Card", "Deck", "Priority", "Content clues", "Misses", "Reviews", "Miss rate", "Last missed"]
@@ -112,6 +114,10 @@ class MissedCardsDialog(QDialog):
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         layout.addWidget(table)
+        detail = section_label("")
+        table.itemSelectionChanged.connect(lambda: _update_detail(table, detail, summaries_by_card_id))
+        _update_detail(table, detail, summaries_by_card_id)
+        layout.addWidget(detail)
         button = QPushButton("Copy Browser search for selected card")
         status = QLabel("")
         status.setStyleSheet("color: #5f675e; font-size: 12px;")
@@ -154,6 +160,21 @@ def _copy_selected_card_search(table: QTableWidget, status: QLabel) -> None:
     query = browser_search_for_card(card_id)
     QApplication.clipboard().setText(query)
     status.setText(f"Copied: {query}")
+
+
+def _update_detail(table: QTableWidget, detail: QLabel, summaries_by_card_id: dict[int, MissedCardSummary]) -> None:
+    summary = _selected_summary(table, summaries_by_card_id)
+    if summary:
+        detail.setText(card_detail_caption(summary))
+
+
+def _selected_summary(table: QTableWidget, summaries_by_card_id: dict[int, MissedCardSummary]) -> MissedCardSummary | None:
+    selected_rows = table.selectionModel().selectedRows()
+    row = selected_rows[0].row() if selected_rows else 0
+    item = table.item(row, 0)
+    if item is None:
+        return None
+    return summaries_by_card_id.get(int(item.data(Qt.ItemDataRole.UserRole)))
 
 
 def _signals_label(summary: MissedCardSummary) -> str:

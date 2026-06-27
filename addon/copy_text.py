@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 try:
-    from .analytics import DeckMissSummary, TagMissSummary
+    from .analytics import DeckMissSummary, MissedCardSummary, TagMissSummary
+    from .browser_search import browser_search_for_card
 except ImportError:
-    from analytics import DeckMissSummary, TagMissSummary
+    from analytics import DeckMissSummary, MissedCardSummary, TagMissSummary
+    from browser_search import browser_search_for_card
 
 
 def analytics_caption(
@@ -37,8 +39,29 @@ def study_content_caption() -> str:
     return "Then study the content"
 
 
+def card_detail_caption(summary: MissedCardSummary) -> str:
+    clues = ", ".join(summary.content_labels) if summary.content_labels else "No obvious clue"
+    text = _preview_text(summary.source_text)
+    lines = [
+        f"Selected card: {summary.card_label}",
+        f"Clues: {clues}",
+        f"Misses: {summary.misses}/{summary.total_reviews} reviews ({summary.miss_rate:.0%})",
+        f"Browser search: {browser_search_for_card(summary.card_id)}",
+    ]
+    if text:
+        lines.append(f"Text: {text}")
+    return "\n".join(lines)
+
+
 def _plural(count: int) -> str:
     return "" if count == 1 else "s"
+
+
+def _preview_text(text: str, *, limit: int = 180) -> str:
+    compact = " ".join(text.split())
+    if len(compact) <= limit:
+        return compact
+    return f"{compact[: limit - 1].rstrip()}..."
 
 
 def _lookback_label(lookback_days: int) -> str:
