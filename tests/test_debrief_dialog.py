@@ -98,8 +98,10 @@ class DebriefDialogTest(unittest.TestCase):
             repair_evidence(summary),
             "Needed another pass on 3/5 recent reviews; format clues: Long card, Dense card.",
         )
-        self.assertIn("split or simplify it", repair_next_step())
+        self.assertIn("Open the card and read the prompt", repair_next_step())
+        self.assertIn("Edit only if it asks too much", repair_next_step())
         self.assertIn("leave it alone", repair_next_step())
+        self.assertNotIn("split or simplify", repair_next_step())
         self.assertEqual(
             study_next_step("tag"),
             "Open the related cards. If they feel unfamiliar, revisit the class material behind this tag.",
@@ -152,7 +154,8 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertIn("Needed another pass on 3/5 recent reviews", body)
         self.assertIn("format clues: Long card, Dense card", body)
-        self.assertIn("split or simplify it", body)
+        self.assertIn("Open it first and read the prompt", body)
+        self.assertIn("Edit only if it asks too much", body)
         self.assertIn("leave it alone and study nearby material", body)
 
     def test_short_label_truncates_long_card_names(self) -> None:

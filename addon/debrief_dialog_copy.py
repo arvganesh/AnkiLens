@@ -89,7 +89,7 @@ def repair_action_summary(card) -> str:
     clues = ", ".join(card.content_labels) if card.content_labels else "repeated misses"
     return (
         f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; format clues: {clues}. "
-        "Open it first. If the prompt asks too much, split or simplify it; if it is clear, leave it alone and study nearby material."
+        "Open it first and read the prompt. Edit only if it asks too much; if it is clear, leave it alone and study nearby material."
     )
 
 
@@ -99,7 +99,7 @@ def repair_evidence(card) -> str:
 
 
 def repair_next_step() -> str:
-    return "Open the card. If the prompt asks too much, split or simplify it; if it is clear, leave it alone."
+    return "Open the card and read the prompt. Edit only if it asks too much; if it is clear, leave it alone."
 
 
 def study_next_step(kind: str) -> str:
