@@ -34,6 +34,19 @@ class AnkiEntryMessagesTest(unittest.TestCase):
     def test_ignores_other_messages(self) -> None:
         self.assertEqual(anki_entry._handle_js_message((False, None), "other", None), (False, None))
 
+    def test_browse_message_reflects_opened_search(self) -> None:
+        message = anki_entry._browse_search_message("tag:cardiology", opened=True)
+
+        self.assertIn("Opened Anki Browse", message)
+        self.assertIn("tag:cardiology", message)
+        self.assertIn("also copied", message)
+
+    def test_browse_message_falls_back_to_copy_instructions(self) -> None:
+        message = anki_entry._browse_search_message("tag:cardiology", opened=False)
+
+        self.assertIn("Copied search", message)
+        self.assertIn("Open Browse and paste", message)
+
 
 if __name__ == "__main__":
     unittest.main()

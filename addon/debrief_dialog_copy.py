@@ -22,11 +22,11 @@ def early_learning_title() -> str:
 
 
 def card_search_button_text() -> str:
-    return "Copy search for this card"
+    return "Open this card in Browse"
 
 
 def related_search_button_text() -> str:
-    return "Copy search for related cards"
+    return "Open related cards in Browse"
 
 
 def supporting_cards_button_text() -> str:

@@ -4,6 +4,7 @@ from datetime import datetime
 
 try:
     from .analytics import filter_review_entries_by_lookback, summarize_missed_cards
+    from .anki_browser import open_browser_search
     from .anki_gateway import load_review_entries
     from .browser_search import browser_search_for_card, browser_search_for_study_target
     from .config import load_config
@@ -11,6 +12,7 @@ try:
     from .debrief import StudyTarget, build_debrief
 except ImportError:
     from analytics import filter_review_entries_by_lookback, summarize_missed_cards
+    from anki_browser import open_browser_search
     from anki_gateway import load_review_entries
     from browser_search import browser_search_for_card, browser_search_for_study_target
     from config import load_config
@@ -105,7 +107,23 @@ def _open_search_from_debrief(query: str) -> None:
     from aqt.utils import showInfo
 
     QApplication.clipboard().setText(query)
-    showInfo(f"Copied search for Anki Browse:\n\n{query}\n\nOpen Browse and paste it into the search field.")
+    showInfo(_browse_search_message(query, opened=_try_open_browser_search(query)))
+
+
+def _try_open_browser_search(query: str) -> bool:
+    try:
+        from aqt import mw
+
+        open_browser_search(mw, query)
+    except Exception:
+        return False
+    return True
+
+
+def _browse_search_message(query: str, *, opened: bool) -> str:
+    if opened:
+        return f"Opened Anki Browse for:\n\n{query}\n\nThe search was also copied."
+    return f"Copied search for Anki Browse:\n\n{query}\n\nOpen Browse and paste it into the search field."
 
 
 def _copy_search_from_debrief(query: str) -> None:
