@@ -4,9 +4,9 @@ from typing import Any
 
 from aqt.qt import QApplication, QAbstractItemView, QDialog, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, Qt
 
-from .analytics import MissedCardSummary, summarize_deck_misses, summarize_tag_misses
+from .analytics import MissedCardSummary, summarize_content_patterns, summarize_deck_misses, summarize_tag_misses
 from .browser_search import browser_search_for_card
-from .copy_text import analytics_caption, deck_concentration_caption, tag_concentration_caption
+from .copy_text import analytics_caption, content_pattern_caption, deck_concentration_caption, tag_concentration_caption
 from .formatting import format_review_date, priority_label
 
 
@@ -43,10 +43,13 @@ class MissedCardsDialog(QDialog):
         tag_caption = tag_concentration_caption(summarize_tag_misses(summaries))
         if tag_caption:
             layout.addWidget(QLabel(tag_caption))
+        pattern_caption = content_pattern_caption(summarize_content_patterns(summaries))
+        if pattern_caption:
+            layout.addWidget(QLabel(pattern_caption))
 
-        table = QTableWidget(len(summaries), 7, self)
+        table = QTableWidget(len(summaries), 8, self)
         table.setHorizontalHeaderLabels(
-            ["Card", "Deck", "Priority", "Misses", "Reviews", "Miss rate", "Last missed"]
+            ["Card", "Deck", "Priority", "Signals", "Misses", "Reviews", "Miss rate", "Last missed"]
         )
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -56,10 +59,11 @@ class MissedCardsDialog(QDialog):
             table.setItem(row, 0, card_item)
             table.setItem(row, 1, QTableWidgetItem(summary.deck_name))
             table.setItem(row, 2, QTableWidgetItem(priority_label(summary)))
-            table.setItem(row, 3, SortItem(str(summary.misses), summary.misses))
-            table.setItem(row, 4, SortItem(str(summary.total_reviews), summary.total_reviews))
-            table.setItem(row, 5, SortItem(f"{summary.miss_rate:.0%}", summary.miss_rate))
-            table.setItem(row, 6, SortItem(format_review_date(summary.last_missed_at), summary.last_missed_at or 0))
+            table.setItem(row, 3, QTableWidgetItem(", ".join(summary.content_labels)))
+            table.setItem(row, 4, SortItem(str(summary.misses), summary.misses))
+            table.setItem(row, 5, SortItem(str(summary.total_reviews), summary.total_reviews))
+            table.setItem(row, 6, SortItem(f"{summary.miss_rate:.0%}", summary.miss_rate))
+            table.setItem(row, 7, SortItem(format_review_date(summary.last_missed_at), summary.last_missed_at or 0))
         table.setSortingEnabled(True)
         table.selectRow(0)
         table.resizeColumnsToContents()

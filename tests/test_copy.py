@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 
 from analytics import DeckMissSummary, TagMissSummary
-from copy_text import analytics_caption, deck_concentration_caption, tag_concentration_caption
+from copy_text import analytics_caption, content_pattern_caption, deck_concentration_caption, tag_concentration_caption
 
 
 class AnalyticsCopyTest(unittest.TestCase):
@@ -45,6 +45,13 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("Tags with repeated misses", caption)
         self.assertIn("murmurs", caption)
         self.assertIn("2 cards, 4 misses", caption)
+
+    def test_content_pattern_caption_lists_patterns(self) -> None:
+        caption = content_pattern_caption({"Dense card": 2})
+
+        self.assertIn("Content patterns", caption)
+        self.assertIn("Dense card", caption)
+        self.assertIn("2 cards", caption)
 
 
 if __name__ == "__main__":

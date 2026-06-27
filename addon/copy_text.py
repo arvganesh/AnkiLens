@@ -55,3 +55,11 @@ def tag_concentration_caption(tags: list[TagMissSummary]) -> str:
         for tag in tags
     )
     return "\n".join(lines)
+
+
+def content_pattern_caption(pattern_counts: dict[str, int]) -> str:
+    if not pattern_counts:
+        return ""
+    lines = ["Content patterns in repeated misses:"]
+    lines.extend(f"- {label}: {count} card{_plural(count)}" for label, count in pattern_counts.items())
+    return "\n".join(lines)

@@ -108,6 +108,14 @@ def summarize_tag_misses(summaries: list[MissedCardSummary], *, limit: int = 5) 
     return sorted(grouped.values(), key=lambda tag: (tag.misses, tag.missed_cards), reverse=True)[:limit]
 
 
+def summarize_content_patterns(summaries: list[MissedCardSummary]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for summary in summaries:
+        for label in summary.content_labels:
+            counts[label] = counts.get(label, 0) + 1
+    return dict(sorted(counts.items(), key=lambda item: item[1], reverse=True))
+
+
 def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
     ordered = sorted(entries, key=lambda entry: entry.reviewed_at)
     missed = [entry for entry in ordered if entry.ease == AGAIN_EASE]
