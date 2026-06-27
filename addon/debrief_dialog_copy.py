@@ -21,7 +21,21 @@ def deck_debrief_button_text() -> str:
     return "What should I check?"
 
 
-def study_target_title(label: str) -> str:
+def study_target_title(
+    label: str,
+    *,
+    kind: str = "",
+    mostly_early: bool = False,
+    early_count: int = 0,
+    mature_count: int = 0,
+    lapsed_count: int = 0,
+) -> str:
+    if kind == "tag" and mostly_early:
+        return f"New material to keep reviewing: {label}"
+    if kind == "tag" and lapsed_count > early_count + mature_count:
+        return f"Relearning signal: {label}"
+    if kind == "tag" and mature_count >= 2 and mature_count >= early_count:
+        return f"Revisit this material: {label}"
     return f"Check related material: {label}"
 
 

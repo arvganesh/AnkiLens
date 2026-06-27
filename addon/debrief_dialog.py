@@ -232,7 +232,14 @@ def _next_step_card(
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
         return recommendation_card(
-            study_target_title(_target_label(target)),
+            study_target_title(
+                _target_label(target),
+                kind=target.kind,
+                mostly_early=target.mostly_early,
+                early_count=target.early_count,
+                mature_count=target.mature_count,
+                lapsed_count=target.lapsed_count,
+            ),
             confidence=evidence_confidence_text(
                 target.count,
                 target.reviewed_count,

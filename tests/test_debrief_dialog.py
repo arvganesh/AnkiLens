@@ -50,6 +50,32 @@ class DebriefDialogTest(unittest.TestCase):
             study_target_title("Cardiology Valves"),
             "Check related material: Cardiology Valves",
         )
+        self.assertEqual(
+            study_target_title(
+                "Cardiology Valves",
+                kind="tag",
+                mostly_early=True,
+                early_count=3,
+            ),
+            "New material to keep reviewing: Cardiology Valves",
+        )
+        self.assertEqual(
+            study_target_title(
+                "Cardiology Valves",
+                kind="tag",
+                mature_count=2,
+            ),
+            "Revisit this material: Cardiology Valves",
+        )
+        self.assertEqual(
+            study_target_title(
+                "Cardiology Valves",
+                kind="tag",
+                early_count=1,
+                lapsed_count=2,
+            ),
+            "Relearning signal: Cardiology Valves",
+        )
 
     def test_tag_targets_are_readable_concepts_with_examples(self) -> None:
         self.assertEqual(
