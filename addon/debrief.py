@@ -69,6 +69,18 @@ class Debrief:
     missed_cards: tuple[MissedCardSummary, ...]
 
 
+_STRONG_REPAIR_LABELS = frozenset(
+    {
+        "Long card",
+        "Dense card",
+        "Many numbers",
+        "Cloze-heavy",
+        "List-like",
+        "Media reference",
+    }
+)
+
+
 def build_debrief(
     entries: list[ReviewLogEntry],
     *,
@@ -129,10 +141,15 @@ def _study_targets(entries: list[ReviewLogEntry], summaries: list[MissedCardSumm
 
 
 def _cards_to_fix(summaries: list[MissedCardSummary]) -> CardsToFix:
-    cards = tuple(summary for summary in summaries if summary.content_labels and not summary.is_early_exposure)
-    early_exposure_count = sum(1 for summary in summaries if summary.content_labels and summary.is_early_exposure)
+    cards = tuple(summary for summary in summaries if _has_repair_signal(summary) and not summary.is_early_exposure)
+    early_exposure_count = sum(1 for summary in summaries if _has_repair_signal(summary) and summary.is_early_exposure)
     clues = tuple(summarize_content_patterns(list(cards)).items())
     return CardsToFix(count=len(cards), clues=clues, cards=cards, early_exposure_count=early_exposure_count)
+
+
+def _has_repair_signal(summary: MissedCardSummary) -> bool:
+    labels = set(summary.content_labels)
+    return bool(labels & _STRONG_REPAIR_LABELS) or len(labels) >= 2
 
 
 def _kind_priority(kind: str) -> int:

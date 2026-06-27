@@ -73,8 +73,10 @@ def _next_step_card(
             button.clicked.connect(lambda _checked=False: _run_then_accept(dialog, lambda: open_card(card.card_id)))
             actions = (button,)
         return panel_card(
-            "Best next step: inspect card friction",
-            f"{debrief.cards_to_fix.count} mature card{_plural(debrief.cards_to_fix.count)} keep missing with construction clues. Decide whether to clarify, flag, suspend, or leave as-is.",
+            "Best next step: inspect missed cards",
+            f"{debrief.cards_to_fix.count} mature card{_plural(debrief.cards_to_fix.count)} "
+            f"{_verb(debrief.cards_to_fix.count, 'keeps', 'keep')} missing with card-specific clues. "
+            "Check whether the miss came from wording, context, or source knowledge before editing or leaving as-is.",
             actions=actions,
             featured=True,
         )
@@ -100,7 +102,7 @@ def _next_step_card(
 
 def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: Callable[[int], None] | None):
     if not cards_to_fix.cards:
-        body = "No obvious card-construction issue surfaced in this window. Study signals may be more useful here."
+        body = "No strong card-specific pattern surfaced in this window. Study signals may be more useful here."
         if cards_to_fix.early_exposure_count:
             body += (
                 f" {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "
@@ -205,7 +207,10 @@ def _plural(count: int) -> str:
 
 
 def _cards_to_fix_body(cards_to_fix: CardsToFix) -> str:
-    body = f"{cards_to_fix.count} card{_plural(cards_to_fix.count)} may be worth checking before studying more."
+    body = (
+        f"{cards_to_fix.count} card{_plural(cards_to_fix.count)} "
+        f"{_verb(cards_to_fix.count, 'shows', 'show')} stronger card-specific clues."
+    )
     if cards_to_fix.early_exposure_count:
         body += (
             f" {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "

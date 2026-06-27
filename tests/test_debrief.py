@@ -161,7 +161,7 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.study_next[0].reviewed_count, 5)
         self.assertEqual(debrief.study_next[0].related_cards, ("Card 2", "Card 1"))
 
-    def test_cards_to_fix_only_counts_cards_with_content_clues(self) -> None:
+    def test_cards_to_fix_ignores_weak_cue_alone(self) -> None:
         debrief = build_debrief(
             [
                 _entry(1, 1, 0, text="weak cue", card_reps=8),
@@ -172,14 +172,38 @@ class DebriefTest(unittest.TestCase):
             ]
         )
 
+        self.assertEqual(debrief.cards_to_fix.count, 0)
+        self.assertEqual(debrief.cards_to_fix.clues, ())
+
+    def test_cards_to_fix_counts_strong_repair_clue(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="word " * 80, card_reps=8),
+                _entry(1, 1, 1, text="word " * 80, card_reps=8),
+                _entry(1, 3, 2, text="word " * 80, card_reps=8),
+            ]
+        )
+
         self.assertEqual(debrief.cards_to_fix.count, 1)
-        self.assertEqual(debrief.cards_to_fix.clues, (("Weak cue", 1),))
+        self.assertEqual(debrief.cards_to_fix.clues, (("Long card", 1), ("Dense card", 1)))
+
+    def test_cards_to_fix_counts_multiple_weaker_clues(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="AS vs MR", card_reps=8),
+                _entry(1, 1, 1, text="AS vs MR", card_reps=8),
+                _entry(1, 3, 2, text="AS vs MR", card_reps=8),
+            ]
+        )
+
+        self.assertEqual(debrief.cards_to_fix.count, 1)
+        self.assertEqual(debrief.cards_to_fix.clues, (("Weak cue", 1), ("Comparison", 1)))
 
     def test_cards_to_fix_excludes_early_exposure_cards(self) -> None:
         debrief = build_debrief(
             [
-                _entry(1, 1, 0, text="weak cue", tags=("AnKing_Cardiology_Valves",), card_reps=2),
-                _entry(1, 1, 1, text="weak cue", tags=("AnKing_Cardiology_Valves",), card_reps=2),
+                _entry(1, 1, 0, text="word " * 80, tags=("AnKing_Cardiology_Valves",), card_reps=2),
+                _entry(1, 1, 1, text="word " * 80, tags=("AnKing_Cardiology_Valves",), card_reps=2),
                 _entry(2, 1, 2, text="focused aortic stenosis murmur prompt", tags=("AnKing_Cardiology_Valves",), card_reps=8),
                 _entry(2, 1, 3, text="focused aortic stenosis murmur prompt", tags=("AnKing_Cardiology_Valves",), card_reps=8),
                 _entry(3, 3, 4, text="focused mitral stenosis prompt", tags=("AnKing_Cardiology_Valves",), card_reps=8),
