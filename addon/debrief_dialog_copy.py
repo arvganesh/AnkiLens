@@ -239,7 +239,7 @@ def no_pattern_evidence(*, has_repeated_misses: bool = True) -> str:
 def no_pattern_next_step(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
         return "Keep reviewing normally. Bonsai will speak up when a stronger pattern appears."
-    return "Do not edit or cram from this alone. If one card felt wrong, view the details; otherwise keep reviewing."
+    return "Do not edit or cram from this alone. If one card felt wrong, inspect that card from Browse; otherwise keep reviewing."
 
 
 def no_pattern_confidence_text(*, has_repeated_misses: bool = True) -> str:
