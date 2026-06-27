@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import Any
 
-from aqt.qt import QAbstractItemView, QDialog, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QTimer, QVBoxLayout, Qt
+from aqt.qt import QApplication, QAbstractItemView, QDialog, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, Qt
 
 from .analytics import MissedCardSummary, summarize_deck_misses, summarize_tag_misses
+from .browser_search import browser_search_for_card
 from .copy_text import analytics_caption, deck_concentration_caption, tag_concentration_caption
 from .formatting import format_review_date, priority_label
 
@@ -18,7 +18,6 @@ class MissedCardsDialog(QDialog):
         minimum_misses: int,
         result_limit: int,
         lookback_days: int,
-        on_open_card: Callable[[int], None] | None = None,
         parent=None,
     ) -> None:
         super().__init__(parent)
@@ -66,10 +65,9 @@ class MissedCardsDialog(QDialog):
         table.resizeColumnsToContents()
 
         layout.addWidget(table)
-        if on_open_card:
-            button = QPushButton("Open selected card in Browser")
-            button.clicked.connect(lambda _checked=False: _open_selected_card(table, on_open_card))
-            layout.addWidget(button)
+        button = QPushButton("Copy Browser search for selected card")
+        button.clicked.connect(lambda _checked=False: _copy_selected_card_search(table))
+        layout.addWidget(button)
         self.setLayout(layout)
 
 
@@ -84,12 +82,11 @@ class SortItem(QTableWidgetItem):
         return super().__lt__(other)
 
 
-def _open_selected_card(table: QTableWidget, on_open_card: Callable[[int], None]) -> None:
+def _copy_selected_card_search(table: QTableWidget) -> None:
     selected_rows = table.selectionModel().selectedRows()
     row = selected_rows[0].row() if selected_rows else 0
     item = table.item(row, 0)
     if item is None:
         return
     card_id = int(item.data(Qt.ItemDataRole.UserRole))
-    table.window().close()
-    QTimer.singleShot(0, lambda: on_open_card(card_id))
+    QApplication.clipboard().setText(browser_search_for_card(card_id))
