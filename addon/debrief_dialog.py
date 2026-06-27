@@ -21,21 +21,25 @@ class DebriefDialog(QDialog):
         *,
         lookback_days: int,
         open_card: Callable[[int], None] | None = None,
+        open_material: Callable[[StudyTarget], None] | None = None,
         open_full_analytics: Callable[[], None] | None = None,
         parent=None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Bonsai Recent Debrief")
+        self.setWindowTitle("Bonsai Recent Misses Debrief")
         self.resize(620, 460)
         self.setStyleSheet("QDialog { background: #f5f2ea; }")
 
         layout = QVBoxLayout()
         layout.setContentsMargins(24, 22, 24, 20)
         layout.setSpacing(12)
-        layout.addWidget(title_label("Recent Debrief"))
+        layout.addWidget(title_label("Recent Misses Debrief"))
         layout.addWidget(body_label(_intro_text(lookback_days)))
-        layout.addWidget(_cards_to_fix_card(debrief.cards_to_fix, dialog=self, open_card=open_card))
-        layout.addWidget(_study_material_card(debrief.study_next))
+        layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
+        if debrief.cards_to_fix.cards:
+            layout.addWidget(_cards_to_fix_card(debrief.cards_to_fix, dialog=self, open_card=None))
+        if debrief.cards_to_fix.cards and debrief.study_next:
+            layout.addWidget(_study_material_card(debrief.study_next, dialog=self, open_material=open_material))
         layout.addWidget(_review_habits_card(debrief.session_habits))
         if open_full_analytics:
             button = secondary_button("Open full analytics")
@@ -49,13 +53,53 @@ class DebriefDialog(QDialog):
 
 def _intro_text(lookback_days: int) -> str:
     if lookback_days <= 0:
-        return "A read-only debrief across all available reviews. Bonsai does not change scheduling."
-    return f"A read-only debrief for the last {lookback_days} days. Bonsai does not change scheduling."
+        return "Read-only patterns across available reviews. Bonsai does not change scheduling."
+    return f"Last {lookback_days} days · read-only · Bonsai does not change scheduling."
+
+
+def _next_step_card(
+    debrief: Debrief,
+    *,
+    dialog: QDialog,
+    open_card: Callable[[int], None] | None,
+    open_material: Callable[[StudyTarget], None] | None,
+):
+    if debrief.cards_to_fix.cards:
+        card = debrief.cards_to_fix.cards[0]
+        actions = ()
+        if open_card:
+            button = primary_button("Inspect top card")
+            button.clicked.connect(lambda _checked=False: _run_then_accept(dialog, lambda: open_card(card.card_id)))
+            actions = (button,)
+        return panel_card(
+            "Best next step: inspect card friction",
+            f"{debrief.cards_to_fix.count} mature card{_plural(debrief.cards_to_fix.count)} keep missing with construction clues. Decide whether to clarify, flag, suspend, or leave as-is.",
+            actions=actions,
+            featured=True,
+        )
+    if debrief.study_next:
+        target = debrief.study_next[0]
+        actions = ()
+        if open_material:
+            button = primary_button("Review related cards")
+            button.clicked.connect(lambda _checked=False: _run_then_accept(dialog, lambda: open_material(target)))
+            actions = (button,)
+        return panel_card(
+            f"Best next step: study {_target_label(target)}",
+            _study_action_summary(target, debrief.cards_to_fix.early_exposure_count),
+            actions=actions,
+            featured=True,
+        )
+    return panel_card(
+        "No strong pattern yet",
+        "Bonsai found repeated misses, but not enough signal to recommend a card edit or study target.",
+        featured=True,
+    )
 
 
 def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: Callable[[int], None] | None):
     if not cards_to_fix.cards:
-        body = "The missed cards do not show obvious construction clues. Use the material patterns below to choose what to study."
+        body = "No obvious card-construction issue surfaced in this window. Study signals may be more useful here."
         if cards_to_fix.early_exposure_count:
             body += (
                 f" {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "
@@ -85,15 +129,26 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
     )
 
 
-def _study_material_card(targets: tuple[StudyTarget, ...]):
+def _study_material_card(
+    targets: tuple[StudyTarget, ...],
+    *,
+    dialog: QDialog,
+    open_material: Callable[[StudyTarget], None] | None,
+):
     if not targets:
         return panel_card(
-            "If the card looks clear, review this material",
+            "No study pattern yet",
             "No repeated material pattern in this window.",
             quiet=True,
         )
-    rows = tuple((_target_label(target), _target_detail(target)) for target in targets[:3])
-    return panel_card("If the card looks clear, review this material", rows=rows)
+    top_target = targets[0]
+    rows = tuple(("Also watch", _target_summary(target)) for target in targets[1:3])
+    actions = ()
+    if open_material:
+        button = secondary_button("Browse related cards")
+        button.clicked.connect(lambda _checked=False: _run_then_accept(dialog, lambda: open_material(top_target)))
+        actions = (button,)
+    return panel_card(f"Study next: {_target_label(top_target)}", _target_summary(top_target), rows=rows, actions=actions)
 
 
 def _review_habits_card(habits: SessionHabits):
@@ -109,11 +164,28 @@ def _review_habits_card(habits: SessionHabits):
     return panel_card("Review habits", " · ".join(parts), quiet=True)
 
 
-def _target_detail(target: StudyTarget) -> str:
-    detail = f"{target.kind}, {target.count} card{_plural(target.count)}"
+def _target_summary(target: StudyTarget) -> str:
+    detail = f"{target.count} repeatedly missed card{_plural(target.count)} share this {_target_kind_label(target.kind)}."
     if target.related_cards:
-        detail += f"; examples: {', '.join(target.related_cards)}"
+        detail += f" Examples: {', '.join(target.related_cards)}."
     return detail
+
+
+def _study_action_summary(target: StudyTarget, early_exposure_count: int) -> str:
+    detail = f"{target.count} repeatedly missed card{_plural(target.count)} cluster here. Skim the source topic, then retry related cards."
+    if target.related_cards:
+        detail += f" Examples: {', '.join(target.related_cards)}."
+    if early_exposure_count:
+        detail += (
+            f" {early_exposure_count} card{_plural(early_exposure_count)} "
+            f"{_verb(early_exposure_count, 'looks', 'look')} early in learning, so do not over-interpret "
+            f"{_verb(early_exposure_count, 'it', 'them')} yet."
+        )
+    return detail
+
+
+def _target_kind_label(kind: str) -> str:
+    return {"tag": "tag", "term": "word", "deck": "deck"}.get(kind, "pattern")
 
 
 def _target_label(target: StudyTarget) -> str:

@@ -8,17 +8,34 @@ except ImportError:
 
 def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
     if not targets:
-        return "If the card looks clear, review this material:\n- No repeated material pattern in this window."
-    lines = ["If the card looks clear, review this material:"]
-    for target in targets:
-        related = f"; examples: {', '.join(target.related_cards)}" if target.related_cards else ""
-        lines.append(f"- {target.label} ({target.kind}, {target.count} cards{related})")
+        return "No study pattern yet:\n- No repeated material pattern in this window."
+    top_target = targets[0]
+    lines = [f"Study: {_target_label(top_target)}", f"- {_target_summary(top_target)}"]
+    if len(targets) > 1:
+        lines.append("- Also watch: " + "; ".join(_target_summary(target) for target in targets[1:3]))
     return "\n".join(lines)
+
+
+def _target_summary(target: StudyTarget) -> str:
+    detail = f"{target.count} repeatedly missed card{_plural(target.count)} share this {_target_kind_label(target.kind)}."
+    if target.related_cards:
+        detail += f" Examples: {', '.join(target.related_cards)}."
+    return detail
+
+
+def _target_label(target: StudyTarget) -> str:
+    if target.kind != "tag":
+        return target.label
+    return target.label.replace("::", " / ").replace("_", " ")
+
+
+def _target_kind_label(kind: str) -> str:
+    return {"tag": "tag", "term": "word", "deck": "deck"}.get(kind, "pattern")
 
 
 def cards_to_fix_caption(cards_to_fix: CardsToFix) -> str:
     if cards_to_fix.count == 0:
-        lines = ["No card repair stands out:", "- Use the material patterns below to choose what to study."]
+        lines = ["No card repair stands out:", "- No obvious card-construction issue surfaced in this window."]
         if cards_to_fix.early_exposure_count:
             lines.append(
                 f"- {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "

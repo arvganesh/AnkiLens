@@ -11,11 +11,7 @@ def open_browser_search(mw, query: str, *, dialog_open=None):
         from aqt import dialogs
 
         dialog_open = dialogs.open
-    browser = dialog_open("Browser", mw)
-    browser.search_for(query)
-    browser.raise_()
-    browser.activateWindow()
-    return browser
+    return dialog_open("Browser", mw, search=(query,))
 
 
 def open_card_in_browser(mw, card_id: int):

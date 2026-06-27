@@ -11,9 +11,10 @@ class DebriefCopyTest(unittest.TestCase):
     def test_study_next_caption_lists_targets_without_scheduler_language(self) -> None:
         caption = study_next_caption((StudyTarget("mitral", "term", 2, ("Card 1", "Card 2")),))
 
-        self.assertIn("If the card looks clear, review this material", caption)
-        self.assertIn("mitral", caption)
-        self.assertIn("examples: Card 1, Card 2", caption)
+        self.assertIn("Study: mitral", caption)
+        self.assertIn("2 repeatedly missed cards share this word", caption)
+        self.assertIn("Examples: Card 1, Card 2", caption)
+        self.assertNotIn("if the card", caption.lower())
         self.assertNotIn("due", caption.lower())
         self.assertNotIn("must", caption.lower())
 
@@ -38,7 +39,7 @@ class DebriefCopyTest(unittest.TestCase):
         caption = cards_to_fix_caption(CardsToFix(0, (), (), early_exposure_count=1))
 
         self.assertIn("No card repair stands out", caption)
-        self.assertIn("choose what to study", caption)
+        self.assertIn("No obvious card-construction issue surfaced", caption)
         self.assertIn("1 card looks early in learning", caption)
 
     def test_session_habits_caption_reports_observed_facts(self) -> None:
