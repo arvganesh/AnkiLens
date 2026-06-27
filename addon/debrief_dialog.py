@@ -192,7 +192,7 @@ def _next_step_card(
                 mixed_signals=bool(debrief.cards_to_fix.cards),
             ),
             evidence=_target_evidence(target, _target_label(target)),
-            next_step=study_next_step(target.kind),
+            next_step=study_next_step(target.kind, mostly_early=target.mostly_early),
             check=_study_check_text(debrief),
             actions=actions,
         )
@@ -315,6 +315,9 @@ def _target_evidence(target: StudyTarget, label: str) -> str:
         label,
         target.related_cards,
         active_cards=target.kind == "tag",
+        early_count=target.early_count,
+        mature_count=target.mature_count,
+        lapsed_count=target.lapsed_count,
     )
 
 

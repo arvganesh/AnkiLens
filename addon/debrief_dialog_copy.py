@@ -40,10 +40,16 @@ def target_evidence_text(
     related_cards: tuple[str, ...] = (),
     *,
     active_cards: bool = False,
+    early_count: int = 0,
+    mature_count: int = 0,
+    lapsed_count: int = 0,
 ) -> str:
     card_label = "card" if reviewed_count == 1 else "cards"
     scope = "active " if active_cards else ""
     evidence = f"{count} of {reviewed_count} {scope}{card_label} reviewed in {label} needed another pass."
+    maturity = _maturity_text(early_count, mature_count, lapsed_count)
+    if maturity:
+        evidence += f" {maturity}."
     if related_cards:
         evidence += f" Examples: {', '.join(related_cards)}."
     return evidence
@@ -106,7 +112,12 @@ def repair_next_step() -> str:
     return "Open the card and read the prompt. Edit only if it asks too much; if it is clear, leave it alone."
 
 
-def study_next_step(kind: str) -> str:
+def study_next_step(kind: str, *, mostly_early: bool = False) -> str:
+    if mostly_early:
+        return (
+            "Treat this as newly encountered material first. Keep reviewing, and only study extra if these examples "
+            "still feel unfamiliar after the session."
+        )
     if kind == "tag":
         return (
             "Open the active related cards first. If the prompts are clear and the examples still feel unfamiliar, "
@@ -177,3 +188,16 @@ def early_learning_check_text() -> str:
 
 def short_label(label: str) -> str:
     return label if len(label) <= 64 else label[:61].rstrip() + "..."
+
+
+def _maturity_text(early_count: int, mature_count: int, lapsed_count: int) -> str:
+    parts = []
+    if early_count:
+        parts.append(f"{early_count} early/new")
+    if mature_count:
+        parts.append(f"{mature_count} mature")
+    if lapsed_count:
+        parts.append(f"{lapsed_count} lapsed")
+    if not parts or parts == [f"{mature_count} mature"]:
+        return ""
+    return "Breakdown: " + ", ".join(parts)

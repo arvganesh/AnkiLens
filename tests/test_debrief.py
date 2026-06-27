@@ -465,6 +465,31 @@ class DebriefTest(unittest.TestCase):
         self.assertFalse(debrief.early_learning_is_dominant)
         self.assertEqual(debrief.study_next[0].label, "AnKing_Cardiology_Valves")
 
+    def test_study_targets_preserve_maturity_breakdown(self) -> None:
+        tag = "AnKing_Cardiology_Valves"
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="new aortic stenosis murmur", tags=(tag,), card_reps=2, card_lapses=0),
+                _entry(1, 1, 1, text="new aortic stenosis murmur", tags=(tag,), card_reps=2, card_lapses=0),
+                _entry(2, 1, 2, text="new mitral regurgitation murmur", tags=(tag,), card_reps=2, card_lapses=0),
+                _entry(2, 1, 3, text="new mitral regurgitation murmur", tags=(tag,), card_reps=2, card_lapses=0),
+                _entry(3, 1, 4, text="mature tricuspid regurgitation", tags=(tag,), card_reps=12, card_lapses=0),
+                _entry(3, 1, 5, text="mature tricuspid regurgitation", tags=(tag,), card_reps=12, card_lapses=0),
+                _entry(4, 1, 6, text="lapsed pulmonic stenosis", tags=(tag,), card_reps=20, card_lapses=1),
+                _entry(4, 1, 7, text="lapsed pulmonic stenosis", tags=(tag,), card_reps=20, card_lapses=1),
+                _entry(5, 3, 8, text="mitral stenosis", tags=(tag,), card_reps=10),
+            ]
+        )
+
+        target = debrief.study_next[0]
+
+        self.assertEqual(target.label, tag)
+        self.assertEqual(target.count, 4)
+        self.assertEqual(target.early_count, 2)
+        self.assertEqual(target.mature_count, 1)
+        self.assertEqual(target.lapsed_count, 1)
+        self.assertFalse(target.mostly_early)
+
     def test_fresh_single_miss_early_learning_can_dominate(self) -> None:
         debrief = build_debrief(
             [

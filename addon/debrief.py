@@ -34,12 +34,19 @@ class StudyTarget:
     count: int
     reviewed_count: int
     related_cards: tuple[str, ...] = ()
+    early_count: int = 0
+    mature_count: int = 0
+    lapsed_count: int = 0
 
     @property
     def miss_rate(self) -> float:
         if self.reviewed_count == 0:
             return 0
         return self.count / self.reviewed_count
+
+    @property
+    def mostly_early(self) -> bool:
+        return self.early_count >= 2 and self.early_count > self.mature_count + self.lapsed_count
 
 
 @dataclass(frozen=True)
@@ -139,6 +146,7 @@ def _study_targets(entries: list[ReviewLogEntry], summaries: list[MissedCardSumm
             _matched_summary_count(summaries, lambda summary, tag=tag.tag: tag in summary.tags and _is_active(summary)),
             _reviewed_cards(entries, lambda entry, tag=tag.tag: tag in entry.tags and _is_active(entry)),
             _related_cards(summaries, lambda summary, tag=tag.tag: tag in summary.tags and _is_active(summary)),
+            *_target_maturity(summaries, lambda summary, tag=tag.tag: tag in summary.tags and _is_active(summary)),
         )
         for tag in summarize_tag_misses(summaries)
         if _useful_study_tag(tag.tag)
@@ -154,6 +162,7 @@ def _study_targets(entries: list[ReviewLogEntry], summaries: list[MissedCardSumm
             count,
             _reviewed_cards(entries, lambda entry, term=term: term in entry.source_text.lower()),
             _related_cards(summaries, lambda summary, term=term: term in summary.source_text.lower()),
+            *_target_maturity(summaries, lambda summary, term=term: term in summary.source_text.lower()),
         )
         for term, count in summarize_terms(summaries)
     ]
@@ -168,6 +177,7 @@ def _study_targets(entries: list[ReviewLogEntry], summaries: list[MissedCardSumm
             deck.missed_cards,
             _reviewed_cards(entries, lambda entry, deck_name=deck.deck_name: entry.deck_name == deck_name),
             _related_cards(summaries, lambda summary, deck_name=deck.deck_name: summary.deck_name == deck_name),
+            *_target_maturity(summaries, lambda summary, deck_name=deck.deck_name: summary.deck_name == deck_name),
         )
         for deck in summarize_deck_misses(summaries)
     ]
@@ -249,6 +259,22 @@ def _related_cards(summaries: list[MissedCardSummary], matches) -> tuple[str, ..
             seen_card_ids.add(summary.card_id)
             labels.append(summary.card_label)
     return tuple(labels[:3])
+
+
+def _target_maturity(summaries: list[MissedCardSummary], matches) -> tuple[int, int, int]:
+    early = mature = lapsed = 0
+    seen_card_ids = set()
+    for summary in summaries:
+        if not matches(summary) or summary.card_id in seen_card_ids:
+            continue
+        seen_card_ids.add(summary.card_id)
+        if summary.is_early_exposure:
+            early += 1
+        elif summary.card_lapses and summary.card_lapses > 0:
+            lapsed += 1
+        else:
+            mature += 1
+    return early, mature, lapsed
 
 
 def _is_active(item) -> bool:

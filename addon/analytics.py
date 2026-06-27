@@ -51,6 +51,7 @@ class MissedCardSummary:
     learning_review_count: int = 0
     is_early_exposure: bool = False
     card_reps: int | None = None
+    card_lapses: int | None = None
     card_queue: int | None = None
 
     @property
@@ -161,6 +162,7 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
         learning_review_count=learning_reviews,
         is_early_exposure=_is_early_exposure(ordered, learning_reviews),
         card_reps=latest.card_reps,
+        card_lapses=latest.card_lapses,
         card_queue=latest.card_queue,
     )
 
