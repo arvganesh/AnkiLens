@@ -31,7 +31,7 @@ class ContentSignalsTest(unittest.TestCase):
             ]
         )
 
-        self.assertEqual(summaries[0].content_labels, ("Long card", "Dense card"))
+        self.assertEqual(summaries[0].content_labels, ("Repeated miss", "Long card", "Dense card"))
 
     def test_summarizes_content_patterns(self) -> None:
         summaries = summarize_missed_cards(

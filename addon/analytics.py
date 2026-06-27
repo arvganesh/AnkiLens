@@ -121,6 +121,7 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
     missed = [entry for entry in ordered if entry.ease == AGAIN_EASE]
     latest = ordered[-1]
 
+    labels = ("Repeated miss", *content_labels(latest.source_text))
     return MissedCardSummary(
         card_id=latest.card_id,
         deck_name=latest.deck_name,
@@ -130,7 +131,7 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
         last_missed_at=missed[-1].reviewed_at if missed else None,
         tags=latest.tags,
         source_text=latest.source_text,
-        content_labels=content_labels(latest.source_text),
+        content_labels=labels,
     )
 
 
