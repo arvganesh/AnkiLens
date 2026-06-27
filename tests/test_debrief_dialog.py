@@ -156,7 +156,8 @@ class DebriefDialogTest(unittest.TestCase):
     def test_no_pattern_copy_stays_actionable_without_overclaiming(self) -> None:
         self.assertEqual(no_pattern_title(), "No clear action yet")
         self.assertEqual(no_pattern_confidence_text(), "Not enough signal")
-        self.assertIn("do not cluster enough", no_pattern_evidence())
+        self.assertIn("do not yet point clearly", no_pattern_evidence())
+        self.assertIn("broad study target", no_pattern_evidence())
         self.assertIn("Do not edit or cram from this alone", no_pattern_next_step())
         self.assertIn("supporting evidence", no_pattern_next_step())
         self.assertIn("intentionally staying quiet", no_pattern_check_text())

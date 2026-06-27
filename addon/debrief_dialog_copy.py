@@ -148,7 +148,7 @@ def no_pattern_title(*, has_repeated_misses: bool = True) -> str:
 def no_pattern_evidence(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
         return "No card crossed the repeated-miss threshold in this window."
-    return "There are repeated misses, but they do not cluster enough to point at a card edit or study target."
+    return "There are repeated misses, but they do not yet point clearly to a card edit or broad study target."
 
 
 def no_pattern_next_step(*, has_repeated_misses: bool = True) -> str:
