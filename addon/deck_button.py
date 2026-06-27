@@ -61,7 +61,7 @@ def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | No
     </button>
   </div>
   <div style="color: #7a7267; font-size: 11px; line-height: 1.35; margin-top: 9px;">
-    Read-only: decide whether to inspect a card or revisit the material.
+    Read-only: decide whether to inspect a card or sample the material.
   </div>
 </div>
 """

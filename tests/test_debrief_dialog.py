@@ -259,7 +259,8 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertNotIn("Session note:", context)
         self.assertIn("40% of reviews needed another pass", context)
-        self.assertIn("revisit the material before treating one card as the problem", context)
+        self.assertIn("study extra only when they felt unfamiliar or clustered", context)
+        self.assertNotIn("revisit the material", context)
 
     def test_session_context_warns_when_reviewing_unusually_fast(self) -> None:
         context = session_context_text(SessionHabits(10, 2, 0.2, "Evening", 8, 60.0, 7.5))
