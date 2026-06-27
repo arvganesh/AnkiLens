@@ -7,10 +7,12 @@ from aqt.qt import QDialog, QHBoxLayout, QVBoxLayout, Qt
 try:
     from .debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
     from .dialog_actions import accept_then
+    from .session_context import session_context_text
     from .ui_helpers import body_label, panel_card, primary_button, secondary_button, title_label
 except ImportError:
     from debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
     from dialog_actions import accept_then
+    from session_context import session_context_text
     from ui_helpers import body_label, panel_card, primary_button, secondary_button, title_label
 
 
@@ -44,11 +46,14 @@ class DebriefDialog(QDialog):
             layout.addWidget(_early_learning_card(debrief))
         if debrief.cards_to_fix.cards and debrief.study_next:
             layout.addWidget(_study_material_card(debrief.study_next, dialog=self, open_material=open_material))
-        layout.addWidget(_review_habits_card(debrief.session_habits))
+        context = session_context_text(debrief.session_habits)
+        if context:
+            layout.addWidget(body_label(context))
         if open_full_analytics:
             button = secondary_button("Open full analytics")
             button.clicked.connect(lambda _checked=False: accept_then(self, open_full_analytics))
             actions = QHBoxLayout()
+            actions.setContentsMargins(0, 4, 0, 0)
             actions.addStretch(1)
             actions.addWidget(button)
             layout.addLayout(actions)
@@ -174,19 +179,6 @@ def _early_learning_card(debrief: Debrief):
         for index, summary in enumerate(_early_learning_cards(debrief)[:3])
     )
     return panel_card("Why not edit yet", _early_learning_body(debrief), rows=rows)
-
-
-def _review_habits_card(habits: SessionHabits):
-    if habits.review_count == 0:
-        return panel_card("Review habits", "No reviews found in this window.", quiet=True)
-    parts = [
-        f"{habits.review_count} reviews",
-        f"{habits.again_rate:.0%} Again",
-        habits.time_of_day.lower(),
-    ]
-    if habits.recorded_answer_seconds is not None and habits.seconds_per_timed_card is not None:
-        parts.append(f"{habits.seconds_per_timed_card:.1f}s/card")
-    return panel_card("Review habits", " · ".join(parts), quiet=True)
 
 
 def _target_summary(target: StudyTarget) -> str:

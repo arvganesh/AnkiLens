@@ -66,9 +66,9 @@ def early_learning_caption(early_learning: EarlyLearning) -> str:
 
 def review_habits_caption(habits: SessionHabits) -> str:
     if habits.review_count == 0:
-        return "Review habits:\n- No reviews found in this window."
+        return "Session context:\n- No reviews found in this window."
     lines = [
-        "Review habits:",
+        "Session context:",
         f"- Reviews: {habits.review_count}",
         f"- Again rate: {habits.again_rate:.0%} ({habits.again_count} Again ratings)",
         f"- Latest review time: {habits.time_of_day}",
@@ -76,6 +76,7 @@ def review_habits_caption(habits: SessionHabits) -> str:
     if habits.recorded_answer_seconds is not None and habits.seconds_per_timed_card is not None:
         lines.append(f"- Recorded answer time: {_format_seconds(habits.recorded_answer_seconds)}")
         lines.append(f"- Avg/card: {habits.seconds_per_timed_card:.1f}s across {habits.timed_review_count} timed reviews")
+    lines.append("- Context only; no recommendation is based on these facts yet.")
     return "\n".join(lines)
 
 
