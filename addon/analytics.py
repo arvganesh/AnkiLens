@@ -3,6 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+try:
+    from .content_signals import content_labels
+except ImportError:
+    from content_signals import content_labels
+
 
 AGAIN_EASE = 1
 
@@ -28,6 +33,7 @@ class MissedCardSummary:
     last_missed_at: datetime | None
     tags: tuple[str, ...] = ()
     source_text: str = ""
+    content_labels: tuple[str, ...] = ()
 
     @property
     def miss_rate(self) -> float:
@@ -116,6 +122,7 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
         last_missed_at=missed[-1].reviewed_at if missed else None,
         tags=latest.tags,
         source_text=latest.source_text,
+        content_labels=content_labels(latest.source_text),
     )
 
 
