@@ -56,8 +56,8 @@ class MissedCardsDialog(QDialog):
         self.resize(1040, 660)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(20, 18, 20, 18)
-        layout.setSpacing(9)
+        layout.setContentsMargins(24, 22, 24, 20)
+        layout.setSpacing(12)
         layout.addWidget(title_label("Supporting Cards"))
         layout.addWidget(
             body_label(
@@ -74,13 +74,14 @@ class MissedCardsDialog(QDialog):
             return
 
         metrics = QHBoxLayout()
-        metrics.setSpacing(10)
+        metrics.setSpacing(12)
         card_label, miss_label, window_label = supporting_metric_labels()
         metrics.addWidget(metric_card(card_label, str(len(summaries))))
         metrics.addWidget(metric_card(miss_label, str(sum(summary.misses for summary in summaries))))
         metrics.addWidget(metric_card(window_label, "all time" if lookback_days <= 0 else f"{lookback_days} days"))
         layout.addLayout(metrics)
 
+        layout.addSpacing(2)
         layout.addWidget(body_label(workflow_caption()))
         layout.addWidget(section_header(check_cards_caption()))
         pattern_caption = content_pattern_caption(summarize_content_patterns(summaries))
@@ -112,9 +113,12 @@ class MissedCardsDialog(QDialog):
         table.resizeColumnsToContents()
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         table.horizontalHeader().setStretchLastSection(True)
-        table.setMinimumHeight(210)
+        table_height = _table_height(len(summaries))
+        table.setMinimumHeight(table_height)
+        table.setMaximumHeight(table_height)
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
+        layout.addSpacing(2)
         layout.addWidget(table)
         detail = section_label("")
         table.itemSelectionChanged.connect(lambda: _update_detail(table, detail, summaries_by_card_id))
@@ -125,11 +129,14 @@ class MissedCardsDialog(QDialog):
         status.setStyleSheet("color: #5f675e; font-size: 12px;")
         button.clicked.connect(lambda _checked=False: _copy_selected_card_search(table, status))
         actions = QHBoxLayout()
+        actions.setContentsMargins(0, 4, 0, 8)
+        actions.setSpacing(10)
         actions.addWidget(status)
         actions.addStretch(1)
         actions.addWidget(button)
         layout.addLayout(actions)
 
+        layout.addSpacing(6)
         layout.addWidget(section_header(study_content_caption()))
         layout.addWidget(section_label(deck_concentration_caption(summarize_deck_misses(summaries))))
         tag_caption = tag_concentration_caption(summarize_tag_misses(summaries))
@@ -181,3 +188,8 @@ def _selected_summary(table: QTableWidget, summaries_by_card_id: dict[int, Misse
 
 def _signals_label(summary: MissedCardSummary) -> str:
     return ", ".join(summary.content_labels) if summary.content_labels else "No obvious clue"
+
+
+def _table_height(row_count: int) -> int:
+    visible_rows = min(max(row_count, 2), 6)
+    return 58 + (visible_rows * 30)
