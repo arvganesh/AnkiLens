@@ -392,6 +392,42 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertTrue(calls[0][1]["quiet"])
         self.assertNotIn("signal", calls[0][0][0].lower())
 
+    def test_study_recommendation_uses_maturity_specific_next_step(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_recommendation_card = debrief_dialog.recommendation_card
+        calls = []
+        debrief_dialog.recommendation_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "recommendation"
+        try:
+            widget = debrief_dialog._next_step_card(
+                Debrief(
+                    study_next=(
+                        StudyTarget(
+                            "AnKing::Cardiology::Valves",
+                            "tag",
+                            4,
+                            8,
+                            ("Aortic stenosis", "Mitral regurgitation"),
+                            early_count=1,
+                            mature_count=3,
+                        ),
+                    ),
+                    cards_to_fix=CardsToFix(0, (), ()),
+                    early_learning=EarlyLearning(0, ()),
+                    session_habits=SessionHabits(8, 4, 0.5, "Evening"),
+                    missed_cards=(),
+                ),
+                dialog=None,
+                open_card=None,
+                open_material=None,
+            )
+        finally:
+            debrief_dialog.recommendation_card = original_recommendation_card
+
+        self.assertEqual(widget, "recommendation")
+        self.assertIn("revisit the surrounding concept", calls[0][1]["next_step"])
+        self.assertIn("3 mature", calls[0][1]["evidence"])
+
 
 if __name__ == "__main__":
     unittest.main()

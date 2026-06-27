@@ -132,11 +132,28 @@ def repair_next_step() -> str:
     return "Open the card and read the prompt. Edit only if it asks too much; if it is clear, leave it alone."
 
 
-def study_next_step(kind: str, *, mostly_early: bool = False) -> str:
+def study_next_step(
+    kind: str,
+    *,
+    mostly_early: bool = False,
+    early_count: int = 0,
+    mature_count: int = 0,
+    lapsed_count: int = 0,
+) -> str:
     if mostly_early:
         return (
             "Treat this as newly encountered material first. Keep reviewing, and only study extra if these examples "
             "still feel unfamiliar after the session."
+        )
+    if lapsed_count > early_count + mature_count:
+        return (
+            "Open related cards and check whether this is relearning old material. If the prompts look clear, "
+            "review the surrounding concept again."
+        )
+    if mature_count >= 2 and mature_count >= early_count:
+        return (
+            "Open related cards and read the prompts. If they are clear and still feel unfamiliar, "
+            "revisit the surrounding concept."
         )
     if kind == "tag":
         return (

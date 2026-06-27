@@ -144,6 +144,15 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("newly encountered material", study_next_step("tag", mostly_early=True))
         self.assertIn("Keep reviewing", study_next_step("tag", mostly_early=True))
 
+    def test_study_next_step_adapts_to_maturity_mix(self) -> None:
+        mature_step = study_next_step("tag", mature_count=2)
+        lapsed_step = study_next_step("tag", early_count=1, lapsed_count=2)
+
+        self.assertIn("revisit the surrounding concept", mature_step)
+        self.assertIn("clear and still feel unfamiliar", mature_step)
+        self.assertIn("relearning old material", lapsed_step)
+        self.assertIn("review the surrounding concept again", lapsed_step)
+
     def test_same_note_cluster_copy_names_limited_scope(self) -> None:
         summary = MissedCardSummary(
             1,

@@ -223,7 +223,13 @@ def _next_step_card(
                 mixed_signals=bool(debrief.cards_to_fix.cards),
             ),
             evidence=_target_evidence(target, _target_label(target)),
-            next_step=study_next_step(target.kind, mostly_early=target.mostly_early),
+            next_step=study_next_step(
+                target.kind,
+                mostly_early=target.mostly_early,
+                early_count=target.early_count,
+                mature_count=target.mature_count,
+                lapsed_count=target.lapsed_count,
+            ),
             check=_study_check_text(debrief),
             actions=actions,
         )
