@@ -152,7 +152,7 @@ class DebriefDialog(QDialog):
                 content_layout.addWidget(card_details)
         if (debrief.cards_to_fix.cards or debrief.study_next) and _early_learning_cards(debrief):
             content_layout.addWidget(_early_learning_card(debrief))
-        if debrief.cards_to_fix.cards and debrief.study_next:
+        if _show_study_support(debrief):
             primary_target = debrief.study_next[0] if debrief.next_check_kind == "study" else None
             study_details = _study_material_card(
                 debrief.study_next,
@@ -174,6 +174,10 @@ class DebriefDialog(QDialog):
         scroll.setWidget(content)
         layout.addWidget(scroll, 1)
         self.setLayout(layout)
+
+
+def _show_study_support(debrief: Debrief) -> bool:
+    return bool(debrief.study_next) and debrief.next_check_kind in {"repair", "same_note", "study"}
 
 
 def _next_step_card(
@@ -330,7 +334,7 @@ def _study_material_card(
     rows = (
         (("Also check", _target_summary(top_target)),)
         if exclude_target is not None
-        else (("Check first", _target_label(top_target)), ("Evidence", _target_summary(top_target)))
+        else (("Also check", _target_label(top_target)), ("Why", _target_summary(top_target)))
     ) + tuple(("Also check", _target_summary(target)) for target in visible_targets[1:3])
     actions = ()
     if open_material and top_target.related_card_ids:

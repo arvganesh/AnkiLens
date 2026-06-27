@@ -465,11 +465,69 @@ class DebriefDialogWidgetTest(unittest.TestCase):
 
         self.assertEqual(widget, "panel")
         self.assertEqual(calls[0][0][0], "Also check related material")
-        self.assertEqual(calls[0][1]["rows"][0][0], "Check first")
-        self.assertEqual(calls[0][1]["rows"][1][0], "Evidence")
+        self.assertEqual(calls[0][1]["rows"][0][0], "Also check")
+        self.assertEqual(calls[0][1]["rows"][1][0], "Why")
         self.assertEqual(calls[0][1]["rows"][2][0], "Also check")
         self.assertTrue(calls[0][1]["quiet"])
         self.assertNotIn("signal", calls[0][0][0].lower())
+
+    def test_study_support_panel_does_not_compete_with_primary_check(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        self.assertTrue(
+            debrief_dialog._show_study_support(
+                Debrief(
+                    study_next=(StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",)),),
+                    cards_to_fix=CardsToFix(
+                        1,
+                        (("Long card", 1),),
+                        (
+                            MissedCardSummary(
+                                1,
+                                "Cardiology",
+                                "Aortic stenosis",
+                                3,
+                                4,
+                                datetime(2026, 6, 26),
+                                content_labels=("Long card",),
+                            ),
+                        ),
+                    ),
+                    early_learning=EarlyLearning(0, ()),
+                    session_habits=SessionHabits(5, 2, 0.4, "Morning"),
+                    missed_cards=(),
+                )
+            )
+        )
+
+    def test_same_note_primary_can_still_show_related_material_support(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        cluster = MissedCardSummary(
+            1,
+            "AnKing",
+            "Aortic stenosis cloze",
+            2,
+            3,
+            datetime(2026, 6, 26),
+            tags=("AnKing::Cardiology::Valves",),
+            note_id=50,
+            note_card_count=4,
+            note_repeated_miss_count=2,
+            card_reps=8,
+        )
+
+        debrief = Debrief(
+            study_next=(StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",)),),
+            cards_to_fix=CardsToFix(0, (), ()),
+            early_learning=EarlyLearning(0, ()),
+            session_habits=SessionHabits(5, 2, 0.4, "Morning"),
+            missed_cards=(cluster,),
+            same_note_cluster=cluster,
+        )
+
+        self.assertEqual(debrief.next_check_kind, "same_note")
+        self.assertTrue(debrief_dialog._show_study_support(debrief))
 
     def test_primary_study_target_is_not_repeated_as_support_panel(self) -> None:
         _install_fake_aqt()
