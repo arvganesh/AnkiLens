@@ -7,9 +7,10 @@ notes, cards, decks, or review history.
 
 ## Product Shape
 
-Bonsai should lead with one recommended next check. Supporting cards and details
-can appear below it, but the first screen should not feel like a dashboard.
-Every visible fact should help answer "what should I do next?"
+Bonsai should lead with the most useful check and may show a small ranked set of
+secondary checks. Supporting facts can appear below each action, but the first
+screen should not feel like a dashboard. Every visible fact should help answer
+"what should I inspect or ignore next?"
 
 Current recommendation hierarchy:
 
@@ -24,7 +25,7 @@ Current recommendation hierarchy:
    - Action: keep reviewing normally; study extra only if the examples felt
      unfamiliar or clustered around the same concept.
 
-3. Check related material
+3. Inspect missed examples or related material
    - Purpose: identify content that may need more review after card quality has
      been checked.
    - Inputs: repeated terms, deck concentration, tag concentration, and related
@@ -32,8 +33,8 @@ Current recommendation hierarchy:
    - Guardrail: broad study targets require support across at least two
      distinct notes/cards, so one cloze-heavy note does not masquerade as a weak
      topic.
-   - Action: check related cards first. If prompts are clear and the examples
-     still feel unfamiliar, revisit nearby material.
+   - Action: inspect exact missed examples when available. If prompts are clear
+     and the examples still feel unfamiliar, revisit nearby material.
 
 4. Inspect one note
    - Use when repeated misses are concentrated in sibling cards from one note.
@@ -100,9 +101,11 @@ recent/today's reviews until session boundaries are modeled.
 
 2. Add a manual Session Debrief dialog.
    - Open it from the Bonsai front-page panel and/or Bonsai dialog.
-   - Lead with one recommended next check.
-   - Keep supporting details below the recommendation and avoid dashboard-like
-     metric blocks.
+   - Lead with the most useful check.
+   - Use ranked language for secondary checks, such as "Also check" and
+     "Ignore for now."
+   - Keep supporting facts below each action and avoid dashboard-like metric
+     blocks.
    - Include a path back to full analytics.
 
 3. Investigate Anki hooks for automatic post-review display.

@@ -3,8 +3,8 @@
 ## Goal For The Next Agent
 
 Continue iterating on the Bonsai Anki add-on as a calm, trustworthy post-study
-assistant. Optimize for one genuinely useful next action after missed cards, not
-for a broad analytics dashboard.
+assistant. Optimize for a small ranked set of genuinely useful actions after
+missed cards, not for a broad analytics dashboard.
 
 Primary product questions:
 
@@ -56,8 +56,8 @@ small change, test it, and commit.
 Bonsai is being shaped into a calm post-study assistant, not a stats dashboard.
 The main flow is:
 
-1. The Anki deck page shows one primary Bonsai action: `What should I check?`.
-2. The debrief gives one recommended next check.
+1. The Anki deck page shows one primary Bonsai action: `Check missed cards`.
+2. The debrief leads with the most useful check and may show a few secondary checks.
 3. The recommendation distinguishes likely causes where possible:
    - problematic card format,
    - genuinely unlearned or lapsed material,
@@ -70,8 +70,9 @@ The Recent Debrief currently leads with a single card:
 
 - Title example: `Relearning signal: Cardiology Valves`.
 - Primary action example: `Show missed examples`.
-- Evidence appears below the action under `Why`.
-- Safety copy appears under `Double-check`.
+- Evidence appears below the action under `Why this came up`, split into short lines.
+- Safety copy appears under `Before studying more`.
+- Secondary cards use ranked language such as `Also check...` or `Ignore for now...`.
 
 Recent UI simplifications:
 
@@ -152,7 +153,7 @@ Visual verification:
 ## Suggested Next Steps
 
 1. Restart Anki to pick up the latest loader/model changes.
-2. Open `What should I check?` on the Test Deck.
+2. Open `Check missed cards` on the Test Deck.
 3. Confirm the primary action says `Show missed examples`.
 4. Click it and confirm Browse opens the exact missed cards, not the whole tag.
 5. Next product slice: decide whether `Bonsai Details` should be redesigned as a focused card-inspection sheet or left as a low-priority Tools-menu fallback.
