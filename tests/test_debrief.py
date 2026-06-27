@@ -191,6 +191,28 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.study_next[0].label, "focused")
         self.assertEqual(debrief.study_next[0].reviewed_count, 5)
 
+    def test_stronger_term_pattern_can_outrank_weaker_organizational_tag(self) -> None:
+        entries = [
+            _entry(1, 1, 0, text="mitral valve anatomy", tags=("lecture_block",)),
+            _entry(1, 1, 1, text="mitral valve anatomy", tags=("lecture_block",)),
+            _entry(2, 1, 2, text="mitral valve prolapse", tags=("lecture_block",)),
+            _entry(2, 1, 3, text="mitral valve prolapse", tags=("lecture_block",)),
+            _entry(3, 1, 4, text="mitral valve murmur", tags=("lecture_block",)),
+            _entry(3, 1, 5, text="mitral valve murmur", tags=("lecture_block",)),
+            _entry(4, 3, 6, text="mitral valve repair", tags=("lecture_block",)),
+            _entry(5, 3, 7, text="aortic stenosis", tags=("lecture_block",)),
+            _entry(6, 3, 8, text="tricuspid regurgitation", tags=("lecture_block",)),
+            _entry(7, 3, 9, text="pulmonic stenosis", tags=("lecture_block",)),
+            _entry(8, 3, 10, text="atrial septal defect", tags=("lecture_block",)),
+        ]
+
+        debrief = build_debrief(entries)
+        by_kind_label = {(target.kind, target.label): target for target in debrief.study_next}
+
+        self.assertEqual(debrief.study_next[0].kind, "term")
+        self.assertEqual(debrief.study_next[0].label, "mitral")
+        self.assertGreater(debrief.study_next[0].miss_rate, by_kind_label[("tag", "lecture_block")].miss_rate)
+
     def test_study_targets_use_all_repeated_misses_not_display_cap(self) -> None:
         entries = [
             _entry(1, 1, 0, text="renal sodium transport", tags=("renal_sodium",), label="Renal 1"),

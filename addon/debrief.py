@@ -174,8 +174,6 @@ def _study_targets(entries: list[ReviewLogEntry], summaries: list[MissedCardSumm
         if _useful_study_tag(tag.tag)
     ]
     tag_targets = _supported_targets(tag_targets, minimum_reviewed=5, minimum_rate=0.25)
-    if tag_targets:
-        return sorted(tag_targets, key=_target_priority)[:limit]
 
     term_targets = [
         StudyTarget(
@@ -190,8 +188,9 @@ def _study_targets(entries: list[ReviewLogEntry], summaries: list[MissedCardSumm
         for term, count in summarize_terms(summaries)
     ]
     term_targets = _supported_targets(term_targets, minimum_reviewed=4, minimum_rate=0.25)
-    if term_targets:
-        return sorted(term_targets, key=_target_priority)[:limit]
+    content_targets = sorted(tag_targets + term_targets, key=_target_priority)
+    if content_targets:
+        return content_targets[:limit]
 
     targets = [
         StudyTarget(
@@ -285,8 +284,15 @@ def _kind_priority(kind: str) -> int:
     return {"tag": 0, "term": 1, "deck": 2}.get(kind, 3)
 
 
-def _target_priority(target: StudyTarget) -> tuple[float, int, int, int, str]:
-    return (-target.miss_rate, -target.count, _kind_priority(target.kind), -_tag_specificity(target), target.label)
+def _target_priority(target: StudyTarget) -> tuple[int, float, int, int, int, str]:
+    return (
+        _specific_topic_priority(target),
+        -target.miss_rate,
+        -target.count,
+        _kind_priority(target.kind),
+        -_tag_specificity(target),
+        target.label,
+    )
 
 
 _BROAD_TAG_PARTS = frozenset({"ak", "anking", "deck", "decks", "step", "step1", "step2", "v11", "v12"})
@@ -303,6 +309,13 @@ def _tag_specificity(target: StudyTarget) -> int:
     if target.kind != "tag":
         return 0
     return len([part for part in _tag_parts(target.label) if part not in _BROAD_TAG_PARTS])
+
+
+def _specific_topic_priority(target: StudyTarget) -> int:
+    parts = _tag_parts(target.label) if target.kind == "tag" else []
+    if target.kind == "tag" and "anking" in parts and _tag_specificity(target) >= 2:
+        return 0
+    return 1
 
 
 def _tag_parts(tag: str) -> list[str]:
