@@ -273,6 +273,26 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.study_next[0].label, "cardiology")
         self.assertFalse(debrief.repair_is_top_check)
 
+    def test_strong_repair_leads_over_weak_broad_study_pattern(self) -> None:
+        entries = [
+            _entry(1, 1, 0, text="word " * 80, tags=("cardiology",), card_reps=8),
+            _entry(1, 1, 1, text="word " * 80, tags=("cardiology",), card_reps=8),
+            _entry(2, 1, 2, text="focused aortic stenosis prompt", tags=("cardiology",), card_reps=8),
+            _entry(2, 1, 3, text="focused aortic stenosis prompt", tags=("cardiology",), card_reps=8),
+            _entry(3, 1, 4, text="focused mitral regurgitation prompt", tags=("cardiology",), card_reps=8),
+            _entry(3, 1, 5, text="focused mitral regurgitation prompt", tags=("cardiology",), card_reps=8),
+        ]
+        entries.extend(
+            _entry(card_id, 3, card_id + 10, text="stable cardiology prompt", tags=("cardiology",), card_reps=8)
+            for card_id in range(4, 13)
+        )
+
+        debrief = build_debrief(entries)
+
+        self.assertEqual(debrief.study_next[0].label, "cardiology")
+        self.assertAlmostEqual(debrief.study_next[0].miss_rate, 3 / 12)
+        self.assertTrue(debrief.repair_is_top_check)
+
     def test_repair_leads_when_no_supported_study_pattern_exists(self) -> None:
         debrief = build_debrief(
             [

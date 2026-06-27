@@ -86,7 +86,11 @@ class Debrief:
             return True
         repair = self.cards_to_fix.cards[0]
         study = self.study_next[0]
-        return self.cards_to_fix.count >= study.count or repair.misses >= study.count
+        return (
+            self.cards_to_fix.count >= study.count
+            or repair.misses >= study.count
+            or (_severe_repair_signal(repair) and study.miss_rate <= 0.30)
+        )
 
 
 _STRONG_REPAIR_LABELS = frozenset(
@@ -180,6 +184,11 @@ def _early_learning(summaries: list[MissedCardSummary]) -> EarlyLearning:
 def _has_repair_signal(summary: MissedCardSummary) -> bool:
     labels = set(summary.content_labels)
     return bool(labels & _STRONG_REPAIR_LABELS) or len(labels) >= 2
+
+
+def _severe_repair_signal(summary: MissedCardSummary) -> bool:
+    labels = set(summary.content_labels)
+    return summary.miss_rate >= 0.75 and len(labels & _STRONG_REPAIR_LABELS) >= 2
 
 
 def _kind_priority(kind: str) -> int:
