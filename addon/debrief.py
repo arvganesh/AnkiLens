@@ -84,6 +84,18 @@ class Debrief:
     same_note_cluster: MissedCardSummary | None = None
 
     @property
+    def next_check_kind(self) -> str:
+        if self.repair_is_top_check:
+            return "repair"
+        if self.early_learning_is_dominant:
+            return "early_learning"
+        if self.study_next:
+            return "study"
+        if self.same_note_cluster:
+            return "same_note"
+        return "none"
+
+    @property
     def early_learning_is_dominant(self) -> bool:
         return (
             self.early_learning.count >= 2

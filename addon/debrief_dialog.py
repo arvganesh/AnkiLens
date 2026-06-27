@@ -171,7 +171,8 @@ def _next_step_card(
     open_card: Callable[[int], None] | None,
     open_material: Callable[[StudyTarget], None] | None,
 ):
-    if getattr(debrief, "repair_is_top_check", bool(debrief.cards_to_fix.cards)):
+    next_check_kind = getattr(debrief, "next_check_kind", None)
+    if next_check_kind == "repair":
         card = debrief.cards_to_fix.cards[0]
         actions = ()
         if open_card:
@@ -186,7 +187,7 @@ def _next_step_card(
             check="Inspect first; edit only if the prompt is unclear after opening it.",
             actions=actions,
         )
-    if _early_learning_cards(debrief) and getattr(debrief, "early_learning_is_dominant", False):
+    if next_check_kind == "early_learning":
         target = debrief.study_next[0] if debrief.study_next else None
         actions = ()
         if open_material and target:
@@ -205,7 +206,7 @@ def _next_step_card(
             check=early_learning_check_text(),
             actions=actions,
         )
-    if debrief.study_next:
+    if next_check_kind == "study":
         target = debrief.study_next[0]
         actions = ()
         if open_material:
@@ -224,7 +225,7 @@ def _next_step_card(
             check=_study_check_text(debrief),
             actions=actions,
         )
-    if cluster_card := debrief.same_note_cluster:
+    if next_check_kind == "same_note" and (cluster_card := debrief.same_note_cluster):
         actions = ()
         if open_card:
             button = secondary_button(card_search_button_text())

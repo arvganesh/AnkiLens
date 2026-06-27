@@ -50,6 +50,7 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.cards_to_fix.count, 0)
         self.assertEqual(debrief.session_habits.review_count, 0)
         self.assertEqual(debrief.session_habits.time_of_day, "No reviews")
+        self.assertEqual(debrief.next_check_kind, "none")
 
     def test_study_next_ranks_terms_before_decks_when_counts_match(self) -> None:
         debrief = build_debrief(
@@ -68,6 +69,7 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.study_next[0].count, 2)
         self.assertEqual(debrief.study_next[0].reviewed_count, 4)
         self.assertEqual(debrief.study_next[0].related_cards, ("Card 2", "Card 1"))
+        self.assertEqual(debrief.next_check_kind, "study")
 
     def test_study_targets_include_capped_deterministic_examples(self) -> None:
         debrief = build_debrief(
@@ -311,6 +313,7 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.cards_to_fix.count, 0)
         self.assertEqual(debrief.cards_to_fix.clues, ())
         self.assertEqual(debrief.same_note_cluster.card_id, 2)
+        self.assertEqual(debrief.next_check_kind, "same_note")
 
     def test_same_note_siblings_do_not_create_broad_study_target(self) -> None:
         tag = "AnKing_Cardiology_Valves"
@@ -345,6 +348,7 @@ class DebriefTest(unittest.TestCase):
 
         self.assertEqual(debrief.study_next, ())
         self.assertEqual(debrief.same_note_cluster.note_id, 50)
+        self.assertEqual(debrief.next_check_kind, "same_note")
 
     def test_study_targets_survive_when_misses_span_multiple_notes(self) -> None:
         tag = "AnKing_Cardiology_Valves"
@@ -435,6 +439,7 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.cards_to_fix.count, 1)
         self.assertEqual(debrief.study_next[0].label, "cardiology")
         self.assertFalse(debrief.repair_is_top_check)
+        self.assertEqual(debrief.next_check_kind, "study")
 
     def test_strong_repair_leads_over_weak_broad_study_pattern(self) -> None:
         entries = [
@@ -455,6 +460,7 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.study_next[0].label, "cardiology")
         self.assertAlmostEqual(debrief.study_next[0].miss_rate, 3 / 12)
         self.assertTrue(debrief.repair_is_top_check)
+        self.assertEqual(debrief.next_check_kind, "repair")
 
     def test_repair_leads_when_no_supported_study_pattern_exists(self) -> None:
         debrief = build_debrief(
@@ -466,6 +472,7 @@ class DebriefTest(unittest.TestCase):
         )
 
         self.assertTrue(debrief.repair_is_top_check)
+        self.assertEqual(debrief.next_check_kind, "repair")
 
     def test_cards_to_fix_excludes_early_exposure_cards(self) -> None:
         debrief = build_debrief(
@@ -518,6 +525,7 @@ class DebriefTest(unittest.TestCase):
         self.assertTrue(debrief.early_learning_is_dominant)
         self.assertEqual(debrief.study_next[0].label, "AnKing_Cardiology_Valves")
         self.assertEqual(debrief.study_next[0].related_cards, ("Card 3", "Card 2", "Card 1"))
+        self.assertEqual(debrief.next_check_kind, "early_learning")
 
     def test_repeated_low_rep_misses_do_not_dominate_as_fresh_learning(self) -> None:
         debrief = build_debrief(
@@ -574,6 +582,7 @@ class DebriefTest(unittest.TestCase):
 
         self.assertEqual(debrief.early_learning.count, 2)
         self.assertTrue(debrief.early_learning_is_dominant)
+        self.assertEqual(debrief.next_check_kind, "early_learning")
 
     def test_lapsed_cards_are_not_treated_as_new_material(self) -> None:
         debrief = build_debrief(
