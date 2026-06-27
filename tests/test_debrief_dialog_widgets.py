@@ -203,6 +203,51 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertIn("intentionally staying quiet", calls[0][1]["check"])
         self.assertNotIn("Weak evidence", calls[0][1]["confidence"])
 
+    def test_same_note_cluster_becomes_inspection_recommendation(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_recommendation_card = debrief_dialog.recommendation_card
+        original_secondary_button = debrief_dialog.secondary_button
+        calls = []
+        button_calls = []
+        debrief_dialog.recommendation_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "recommendation"
+        debrief_dialog.secondary_button = lambda text: button_calls.append(text) or _FakeButton(text)
+        try:
+            widget = debrief_dialog._next_step_card(
+                Debrief(
+                    study_next=(),
+                    cards_to_fix=CardsToFix(0, (), ()),
+                    early_learning=EarlyLearning(0, ()),
+                    session_habits=SessionHabits(4, 2, 0.5, "Morning"),
+                    missed_cards=(
+                        MissedCardSummary(
+                            1,
+                            "AnKing",
+                            "Aortic stenosis cloze",
+                            2,
+                            3,
+                            datetime(2026, 6, 26),
+                            note_id=50,
+                            note_card_count=4,
+                            note_repeated_miss_count=2,
+                            card_reps=8,
+                        ),
+                    ),
+                ),
+                dialog=None,
+                open_card=lambda _card_id: None,
+                open_material=None,
+            )
+        finally:
+            debrief_dialog.recommendation_card = original_recommendation_card
+            debrief_dialog.secondary_button = original_secondary_button
+
+        self.assertEqual(widget, "recommendation")
+        self.assertEqual(calls[0][0][0], "Same-note cluster to inspect: Aortic stenosis cloze")
+        self.assertEqual(calls[0][1]["confidence"], "Clustered note evidence")
+        self.assertIn("not proof the whole topic is weak", calls[0][1]["evidence"])
+        self.assertEqual(button_calls, ["Open card in Browse"])
+
     def test_dominant_early_learning_recommendation_names_scope(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")

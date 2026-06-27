@@ -28,6 +28,10 @@ from debrief_dialog_copy import (
     repair_evidence,
     repair_next_step,
     repair_title,
+    same_note_cluster_check_text,
+    same_note_cluster_evidence,
+    same_note_cluster_next_step,
+    same_note_cluster_title,
     short_label,
     scoped_early_learning_evidence,
     scoped_early_learning_title,
@@ -136,6 +140,25 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertNotIn("class material", study_next_step("tag"))
         self.assertIn("newly encountered material", study_next_step("tag", mostly_early=True))
         self.assertIn("Keep reviewing", study_next_step("tag", mostly_early=True))
+
+    def test_same_note_cluster_copy_names_limited_scope(self) -> None:
+        summary = MissedCardSummary(
+            1,
+            "AnKing",
+            "Aortic stenosis cloze",
+            2,
+            3,
+            datetime(2026, 6, 26),
+            note_id=50,
+            note_card_count=4,
+            note_repeated_miss_count=3,
+        )
+
+        self.assertEqual(same_note_cluster_title("Aortic stenosis cloze"), "Same-note cluster to inspect: Aortic stenosis cloze")
+        self.assertIn("3 sibling cards from the same note", same_note_cluster_evidence(summary))
+        self.assertIn("not proof the whole topic is weak", same_note_cluster_evidence(summary))
+        self.assertIn("inspect the note", same_note_cluster_next_step())
+        self.assertIn("keep reviewing normally", same_note_cluster_check_text())
 
     def test_evidence_confidence_copy_does_not_overclaim_thin_signals(self) -> None:
         self.assertEqual(evidence_confidence_text(2, 5), "Limited evidence")

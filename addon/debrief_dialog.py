@@ -27,6 +27,10 @@ try:
         repair_evidence,
         repair_next_step,
         repair_title,
+        same_note_cluster_check_text,
+        same_note_cluster_evidence,
+        same_note_cluster_next_step,
+        same_note_cluster_title,
         short_label,
         scoped_early_learning_evidence,
         scoped_early_learning_title,
@@ -63,6 +67,10 @@ except ImportError:
         repair_evidence,
         repair_next_step,
         repair_title,
+        same_note_cluster_check_text,
+        same_note_cluster_evidence,
+        same_note_cluster_next_step,
+        same_note_cluster_title,
         short_label,
         scoped_early_learning_evidence,
         scoped_early_learning_title,
@@ -196,6 +204,20 @@ def _next_step_card(
             check=_study_check_text(debrief),
             actions=actions,
         )
+    if cluster_card := _same_note_cluster_card(debrief):
+        actions = ()
+        if open_card:
+            button = secondary_button(card_search_button_text())
+            button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(cluster_card.card_id)))
+            actions = (button,)
+        return recommendation_card(
+            same_note_cluster_title(short_label(cluster_card.card_label)),
+            confidence="Clustered note evidence",
+            evidence=same_note_cluster_evidence(cluster_card),
+            next_step=same_note_cluster_next_step(),
+            check=same_note_cluster_check_text(),
+            actions=actions,
+        )
     has_repeated_misses = bool(debrief.missed_cards)
     return recommendation_card(
         no_pattern_title(has_repeated_misses=has_repeated_misses),
@@ -243,6 +265,19 @@ def _repair_evidence_with_note_context(card) -> str:
 
 def _repair_clues(summary) -> str:
     return ", ".join(summary.content_labels) if summary.content_labels else "repeated misses"
+
+
+def _same_note_cluster_card(debrief: Debrief):
+    candidates = [
+        summary
+        for summary in debrief.missed_cards
+        if summary.note_id
+        and summary.note_card_count
+        and summary.note_card_count > 1
+        and summary.note_repeated_miss_count >= 2
+        and not summary.is_early_exposure
+    ]
+    return candidates[0] if candidates else None
 
 
 def _study_material_card(
