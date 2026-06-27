@@ -8,11 +8,17 @@ try:
     from .debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
     from .debrief_dialog_copy import (
         card_search_button_text,
+        early_learning_evidence,
+        early_learning_next_step,
         early_learning_title,
+        no_repair_signal_text,
         related_search_button_text,
-        repair_action_summary,
+        repair_evidence,
+        repair_next_step,
         short_label,
         study_target_title,
+        study_next_step,
+        supporting_cards_button_text,
     )
     from .dialog_actions import accept_then
     from .session_context import session_context_text
@@ -21,11 +27,17 @@ except ImportError:
     from debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
     from debrief_dialog_copy import (
         card_search_button_text,
+        early_learning_evidence,
+        early_learning_next_step,
         early_learning_title,
+        no_repair_signal_text,
         related_search_button_text,
-        repair_action_summary,
+        repair_evidence,
+        repair_next_step,
         short_label,
         study_target_title,
+        study_next_step,
+        supporting_cards_button_text,
     )
     from dialog_actions import accept_then
     from session_context import session_context_text
@@ -45,7 +57,7 @@ class DebriefDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Bonsai Recent Misses Debrief")
-        self.resize(620, 420)
+        self.resize(640, 440)
         self.setStyleSheet("QDialog { background: #f5f2ea; }")
 
         layout = QVBoxLayout()
@@ -72,7 +84,7 @@ class DebriefDialog(QDialog):
         if context:
             content_layout.addWidget(body_label(context))
         if open_full_analytics:
-            button = secondary_button("Open full analytics")
+            button = secondary_button(supporting_cards_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(self, open_full_analytics))
             actions = QHBoxLayout()
             actions.setContentsMargins(0, 2, 0, 0)
@@ -112,7 +124,11 @@ def _next_step_card(
             actions = (button,)
         return panel_card(
             f"Suggested next check: {short_label(card.card_label)}",
-            repair_action_summary(card),
+            rows=(
+                ("Evidence", repair_evidence(card)),
+                ("Next", repair_next_step()),
+                ("Check", "Card-construction clues showed up, so inspect it before assuming the topic is unlearned."),
+            ),
             actions=actions,
             featured=True,
         )
@@ -125,7 +141,10 @@ def _next_step_card(
             actions = (button,)
         return panel_card(
             early_learning_title(),
-            _early_learning_body(debrief),
+            rows=(
+                ("Evidence", early_learning_evidence(_early_learning_count(debrief))),
+                ("Next", early_learning_next_step()),
+            ),
             actions=actions,
             featured=True,
         )
@@ -138,7 +157,11 @@ def _next_step_card(
             actions = (button,)
         return panel_card(
             study_target_title(_target_label(target)),
-            _study_action_summary(target),
+            rows=(
+                ("Evidence", _target_evidence(target, _target_label(target))),
+                ("Next", study_next_step()),
+                ("Check", no_repair_signal_text()),
+            ),
             actions=actions,
             featured=True,
         )
@@ -220,10 +243,6 @@ def _target_summary(target: StudyTarget) -> str:
     if target.related_cards:
         detail += f" Examples: {', '.join(target.related_cards)}."
     return detail
-
-
-def _study_action_summary(target: StudyTarget) -> str:
-    return f"{_target_evidence(target, _target_label(target))} Review the source topic, then retry related cards."
 
 
 def _early_learning_body(debrief: Debrief) -> str:

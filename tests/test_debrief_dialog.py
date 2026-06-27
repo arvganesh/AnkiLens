@@ -7,11 +7,18 @@ from analytics import MissedCardSummary
 from debrief import SessionHabits
 from debrief_dialog_copy import (
     card_search_button_text,
+    early_learning_evidence,
+    early_learning_next_step,
     early_learning_title,
+    no_repair_signal_text,
     related_search_button_text,
     repair_action_summary,
+    repair_evidence,
+    repair_next_step,
     short_label,
     study_target_title,
+    study_next_step,
+    supporting_cards_button_text,
 )
 from session_context import session_context_text
 
@@ -27,6 +34,23 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(early_learning_title(), "Suggested next check: retry early material")
         self.assertEqual(card_search_button_text(), "Copy search for this card")
         self.assertEqual(related_search_button_text(), "Copy search for related cards")
+        self.assertEqual(supporting_cards_button_text(), "See supporting cards")
+        self.assertEqual(no_repair_signal_text(), "No strong card-construction clue stood out.")
+
+    def test_featured_recommendation_copy_separates_evidence_from_action(self) -> None:
+        summary = MissedCardSummary(
+            1,
+            "Cardiology",
+            "Aortic stenosis murmur",
+            3,
+            5,
+            datetime(2026, 6, 26),
+            content_labels=("Long card", "Dense card"),
+        )
+
+        self.assertEqual(repair_evidence(summary), "Missed 3/5 recent reviews; clues: Long card, Dense card.")
+        self.assertIn("Inspect the prompt first", repair_next_step())
+        self.assertEqual(study_next_step(), "Review this source topic, then retry the related cards.")
 
     def test_repair_action_summary_names_evidence_and_uncertainty(self) -> None:
         summary = MissedCardSummary(
@@ -47,6 +71,13 @@ class DebriefDialogTest(unittest.TestCase):
 
     def test_short_label_truncates_long_card_names(self) -> None:
         self.assertEqual(short_label("A" * 70), "A" * 61 + "...")
+
+    def test_early_learning_copy_frames_normal_first_pass_learning(self) -> None:
+        self.assertEqual(early_learning_evidence(2), "2 early cards are still in first-pass learning.")
+        self.assertEqual(
+            early_learning_next_step(),
+            "Treat this as normal learning first: quick source check, then retry.",
+        )
 
     def test_session_context_is_hidden_for_tiny_windows(self) -> None:
         context = session_context_text(SessionHabits(4, 1, 0.25, "Evening"))
