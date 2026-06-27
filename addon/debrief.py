@@ -76,7 +76,11 @@ class Debrief:
 
     @property
     def early_learning_is_dominant(self) -> bool:
-        return self.early_learning.count >= 2 and all(summary.is_early_exposure for summary in self.missed_cards)
+        return (
+            self.early_learning.count >= 2
+            and all(_is_fresh_exposure(summary) for summary in self.early_learning.cards)
+            and all(_is_fresh_exposure(summary) for summary in self.missed_cards)
+        )
 
     @property
     def repair_is_top_check(self) -> bool:
@@ -179,6 +183,12 @@ def _cards_to_fix(summaries: list[MissedCardSummary]) -> CardsToFix:
 def _early_learning(summaries: list[MissedCardSummary]) -> EarlyLearning:
     cards = tuple(summary for summary in summaries if summary.is_early_exposure)
     return EarlyLearning(count=len(cards), cards=cards)
+
+
+def _is_fresh_exposure(summary: MissedCardSummary) -> bool:
+    return summary.is_early_exposure and (
+        summary.misses == 1 or (summary.card_reps is not None and summary.card_reps <= 2)
+    )
 
 
 def _has_repair_signal(summary: MissedCardSummary) -> bool:

@@ -132,6 +132,7 @@ class MissedCardAnalyticsTest(unittest.TestCase):
         )
 
         self.assertTrue(summaries[0].is_early_exposure)
+        self.assertEqual(summaries[0].card_reps, 2)
         self.assertEqual(summaries[0].first_reviewed_at, datetime(2026, 6, 1))
         self.assertEqual(summaries[0].learning_review_count, 2)
 
