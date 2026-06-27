@@ -35,6 +35,7 @@ from .copy_text import (
     selected_card_status_text,
     study_content_caption,
     supporting_metric_labels,
+    supporting_table_headers,
     tag_concentration_caption,
     term_caption,
     workflow_caption,
@@ -93,9 +94,7 @@ class MissedCardsDialog(QDialog):
 
         summaries_by_card_id = {summary.card_id: summary for summary in summaries}
         table = QTableWidget(len(summaries), 8, self)
-        table.setHorizontalHeaderLabels(
-            ["Card", "Deck", "Priority", "Content clues", "Misses", "Reviews", "Miss rate", "Last missed"]
-        )
+        table.setHorizontalHeaderLabels(list(supporting_table_headers()))
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         table.setAlternatingRowColors(True)

@@ -43,6 +43,10 @@ def supporting_metric_labels() -> tuple[str, str, str]:
     return ("cards to inspect", "repeated misses", "evidence window")
 
 
+def supporting_table_headers() -> tuple[str, ...]:
+    return ("Card", "Deck", "Priority", "Card clues", "Misses", "Reviews", "Miss rate", "Last missed")
+
+
 def selected_card_button_text() -> str:
     return "Open selected card in Browse"
 

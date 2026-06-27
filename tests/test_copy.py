@@ -14,6 +14,7 @@ from copy_text import (
     selected_card_status_text,
     study_content_caption,
     supporting_metric_labels,
+    supporting_table_headers,
     tag_concentration_caption,
     term_caption,
     workflow_caption,
@@ -82,6 +83,12 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertEqual(
             supporting_metric_labels(),
             ("cards to inspect", "repeated misses", "evidence window"),
+        )
+
+    def test_supporting_table_headers_name_card_clues(self) -> None:
+        self.assertEqual(
+            supporting_table_headers(),
+            ("Card", "Deck", "Priority", "Card clues", "Misses", "Reviews", "Miss rate", "Last missed"),
         )
 
     def test_selected_card_action_opens_browse_with_copy_fallback(self) -> None:
