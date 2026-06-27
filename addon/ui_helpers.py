@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from aqt.qt import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, Qt
+from aqt.qt import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, Qt
 
 
 def title_label(text: str) -> QLabel:
     label = QLabel(text)
+    label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
     label.setStyleSheet("color: #1f2a20; font-size: 22px; font-weight: 700;")
     return label
 
@@ -12,6 +13,7 @@ def title_label(text: str) -> QLabel:
 def body_label(text: str) -> QLabel:
     label = QLabel(text)
     label.setWordWrap(True)
+    label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
     label.setStyleSheet("color: #4d554d; font-size: 13px;")
     return label
 
@@ -49,6 +51,7 @@ def panel_card(
     quiet: bool = False,
 ) -> QFrame:
     frame = QFrame()
+    frame.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
     frame.setFrameShape(QFrame.Shape.StyledPanel)
     border = "#cfddbd" if featured else "#ebe4d8" if quiet else "#e6dfd2"
     background = "#f7fbef" if featured else "#f7f4ec" if quiet else "#fbfaf5"
@@ -65,6 +68,7 @@ def panel_card(
 
     heading = QLabel(title)
     heading.setWordWrap(True)
+    heading.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
     heading_size = "13px" if quiet else "15px"
     heading.setStyleSheet(f"border: none; color: #1f2a20; font-size: {heading_size}; font-weight: 700;")
     layout.addWidget(heading)
@@ -72,6 +76,7 @@ def panel_card(
     if body:
         content = QLabel(body)
         content.setWordWrap(True)
+        content.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         content_size = "12px" if quiet else "13px"
         content.setStyleSheet(f"border: none; color: #3f473e; font-size: {content_size}; line-height: 120%;")
         layout.addWidget(content)

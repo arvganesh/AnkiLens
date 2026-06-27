@@ -32,7 +32,14 @@ class StudyTarget:
     label: str
     kind: str
     count: int
+    reviewed_count: int
     related_cards: tuple[str, ...] = ()
+
+    @property
+    def miss_rate(self) -> float:
+        if self.reviewed_count == 0:
+            return 0
+        return self.count / self.reviewed_count
 
 
 @dataclass(frozen=True)
@@ -71,39 +78,54 @@ def build_debrief(
 ) -> Debrief:
     missed_cards = summarize_missed_cards(entries, minimum_misses=minimum_misses, limit=result_limit)
     return Debrief(
-        study_next=tuple(_study_targets(missed_cards, limit=study_limit)),
+        study_next=tuple(_study_targets(entries, missed_cards, limit=study_limit)),
         cards_to_fix=_cards_to_fix(missed_cards),
         session_habits=_session_habits(entries),
         missed_cards=tuple(missed_cards),
     )
 
 
-def _study_targets(summaries: list[MissedCardSummary], *, limit: int) -> list[StudyTarget]:
+def _study_targets(entries: list[ReviewLogEntry], summaries: list[MissedCardSummary], *, limit: int) -> list[StudyTarget]:
     tag_targets = [
-        StudyTarget(tag.tag, "tag", tag.missed_cards, _related_cards(summaries, lambda summary, tag=tag.tag: tag in summary.tags))
+        StudyTarget(
+            tag.tag,
+            "tag",
+            tag.missed_cards,
+            _reviewed_cards(entries, lambda entry, tag=tag.tag: tag in entry.tags),
+            _related_cards(summaries, lambda summary, tag=tag.tag: tag in summary.tags),
+        )
         for tag in summarize_tag_misses(summaries)
         if tag.missed_cards >= 2
     ]
+    tag_targets = _supported_targets(tag_targets, minimum_reviewed=5, minimum_rate=0.25)
     if tag_targets:
-        return sorted(tag_targets, key=lambda target: (-target.count, _kind_priority(target.kind), target.label))[:limit]
+        return sorted(tag_targets, key=_target_priority)[:limit]
 
     term_targets = [
-        StudyTarget(term, "term", count, _related_cards(summaries, lambda summary, term=term: term in summary.source_text.lower()))
+        StudyTarget(
+            term,
+            "term",
+            count,
+            _reviewed_cards(entries, lambda entry, term=term: term in entry.source_text.lower()),
+            _related_cards(summaries, lambda summary, term=term: term in summary.source_text.lower()),
+        )
         for term, count in summarize_terms(summaries)
     ]
+    term_targets = _supported_targets(term_targets, minimum_reviewed=4, minimum_rate=0.25)
     if term_targets:
-        return sorted(term_targets, key=lambda target: (-target.count, _kind_priority(target.kind), target.label))[:limit]
+        return sorted(term_targets, key=_target_priority)[:limit]
 
     targets = [
         StudyTarget(
             deck.deck_name,
             "deck",
             deck.missed_cards,
+            _reviewed_cards(entries, lambda entry, deck_name=deck.deck_name: entry.deck_name == deck_name),
             _related_cards(summaries, lambda summary, deck_name=deck.deck_name: summary.deck_name == deck_name),
         )
         for deck in summarize_deck_misses(summaries)
     ]
-    return sorted(targets, key=lambda target: (-target.count, _kind_priority(target.kind), target.label))[:limit]
+    return sorted(_supported_targets(targets, minimum_reviewed=5, minimum_rate=0.20), key=_target_priority)[:limit]
 
 
 def _cards_to_fix(summaries: list[MissedCardSummary]) -> CardsToFix:
@@ -115,6 +137,18 @@ def _cards_to_fix(summaries: list[MissedCardSummary]) -> CardsToFix:
 
 def _kind_priority(kind: str) -> int:
     return {"tag": 0, "term": 1, "deck": 2}.get(kind, 3)
+
+
+def _target_priority(target: StudyTarget) -> tuple[float, int, int, str]:
+    return (-target.miss_rate, -target.count, _kind_priority(target.kind), target.label)
+
+
+def _supported_targets(targets: list[StudyTarget], *, minimum_reviewed: int, minimum_rate: float) -> list[StudyTarget]:
+    return [target for target in targets if target.reviewed_count >= minimum_reviewed and target.miss_rate >= minimum_rate]
+
+
+def _reviewed_cards(entries: list[ReviewLogEntry], matches) -> int:
+    return len({entry.card_id for entry in entries if matches(entry)})
 
 
 def _related_cards(summaries: list[MissedCardSummary], matches) -> tuple[str, ...]:

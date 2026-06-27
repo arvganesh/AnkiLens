@@ -48,12 +48,15 @@ class DebriefTest(unittest.TestCase):
                 _entry(1, 1, 1, text="mitral murmur"),
                 _entry(2, 1, 2, text="mitral valve"),
                 _entry(2, 1, 3, text="mitral valve"),
+                _entry(3, 3, 4, text="mitral regurgitation"),
+                _entry(4, 3, 5, text="mitral stenosis"),
             ]
         )
 
         self.assertEqual(debrief.study_next[0].label, "mitral")
         self.assertEqual(debrief.study_next[0].kind, "term")
         self.assertEqual(debrief.study_next[0].count, 2)
+        self.assertEqual(debrief.study_next[0].reviewed_count, 4)
         self.assertEqual(debrief.study_next[0].related_cards, ("Card 2", "Card 1"))
 
     def test_study_targets_include_capped_deterministic_examples(self) -> None:
@@ -79,12 +82,47 @@ class DebriefTest(unittest.TestCase):
                 _entry(1, 1, 1, text="aortic stenosis", tags=("AnKing_Cardiology_Valves",)),
                 _entry(2, 1, 2, text="aortic murmur", tags=("AnKing_Cardiology_Valves",)),
                 _entry(2, 1, 3, text="aortic murmur", tags=("AnKing_Cardiology_Valves",)),
+                _entry(3, 3, 4, text="mitral regurgitation", tags=("AnKing_Cardiology_Valves",)),
+                _entry(4, 3, 5, text="mitral stenosis", tags=("AnKing_Cardiology_Valves",)),
+                _entry(5, 3, 6, text="tricuspid regurgitation", tags=("AnKing_Cardiology_Valves",)),
             ]
         )
 
         self.assertEqual(len(debrief.study_next), 1)
         self.assertEqual(debrief.study_next[0].kind, "tag")
         self.assertEqual(debrief.study_next[0].label, "AnKing_Cardiology_Valves")
+        self.assertEqual(debrief.study_next[0].reviewed_count, 5)
+        self.assertAlmostEqual(debrief.study_next[0].miss_rate, 2 / 5)
+
+    def test_study_targets_require_enough_denominator_support(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="aortic stenosis", tags=("AnKing_Cardiology_Valves",)),
+                _entry(1, 1, 1, text="aortic stenosis", tags=("AnKing_Cardiology_Valves",)),
+                _entry(2, 1, 2, text="aortic murmur", tags=("AnKing_Cardiology_Valves",)),
+                _entry(2, 1, 3, text="aortic murmur", tags=("AnKing_Cardiology_Valves",)),
+            ]
+        )
+
+        self.assertEqual(debrief.study_next, ())
+
+    def test_study_targets_prefer_concentrated_tags_over_broad_volume(self) -> None:
+        entries = [
+            _entry(1, 1, 0, tags=("broad", "focused")),
+            _entry(1, 1, 1, tags=("broad", "focused")),
+            _entry(2, 1, 2, tags=("broad", "focused")),
+            _entry(2, 1, 3, tags=("broad", "focused")),
+            _entry(3, 1, 4, tags=("broad", "focused")),
+            _entry(3, 1, 5, tags=("broad", "focused")),
+            _entry(4, 3, 6, tags=("broad", "focused")),
+            _entry(5, 3, 7, tags=("broad", "focused")),
+        ]
+        entries.extend(_entry(card_id, 3, card_id + 10, tags=("broad",)) for card_id in range(6, 21))
+
+        debrief = build_debrief(entries, study_limit=5)
+
+        self.assertEqual(debrief.study_next[0].label, "focused")
+        self.assertEqual(debrief.study_next[0].reviewed_count, 5)
 
     def test_study_targets_prefer_repeated_tags_over_deck_fallback(self) -> None:
         debrief = build_debrief(
@@ -93,6 +131,9 @@ class DebriefTest(unittest.TestCase):
                 _entry(1, 1, 1, deck="AnKing", text="alpha beta", tags=("cardiology", "murmurs")),
                 _entry(2, 1, 2, deck="AnKing", text="gamma delta", tags=("cardiology",)),
                 _entry(2, 1, 3, deck="AnKing", text="gamma delta", tags=("cardiology",)),
+                _entry(3, 3, 4, deck="AnKing", text="epsilon zeta", tags=("cardiology",)),
+                _entry(4, 3, 5, deck="AnKing", text="eta theta", tags=("cardiology",)),
+                _entry(5, 3, 6, deck="AnKing", text="iota kappa", tags=("cardiology",)),
             ],
             study_limit=5,
         )
@@ -108,12 +149,16 @@ class DebriefTest(unittest.TestCase):
                 _entry(1, 1, 1, deck="Cardiology", text="alpha beta", tags=("murmurs",)),
                 _entry(2, 1, 2, deck="Cardiology", text="gamma delta", tags=("valves",)),
                 _entry(2, 1, 3, deck="Cardiology", text="gamma delta", tags=("valves",)),
+                _entry(3, 3, 4, deck="Cardiology", text="epsilon zeta", tags=("arrhythmias",)),
+                _entry(4, 3, 5, deck="Cardiology", text="eta theta", tags=("ischemia",)),
+                _entry(5, 3, 6, deck="Cardiology", text="iota kappa", tags=("congenital",)),
             ],
             study_limit=5,
         )
 
         self.assertEqual(debrief.study_next[0].kind, "deck")
         self.assertEqual(debrief.study_next[0].label, "Cardiology")
+        self.assertEqual(debrief.study_next[0].reviewed_count, 5)
         self.assertEqual(debrief.study_next[0].related_cards, ("Card 2", "Card 1"))
 
     def test_cards_to_fix_only_counts_cards_with_content_clues(self) -> None:
@@ -137,12 +182,16 @@ class DebriefTest(unittest.TestCase):
                 _entry(1, 1, 1, text="weak cue", tags=("AnKing_Cardiology_Valves",), card_reps=2),
                 _entry(2, 1, 2, text="focused aortic stenosis murmur prompt", tags=("AnKing_Cardiology_Valves",), card_reps=8),
                 _entry(2, 1, 3, text="focused aortic stenosis murmur prompt", tags=("AnKing_Cardiology_Valves",), card_reps=8),
+                _entry(3, 3, 4, text="focused mitral stenosis prompt", tags=("AnKing_Cardiology_Valves",), card_reps=8),
+                _entry(4, 3, 5, text="focused tricuspid regurgitation prompt", tags=("AnKing_Cardiology_Valves",), card_reps=8),
+                _entry(5, 3, 6, text="focused pulmonic stenosis prompt", tags=("AnKing_Cardiology_Valves",), card_reps=8),
             ]
         )
 
         self.assertEqual(debrief.cards_to_fix.count, 0)
         self.assertEqual(debrief.cards_to_fix.early_exposure_count, 1)
         self.assertEqual(debrief.study_next[0].label, "AnKing_Cardiology_Valves")
+        self.assertEqual(debrief.study_next[0].reviewed_count, 5)
 
     def test_session_habits_report_observed_facts(self) -> None:
         debrief = build_debrief(

@@ -17,7 +17,10 @@ def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
 
 
 def _target_summary(target: StudyTarget) -> str:
-    detail = f"{target.count} repeatedly missed card{_plural(target.count)} share this {_target_kind_label(target.kind)}."
+    detail = (
+        f"{target.count} of {target.reviewed_count} reviewed card{_plural(target.reviewed_count)} "
+        f"missed in {_target_kind_label(target.kind)}."
+    )
     if target.related_cards:
         detail += f" Examples: {', '.join(target.related_cards)}."
     return detail

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from aqt.qt import QDialog, QHBoxLayout, QVBoxLayout
+from aqt.qt import QDialog, QHBoxLayout, QVBoxLayout, Qt
 
 try:
     from .debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
@@ -31,8 +31,9 @@ class DebriefDialog(QDialog):
         self.setStyleSheet("QDialog { background: #f5f2ea; }")
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(24, 22, 24, 20)
-        layout.setSpacing(12)
+        layout.setContentsMargins(24, 20, 24, 18)
+        layout.setSpacing(9)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addWidget(title_label("Recent Misses Debrief"))
         layout.addWidget(body_label(_intro_text(lookback_days)))
         layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
@@ -165,16 +166,14 @@ def _review_habits_card(habits: SessionHabits):
 
 
 def _target_summary(target: StudyTarget) -> str:
-    detail = f"{target.count} repeatedly missed card{_plural(target.count)} share this {_target_kind_label(target.kind)}."
+    detail = _target_evidence(target, _target_kind_label(target.kind))
     if target.related_cards:
         detail += f" Examples: {', '.join(target.related_cards)}."
     return detail
 
 
 def _study_action_summary(target: StudyTarget, early_exposure_count: int) -> str:
-    detail = f"{target.count} repeatedly missed card{_plural(target.count)} cluster here. Skim the source topic, then retry related cards."
-    if target.related_cards:
-        detail += f" Examples: {', '.join(target.related_cards)}."
+    detail = f"{_target_evidence(target, _target_label(target))} Skim the source topic, then retry related cards."
     if early_exposure_count:
         detail += (
             f" {early_exposure_count} card{_plural(early_exposure_count)} "
@@ -182,6 +181,13 @@ def _study_action_summary(target: StudyTarget, early_exposure_count: int) -> str
             f"{_verb(early_exposure_count, 'it', 'them')} yet."
         )
     return detail
+
+
+def _target_evidence(target: StudyTarget, label: str) -> str:
+    return (
+        f"{target.count} of {target.reviewed_count} reviewed card{_plural(target.reviewed_count)} "
+        f"missed in {label}."
+    )
 
 
 def _target_kind_label(kind: str) -> str:
