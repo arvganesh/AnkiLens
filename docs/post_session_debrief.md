@@ -7,28 +7,52 @@ notes, cards, decks, or review history.
 
 ## Product Shape
 
-The debrief has three distinct buckets.
+Bonsai should lead with one recommended next check. Supporting cards and
+secondary evidence can appear below it, but the first screen should not feel like
+a dashboard. Every visible fact should help answer "what should I do next?"
 
-1. Study material
+Current recommendation hierarchy:
+
+1. Inspect a card
+   - Use when mature repeated misses have card-surface clues such as long,
+     dense, list-like, many numbers, media reference, or multiple weaker clues.
+   - Action: open the card, read the prompt, and edit only if it asks too much
+     or is unclear.
+
+2. Treat as early learning
+   - Use when misses are mostly fresh/new cards.
+   - Action: keep reviewing normally; study extra only if the examples felt
+     unfamiliar or clustered around the same concept.
+
+3. Sample material
    - Purpose: identify content that may need more review after card quality has
      been checked.
    - Inputs: repeated terms, deck concentration, tag concentration, and related
      missed cards.
-   - Initial output: top 3 study targets, expandable later into related cards.
+   - Guardrail: broad study targets require evidence across at least two
+     distinct notes/cards, so one cloze-heavy note does not masquerade as a weak
+     topic.
+   - Action: sample related cards first. If prompts are clear and the examples
+     still feel unfamiliar, revisit nearby material.
 
-2. Fix cards
-   - Purpose: identify cards where construction may be causing repeated misses.
-   - Inputs: content clues such as weak cue, long card, dense card, cloze-heavy,
-     list-like, many numbers, media reference, and comparison.
-   - Initial output: a quiet notice like "2 cards may need editing"; suggestions
-     appear only when the user asks.
+4. Inspect one note
+   - Use when repeated misses are concentrated in sibling cards from one note.
+   - Action: open one sibling card and inspect the note. Treat this as one note
+     to inspect, not proof the whole topic is weak.
 
-3. Session habits
+5. Stay quiet
+   - Use when there are repeated misses but they do not yet point clearly to a
+     card edit, one-note inspection, early-learning case, or broad study target.
+   - Action: do not edit or cram from this alone; keep reviewing unless one card
+     felt wrong.
+
+Session habits are supporting context only.
    - Purpose: describe how the session went without judging the user.
    - Inputs: review count, Again count/rate, total time, average seconds/card,
      hardest deck/tag, and time of day.
-   - Initial output: descriptive metrics only. Trend claims such as "evening
-     sessions are harder" require enough history and should come later.
+   - Output: show only when the context changes interpretation, such as many
+     cards feeling new or unusually fast reviewing. Trend claims such as
+     "evening sessions are harder" require enough history and should come later.
 
 ## Workflow
 
@@ -42,9 +66,12 @@ For tag-driven decks such as AnKing, repeated misses can also mean the user
 unsuspended material that matches class tags but has not actually learned the
 underlying lecture/topic yet. Bonsai should frame the debrief as a decision:
 
-- If construction clues are present, check the specific card first.
-- If construction clues are absent and misses cluster around a tag/deck/topic,
-  treat the cluster as material to study, not a card-edit diagnosis.
+- If mature construction clues are present, check the specific card first.
+- If misses cluster around one note, inspect that note before deciding to study
+  more.
+- If construction clues are absent and misses span multiple notes in a
+  tag/deck/topic, treat the cluster as material to sample, not a card-edit
+  diagnosis.
 - If the cards are new or recently unsuspended, avoid over-interpreting early
   misses as either bad cards or weak knowledge.
 
@@ -54,23 +81,28 @@ For the first implementation, "post-session" means a recent review window, not a
 true Anki session boundary. Bonsai should label this clearly as a debrief for
 recent/today's reviews until session boundaries are modeled.
 
-- Study material means "content areas worth reviewing if the cards look okay,"
+- Study material means "content areas worth sampling if the cards look okay,"
   not a scheduler override.
-- Fix cards means repeated-miss cards with construction clues, not an edit
+- Fix cards means repeated-miss cards with surface clues, not an automatic edit
   workflow.
-- Session habits means observed facts only, not advice or judgment.
+- Same-note evidence means one note/card family to inspect, not proof the whole
+  tag is weak.
+- Session habits means observed facts only, not judgment.
 
 ## Implementation Sequence
 
 1. Define a pure debrief model from existing missed-card summaries.
-   - Produce `study_next`, `cards_to_fix`, and `session_habits`.
+   - Produce `study_next`, `cards_to_fix`, `early_learning`,
+     `same_note_cluster`, and `session_habits`.
    - Start with today's/recent review window instead of true Anki session
      boundaries.
    - Cover semantics with unit tests before adding UI.
 
 2. Add a manual Session Debrief dialog.
    - Open it from the Bonsai front-page panel and/or Bonsai dialog.
-   - Show top 3 study targets, card-fix notice, and basic session metrics.
+   - Lead with one recommended next check.
+   - Keep support evidence below the recommendation and avoid dashboard-like
+     metric blocks.
    - Include a path back to full analytics.
 
 3. Investigate Anki hooks for automatic post-review display.
@@ -83,7 +115,9 @@ recent/today's reviews until session boundaries are modeled.
 
 - Unit-test the debrief model outside Anki.
 - Include empty/small-window tests so Bonsai does not overclaim from thin data.
-- Keep ranking deterministic for top study targets.
+- Keep ranking deterministic for supported study targets.
+- Include cloze-heavy AnKing scenarios where sibling cards from one note should
+  not become broad study evidence.
 - Keep Anki UI code thin and manually verify it in the actual Anki app before
   committing UI slices.
 - Use adversarial review for product semantics before adding auto hooks.
