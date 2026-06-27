@@ -9,6 +9,7 @@ try:
     from .debrief_dialog_copy import (
         card_search_button_text,
         debrief_title,
+        debrief_intro_text,
         debrief_window_title,
         early_learning_evidence,
         early_learning_check_text,
@@ -40,6 +41,7 @@ except ImportError:
     from debrief_dialog_copy import (
         card_search_button_text,
         debrief_title,
+        debrief_intro_text,
         debrief_window_title,
         early_learning_evidence,
         early_learning_check_text,
@@ -89,7 +91,7 @@ class DebriefDialog(QDialog):
         layout.setSpacing(12)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addWidget(title_label(debrief_title()))
-        layout.addWidget(body_label(_intro_text(lookback_days)))
+        layout.addWidget(body_label(debrief_intro_text(lookback_days)))
 
         content = QWidget()
         content.setStyleSheet("background: transparent;")
@@ -124,12 +126,6 @@ class DebriefDialog(QDialog):
         scroll.setWidget(content)
         layout.addWidget(scroll, 1)
         self.setLayout(layout)
-
-
-def _intro_text(lookback_days: int) -> str:
-    if lookback_days <= 0:
-        return "Read-only patterns across available reviews. Bonsai does not change scheduling."
-    return f"Last {lookback_days} days · read-only · Bonsai does not change scheduling."
 
 
 def _next_step_card(

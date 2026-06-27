@@ -9,6 +9,14 @@ def debrief_title() -> str:
     return "Next Check"
 
 
+def debrief_intro_text(lookback_days: int) -> str:
+    if lookback_days <= 0:
+        return "Read-only patterns across available reviews. Bonsai does not change scheduling."
+    if lookback_days == 1:
+        return "Last 24 hours · read-only · Bonsai does not change scheduling."
+    return f"Last {lookback_days} days · read-only · Bonsai does not change scheduling."
+
+
 def deck_debrief_button_text() -> str:
     return "Next Check"
 

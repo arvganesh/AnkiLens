@@ -77,20 +77,24 @@ def show_session_debrief() -> None:
     from .debrief_dialog import DebriefDialog
 
     config = load_config(mw.addonManager.getConfig(__package__))
-    entries = filter_review_entries_by_lookback(
-        load_review_entries(mw),
-        lookback_days=config.lookback_days,
-        now=datetime.now(),
-    )
+    entries = _debrief_entries(load_review_entries(mw), config, now=datetime.now())
     dialog = DebriefDialog(
         build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
-        lookback_days=config.lookback_days,
+        lookback_days=config.debrief_lookback_days,
         open_card=_open_card_from_debrief,
         open_material=_open_material_from_debrief,
         open_full_analytics=show_missed_card_analytics,
         parent=mw,
     )
     dialog.exec()
+
+
+def _debrief_entries(entries, config, *, now: datetime):
+    return filter_review_entries_by_lookback(
+        entries,
+        lookback_days=config.debrief_lookback_days,
+        now=now,
+    )
 
 
 def _open_card_from_debrief(card_id: int) -> None:

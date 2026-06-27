@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import unittest
+from datetime import datetime
 
 import anki_entry
+from analytics import ReviewLogEntry
+from config import BonsaiConfig
 from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE
 
 
@@ -44,6 +47,20 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         self.assertIn("Copied search", message)
         self.assertIn("Open Browse and paste", message)
+
+    def test_debrief_entries_use_short_recent_window(self) -> None:
+        entries = [
+            ReviewLogEntry(1, 1, datetime(2026, 6, 25, 8), "Deck", "Old"),
+            ReviewLogEntry(2, 1, datetime(2026, 6, 26, 8), "Deck", "Recent"),
+        ]
+
+        filtered = anki_entry._debrief_entries(
+            entries,
+            BonsaiConfig(lookback_days=90, debrief_lookback_days=1),
+            now=datetime(2026, 6, 26, 12),
+        )
+
+        self.assertEqual([entry.card_label for entry in filtered], ["Recent"])
 
 
 if __name__ == "__main__":

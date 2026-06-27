@@ -7,6 +7,7 @@ from analytics import MissedCardSummary
 from debrief import SessionHabits
 from debrief_dialog_copy import (
     card_search_button_text,
+    debrief_intro_text,
     debrief_title,
     debrief_window_title,
     deck_debrief_button_text,
@@ -60,6 +61,10 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(debrief_window_title(), "Bonsai Next Check")
         self.assertEqual(debrief_title(), "Next Check")
         self.assertEqual(deck_debrief_button_text(), "Next Check")
+
+    def test_debrief_intro_names_short_recent_window(self) -> None:
+        self.assertEqual(debrief_intro_text(1), "Last 24 hours · read-only · Bonsai does not change scheduling.")
+        self.assertIn("Last 2 days", debrief_intro_text(2))
 
     def test_debrief_action_copy_is_clear_and_cautious(self) -> None:
         self.assertEqual(early_learning_title(), "Likely normal first-pass learning")
