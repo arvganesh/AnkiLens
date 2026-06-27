@@ -311,6 +311,74 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.cards_to_fix.count, 0)
         self.assertEqual(debrief.cards_to_fix.clues, ())
 
+    def test_same_note_siblings_do_not_create_broad_study_target(self) -> None:
+        tag = "AnKing_Cardiology_Valves"
+        entries = [
+            _entry(
+                card_id,
+                1,
+                card_id,
+                text=f"valve sibling {card_id}",
+                tags=(tag,),
+                card_reps=8,
+                note_id=50,
+                note_card_count=5,
+            )
+            for card_id in range(1, 5)
+        ]
+        entries.extend(
+            _entry(
+                card_id,
+                3,
+                card_id,
+                text=f"stable valve {card_id}",
+                tags=(tag,),
+                card_reps=8,
+                note_id=card_id + 100,
+                note_card_count=1,
+            )
+            for card_id in range(5, 9)
+        )
+
+        debrief = build_debrief(entries, minimum_misses=1)
+
+        self.assertEqual(debrief.study_next, ())
+
+    def test_study_targets_survive_when_misses_span_multiple_notes(self) -> None:
+        tag = "AnKing_Cardiology_Valves"
+        entries = [
+            _entry(
+                card_id,
+                1,
+                card_id,
+                text=f"missed valve {card_id}",
+                tags=(tag,),
+                card_reps=8,
+                note_id=card_id + 100,
+                note_card_count=1,
+            )
+            for card_id in range(1, 5)
+        ]
+        entries.extend(
+            _entry(
+                card_id,
+                3,
+                card_id,
+                text=f"stable valve {card_id}",
+                tags=(tag,),
+                card_reps=8,
+                note_id=card_id + 100,
+                note_card_count=1,
+            )
+            for card_id in range(5, 9)
+        )
+
+        debrief = build_debrief(entries, minimum_misses=1)
+
+        self.assertEqual(debrief.study_next[0].label, tag)
+        self.assertEqual(debrief.study_next[0].count, 4)
+        self.assertEqual(debrief.study_next[0].source_count, 4)
+
     def test_cards_to_fix_counts_strong_repair_clue(self) -> None:
         debrief = build_debrief(
             [
