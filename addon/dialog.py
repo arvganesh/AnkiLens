@@ -51,13 +51,13 @@ class MissedCardsDialog(QDialog):
         parent=None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Bonsai")
+        self.setWindowTitle("Bonsai Supporting Cards")
         self.resize(1040, 660)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 18, 20, 18)
         layout.setSpacing(9)
-        layout.addWidget(title_label("Bonsai"))
+        layout.addWidget(title_label("Supporting Cards"))
         layout.addWidget(
             body_label(
                 analytics_caption(

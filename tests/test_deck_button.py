@@ -10,7 +10,7 @@ class DeckButtonTest(unittest.TestCase):
         html = deck_button_html()
 
         self.assertIn(BUTTON_MESSAGE, html)
-        self.assertIn("Open Bonsai", html)
+        self.assertIn("Supporting Cards", html)
         self.assertIn(DEBRIEF_MESSAGE, html)
         self.assertIn("Recent Debrief", html)
 

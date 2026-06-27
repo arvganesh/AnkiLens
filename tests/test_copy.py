@@ -38,7 +38,7 @@ class AnalyticsCopyTest(unittest.TestCase):
             lookback_days=0,
         )
 
-        self.assertIn("Showing 2 cards", caption)
+        self.assertIn("Supporting evidence for the debrief: 2 cards", caption)
         self.assertIn("at least 2 times", caption)
         self.assertIn("Limit: 10", caption)
         self.assertIn("all time", caption)
@@ -71,9 +71,9 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("mitral", caption)
 
     def test_workflow_copy_separates_card_fixing_from_study(self) -> None:
-        self.assertIn("card needs editing", workflow_caption())
-        self.assertIn("Check the cards", check_cards_caption())
-        self.assertIn("study the content", study_content_caption())
+        self.assertIn("inspect the cards behind the recommendation", workflow_caption())
+        self.assertEqual(check_cards_caption(), "Inspect card quality")
+        self.assertEqual(study_content_caption(), "Review material if the cards look clear")
 
     def test_card_detail_caption_explains_selected_card(self) -> None:
         summary = MissedCardSummary(

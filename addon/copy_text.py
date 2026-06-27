@@ -22,21 +22,21 @@ def analytics_caption(
             f"Cards appear here after {minimum_misses} Again rating{_plural(minimum_misses)} {window}."
         )
     return (
-        f"Showing {shown_count} card{_plural(shown_count)} that needed another pass "
-        f"at least {minimum_misses} times {window}. Limit: {result_limit}."
+        f"Supporting evidence for the debrief: {shown_count} card{_plural(shown_count)} "
+        f"needed another pass at least {minimum_misses} times {window}. Limit: {result_limit}."
     )
 
 
 def workflow_caption() -> str:
-    return "Repeated misses can mean the card needs editing, the content needs more study, or both."
+    return "Use this to inspect the cards behind the recommendation before deciding to edit or study more."
 
 
 def check_cards_caption() -> str:
-    return "Check the cards first"
+    return "Inspect card quality"
 
 
 def study_content_caption() -> str:
-    return "Then study the content"
+    return "Review material if the cards look clear"
 
 
 def card_detail_caption(summary: MissedCardSummary) -> str:

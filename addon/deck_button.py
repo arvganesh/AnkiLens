@@ -36,7 +36,7 @@ def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | No
       padding: 7px 14px;
     "
   >
-    Open Bonsai
+    Supporting Cards
   </button>
   <button
     onclick="pycmd('bonsai:debrief')"
