@@ -732,6 +732,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "recommendation")
+        self.assertEqual(calls[0][0][0], "Check examples from Cardiology Valves")
         self.assertEqual(calls[0][1]["confidence"], "4 of 8 cards in this group needed another pass.")
         self.assertIn("revisit the surrounding concept", calls[0][1]["next_step"])
         self.assertIn("3 mature", calls[0][1]["evidence"])
@@ -771,10 +772,45 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.recommendation_card = original_recommendation_card
 
         self.assertEqual(widget, "recommendation")
+        self.assertEqual(calls[0][0][0], "Check examples from Cardiology Valves")
         self.assertIn("Open the missed examples", calls[0][1]["next_step"])
         self.assertNotIn("Open related cards", calls[0][1]["next_step"])
         self.assertIn("old material that needs another pass", calls[0][1]["next_step"])
         self.assertIn("inspect these examples", calls[0][1]["check"])
+
+    def test_broad_study_recommendation_keeps_cautious_title(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_recommendation_card = debrief_dialog.recommendation_card
+        calls = []
+        debrief_dialog.recommendation_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "recommendation"
+        try:
+            widget = debrief_dialog._next_step_card(
+                Debrief(
+                    study_next=(
+                        StudyTarget(
+                            "AnKing::Cardiology::Valves",
+                            "tag",
+                            2,
+                            5,
+                            ("Murmur?", "Aortic stenosis murmur"),
+                            lapsed_count=2,
+                        ),
+                    ),
+                    cards_to_fix=CardsToFix(0, (), ()),
+                    early_learning=EarlyLearning(0, ()),
+                    session_habits=SessionHabits(5, 2, 0.4, "Evening"),
+                    missed_cards=(),
+                ),
+                dialog=None,
+                open_card=None,
+                open_material=None,
+            )
+        finally:
+            debrief_dialog.recommendation_card = original_recommendation_card
+
+        self.assertEqual(widget, "recommendation")
+        self.assertEqual(calls[0][0][0], "Worth checking: Cardiology Valves")
 
 
 if __name__ == "__main__":

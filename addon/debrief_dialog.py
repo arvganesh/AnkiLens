@@ -230,14 +230,7 @@ def _next_step_card(
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
         return recommendation_card(
-            study_target_title(
-                _target_label(target),
-                kind=target.kind,
-                mostly_early=target.mostly_early,
-                early_count=target.early_count,
-                mature_count=target.mature_count,
-                lapsed_count=target.lapsed_count,
-            ),
+            _study_recommendation_title(target),
             confidence=target_signal_text(
                 target.count,
                 target.reviewed_count,
@@ -461,6 +454,19 @@ def _material_button_text(target: StudyTarget) -> str:
     if target.related_card_ids:
         return missed_examples_button_text()
     return related_search_button_text()
+
+
+def _study_recommendation_title(target: StudyTarget) -> str:
+    if target.related_card_ids:
+        return f"Check examples from {_target_label(target)}"
+    return study_target_title(
+        _target_label(target),
+        kind=target.kind,
+        mostly_early=target.mostly_early,
+        early_count=target.early_count,
+        mature_count=target.mature_count,
+        lapsed_count=target.lapsed_count,
+    )
 
 
 def _study_next_step_for_target(target: StudyTarget) -> str:
