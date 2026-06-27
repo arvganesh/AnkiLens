@@ -42,7 +42,7 @@ def card_search_button_text() -> str:
 
 
 def related_search_button_text() -> str:
-    return "Open related cards in Browse"
+    return "Open examples in Browse"
 
 
 def supporting_cards_button_text() -> str:
