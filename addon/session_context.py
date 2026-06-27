@@ -17,7 +17,7 @@ def session_context_text(habits: SessionHabits) -> str:
     if has_reliable_timing(habits) and habits.seconds_per_timed_card < 3:
         return (
             f"{habits.seconds_per_timed_card:.1f}s/card. "
-            "If you were rushing, treat misses as weaker evidence."
+            "If you were rushing, slow down before editing cards or deciding the material is unlearned."
         )
     return ""
 

@@ -200,7 +200,9 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertNotIn("Session note:", fast_context)
         self.assertIn("2.5s/card", fast_context)
-        self.assertIn("treat misses as weaker evidence", fast_context)
+        self.assertIn("slow down before editing cards", fast_context)
+        self.assertIn("deciding the material is unlearned", fast_context)
+        self.assertNotIn("weaker evidence", fast_context)
 
 
 if __name__ == "__main__":
