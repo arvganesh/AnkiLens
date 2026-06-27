@@ -10,7 +10,7 @@ def session_context_text(habits: SessionHabits) -> str:
     if habits.review_count < 5:
         return ""
     parts = [
-        f"Context: {habits.review_count} reviews",
+        f"Observed only: {habits.review_count} reviews",
         f"{habits.again_rate:.0%} Again",
         habits.time_of_day.lower(),
     ]

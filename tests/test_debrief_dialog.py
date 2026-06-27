@@ -56,12 +56,12 @@ class DebriefDialogTest(unittest.TestCase):
     def test_session_context_omits_unreliable_timing(self) -> None:
         context = session_context_text(SessionHabits(10, 2, 0.2, "Evening", 1, 7.0, 7.0))
 
-        self.assertEqual(context, "Context: 10 reviews · 20% Again · evening")
+        self.assertEqual(context, "Observed only: 10 reviews · 20% Again · evening")
 
     def test_session_context_includes_timing_when_most_reviews_are_timed(self) -> None:
         context = session_context_text(SessionHabits(10, 2, 0.2, "Evening", 8, 60.0, 7.5))
 
-        self.assertEqual(context, "Context: 10 reviews · 20% Again · evening · 7.5s/card")
+        self.assertEqual(context, "Observed only: 10 reviews · 20% Again · evening · 7.5s/card")
 
 
 if __name__ == "__main__":
