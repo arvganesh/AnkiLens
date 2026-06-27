@@ -90,8 +90,9 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertIn("1 card may need a card-format check", calls[0][0][1])
         self.assertEqual(calls[0][1]["rows"][0][0], "Start here")
         self.assertIn("Aortic stenosis: Long card; needed another pass on 3/4 reviews", calls[0][1]["rows"][0][1])
+        self.assertTrue(calls[0][1]["quiet"])
 
-    def test_cards_to_fix_support_action_is_secondary(self) -> None:
+    def test_cards_to_fix_support_panel_does_not_compete_with_primary_action(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")
         original_panel_card = debrief_dialog.panel_card
@@ -125,8 +126,9 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(button_calls, ["Show card in Browse"])
-        self.assertIsInstance(panel_calls[0][1]["actions"][0], _FakeButton)
+        self.assertEqual(button_calls, [])
+        self.assertNotIn("actions", panel_calls[0][1])
+        self.assertTrue(panel_calls[0][1]["quiet"])
 
     def test_early_learning_support_panel_uses_material_language(self) -> None:
         _install_fake_aqt()
@@ -164,6 +166,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertIn("normal first-pass learning", calls[0][0][1])
         self.assertIn("not a card-edit signal", calls[0][0][1])
         self.assertIn("study extra only if these felt unfamiliar or clustered", calls[0][0][1])
+        self.assertTrue(calls[0][1]["quiet"])
         self.assertNotIn("source", calls[0][0][1].lower())
         self.assertNotIn("weak evidence", calls[0][0][1].lower())
 
@@ -332,6 +335,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(calls[0][1]["rows"][0][0], "Check first")
         self.assertEqual(calls[0][1]["rows"][1][0], "Why")
         self.assertEqual(calls[0][1]["rows"][2][0], "Also check")
+        self.assertTrue(calls[0][1]["quiet"])
         self.assertNotIn("signal", calls[0][0][0].lower())
 
 

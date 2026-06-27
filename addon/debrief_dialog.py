@@ -255,13 +255,8 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
         return panel_card(
             "No card repair stands out",
             body,
+            quiet=True,
         )
-    card = cards_to_fix.cards[0]
-    actions = ()
-    if open_card:
-        button = secondary_button(card_search_button_text())
-        button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(card.card_id)))
-        actions = (button,)
     rows = tuple(
         (
             "Start here" if index == 0 else "Also check",
@@ -273,7 +268,7 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
         "Card-format details",
         _cards_to_fix_body(cards_to_fix),
         rows=rows,
-        actions=actions,
+        quiet=True,
     )
 
 
@@ -305,15 +300,10 @@ def _study_material_card(
         ("Check first", _target_label(top_target)),
         ("Why", _target_summary(top_target)),
     ) + tuple(("Also check", _target_summary(target)) for target in targets[1:3])
-    actions = ()
-    if open_material:
-        button = secondary_button(related_search_button_text())
-        button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(top_target)))
-        actions = (button,)
     return panel_card(
         "Related material to check",
         rows=rows,
-        actions=actions,
+        quiet=True,
     )
 
 
@@ -325,7 +315,7 @@ def _early_learning_card(debrief: Debrief):
         )
         for index, summary in enumerate(_early_learning_cards(debrief)[:3])
     )
-    return panel_card("Early learning", _early_learning_body(debrief), rows=rows)
+    return panel_card("Early learning", _early_learning_body(debrief), rows=rows, quiet=True)
 
 
 def _target_summary(target: StudyTarget) -> str:
