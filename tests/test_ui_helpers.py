@@ -140,6 +140,20 @@ class UiHelpersTest(unittest.TestCase):
         self.assertEqual(len(_FakeLayout.action_rows), 1)
         self.assertEqual(_FakeLayout.stretch_count, 1)
 
+    def test_recommendation_card_omits_empty_check_guidance(self) -> None:
+        _install_fake_aqt()
+        ui_helpers = importlib.import_module("ui_helpers")
+
+        ui_helpers.recommendation_card(
+            "Check missed examples from Cardiology Valves",
+            confidence="2 of 5 cards in this group needed another pass.",
+            evidence="Examples: Murmur?; Aortic stenosis murmur.",
+            next_step="Check the missed examples first.",
+            check="",
+        )
+
+        self.assertNotIn("Before studying more", _FakeWidget.labels)
+
     def test_detail_blocks_have_breathing_room(self) -> None:
         _install_fake_aqt()
         ui_helpers = importlib.import_module("ui_helpers")

@@ -68,7 +68,7 @@ The main flow is:
 
 The Missed Cards debrief currently leads with a single card:
 
-- Window heading: `Cards to check`.
+- Window heading: `Missed card analytics`.
 - Title example: `Check missed examples from Cardiology Valves`.
 - Signal badge example: `2 of 5 cards in this group needed another pass.`
 - Primary action example: `Show 2 missed examples`.
@@ -93,7 +93,7 @@ Recent UI simplifications:
   set is larger than the visible examples.
 - A repeatable E2E seeder now exists at `scripts/seed_e2e_deck.py`. It creates a named
   `Bonsai E2E Large Review Window` deck with 300 cards and 380 review-log rows.
-- The main heading changed from `Missed cards` to `Cards to check`.
+- The main heading changed from `Missed cards` to `Missed card analytics`.
 - Exact-card recommendation titles now say `Check missed examples from...`.
 - The signal badge no longer says `consistent enough to check`; larger supported patterns still show the
   concrete count, but avoid sounding like a diagnosis.

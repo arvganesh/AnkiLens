@@ -448,7 +448,7 @@ def _study_check_text(debrief: Debrief, target: StudyTarget) -> str:
     if debrief.cards_to_fix.cards:
         return mixed_repair_signal_text()
     if target.related_card_ids:
-        return "No obvious card-format issue stood out, so inspect these examples before deciding to study more."
+        return ""
     return no_repair_signal_text()
 
 

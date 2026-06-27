@@ -6,7 +6,7 @@ def debrief_window_title() -> str:
 
 
 def debrief_title() -> str:
-    return "Cards to check"
+    return "Missed card analytics"
 
 
 def debrief_intro_text(lookback_days: int) -> str:

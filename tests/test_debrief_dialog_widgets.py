@@ -879,7 +879,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertNotIn("Open related cards", calls[0][1]["next_step"])
         self.assertNotIn("related cards", calls[0][1]["next_step"])
         self.assertIn("may just need another pass", calls[0][1]["next_step"])
-        self.assertIn("inspect these examples", calls[0][1]["check"])
+        self.assertEqual(calls[0][1]["check"], "")
 
     def test_broad_study_recommendation_keeps_cautious_title(self) -> None:
         _install_fake_aqt()

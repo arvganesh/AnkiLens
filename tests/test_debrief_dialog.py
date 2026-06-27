@@ -136,7 +136,7 @@ class DebriefDialogTest(unittest.TestCase):
 
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
         self.assertEqual(debrief_window_title(), "Bonsai Missed Cards")
-        self.assertEqual(debrief_title(), "Cards to check")
+        self.assertEqual(debrief_title(), "Missed card analytics")
         self.assertEqual(deck_debrief_button_text(), "Analyze missed cards")
 
     def test_debrief_intro_names_short_recent_window(self) -> None:
