@@ -13,7 +13,7 @@ class DebriefCopyTest(unittest.TestCase):
 
         self.assertIn("Material to sample: mitral", caption)
         self.assertIn("Why:", caption)
-        self.assertIn("2 of 6 reviewed cards missed in word", caption)
+        self.assertIn("Small sample: 2 of 6 reviewed cards missed in word", caption)
         self.assertIn("Examples: Card 1, Card 2", caption)
         self.assertNotIn("if the card", caption.lower())
         self.assertNotIn("due", caption.lower())
@@ -34,7 +34,13 @@ class DebriefCopyTest(unittest.TestCase):
     def test_tag_study_next_caption_names_active_cards(self) -> None:
         caption = study_next_caption((StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",)),))
 
-        self.assertIn("2 of 5 reviewed active cards missed in tag", caption)
+        self.assertIn("Small sample: 2 of 5 reviewed active cards missed in tag", caption)
+
+    def test_study_next_caption_omits_sample_warning_for_larger_windows(self) -> None:
+        caption = study_next_caption((StudyTarget("cardiology", "deck", 4, 12, ("Card 1",)),))
+
+        self.assertIn("4 of 12 reviewed cards missed in deck", caption)
+        self.assertNotIn("Small sample", caption)
 
     def test_cards_to_fix_caption_lists_capped_cards_to_inspect(self) -> None:
         card = MissedCardSummary(

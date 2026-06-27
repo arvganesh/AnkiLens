@@ -18,8 +18,9 @@ def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
 
 def _target_summary(target: StudyTarget) -> str:
     scope = " active" if target.kind == "tag" else ""
+    sample = "Small sample: " if _is_small_sample(target.reviewed_count) else ""
     detail = (
-        f"{target.count} of {target.reviewed_count} reviewed{scope} card{_plural(target.reviewed_count)} "
+        f"{sample}{target.count} of {target.reviewed_count} reviewed{scope} card{_plural(target.reviewed_count)} "
         f"missed in {_target_kind_label(target.kind)}."
     )
     if target.related_cards:
@@ -87,6 +88,10 @@ def _plural(count: int) -> str:
 
 def _verb(count: int, singular: str, plural: str) -> str:
     return singular if count == 1 else plural
+
+
+def _is_small_sample(reviewed_count: int) -> bool:
+    return 0 < reviewed_count < 10
 
 
 def _format_seconds(seconds: float) -> str:

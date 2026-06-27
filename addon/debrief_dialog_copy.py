@@ -46,7 +46,8 @@ def target_evidence_text(
 ) -> str:
     card_label = "card" if reviewed_count == 1 else "cards"
     scope = "active " if active_cards else ""
-    evidence = f"{count} of {reviewed_count} {scope}{card_label} reviewed in {label} needed another pass."
+    sample = "Small sample: " if _is_small_sample(reviewed_count) else ""
+    evidence = f"{sample}{count} of {reviewed_count} {scope}{card_label} reviewed in {label} needed another pass."
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
     if maturity:
         evidence += f" {maturity}."
@@ -201,3 +202,7 @@ def _maturity_text(early_count: int, mature_count: int, lapsed_count: int) -> st
     if not parts or parts == [f"{mature_count} mature"]:
         return ""
     return "Breakdown: " + ", ".join(parts)
+
+
+def _is_small_sample(reviewed_count: int) -> bool:
+    return 0 < reviewed_count < 10
