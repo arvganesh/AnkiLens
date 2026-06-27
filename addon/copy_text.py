@@ -52,7 +52,7 @@ def supporting_metric_labels() -> tuple[str, str, str]:
 
 
 def supporting_table_headers() -> tuple[str, ...]:
-    return ("Card", "Deck", "Triage", "Format clues", "Misses", "Reviews", "Miss rate", "Last missed")
+    return ("Card", "Deck", "Next check", "Format clues", "Misses", "Reviews", "Miss rate", "Last missed")
 
 
 def selected_card_button_text() -> str:
