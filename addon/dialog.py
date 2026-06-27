@@ -3,22 +3,33 @@ from __future__ import annotations
 from aqt.qt import QDialog, QLabel, QTableWidget, QTableWidgetItem, QVBoxLayout
 
 from .analytics import MissedCardSummary
+from .copy_text import analytics_caption
 
 
 class MissedCardsDialog(QDialog):
-    def __init__(self, summaries: list[MissedCardSummary], parent=None) -> None:
+    def __init__(
+        self,
+        summaries: list[MissedCardSummary],
+        *,
+        minimum_misses: int,
+        result_limit: int,
+        parent=None,
+    ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Bonsai")
         self.resize(760, 420)
 
         layout = QVBoxLayout()
-        if not summaries:
-            layout.addWidget(
-                QLabel(
-                    "No repeated misses found yet.\n\n"
-                    "When cards need another pass more than once, Bonsai will show them here."
+        layout.addWidget(
+            QLabel(
+                analytics_caption(
+                    shown_count=len(summaries),
+                    minimum_misses=minimum_misses,
+                    result_limit=result_limit,
                 )
             )
+        )
+        if not summaries:
             self.setLayout(layout)
             return
 

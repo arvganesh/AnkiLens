@@ -26,5 +26,10 @@ def show_missed_card_analytics() -> None:
         minimum_misses=config.minimum_misses,
         limit=config.result_limit,
     )
-    dialog = MissedCardsDialog(summaries, mw)
+    dialog = MissedCardsDialog(
+        summaries,
+        minimum_misses=config.minimum_misses,
+        result_limit=config.result_limit,
+        parent=mw,
+    )
     dialog.exec()
