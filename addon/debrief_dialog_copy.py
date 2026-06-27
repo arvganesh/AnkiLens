@@ -54,7 +54,7 @@ def repair_title(label: str) -> str:
 
 
 def related_search_button_text() -> str:
-    return "Review evidence in Browse"
+    return "Find related cards in Browse"
 
 
 def evidence_confidence_text(
@@ -74,7 +74,7 @@ def evidence_confidence_text(
 
 
 def supporting_cards_button_text() -> str:
-    return "Open full evidence"
+    return "Open evidence table"
 
 
 def repair_action_summary(card) -> str:

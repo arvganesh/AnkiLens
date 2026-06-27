@@ -204,7 +204,7 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
     card = cards_to_fix.cards[0]
     actions = ()
     if open_card:
-        button = primary_button(card_search_button_text())
+        button = secondary_button(card_search_button_text())
         button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(card.card_id)))
         actions = (button,)
     rows = tuple(
