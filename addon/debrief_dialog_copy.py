@@ -34,7 +34,7 @@ def target_evidence_text(count: int, reviewed_count: int, label: str, related_ca
 
 
 def early_learning_title() -> str:
-    return "Suggested next check: retry early material"
+    return "Likely normal first-pass learning"
 
 
 def card_search_button_text() -> str:
@@ -98,11 +98,15 @@ def no_pattern_next_step() -> str:
 
 def early_learning_evidence(count: int) -> str:
     label = "card is" if count == 1 else "cards are"
-    return f"{count} early {label} still in first-pass learning."
+    return f"{count} early {label} still in first-pass learning, not mature lapses."
 
 
 def early_learning_next_step() -> str:
-    return "Treat this as normal learning first: quick source check, then retry."
+    return "Do a quick source refresh, then retry. Do not edit these cards yet."
+
+
+def early_learning_check_text() -> str:
+    return "Treat this as weak evidence unless the same cards keep failing after more reps."
 
 
 def short_label(label: str) -> str:

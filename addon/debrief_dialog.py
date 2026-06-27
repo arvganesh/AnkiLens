@@ -11,6 +11,7 @@ try:
         debrief_title,
         debrief_window_title,
         early_learning_evidence,
+        early_learning_check_text,
         early_learning_next_step,
         early_learning_title,
         no_pattern_evidence,
@@ -38,6 +39,7 @@ except ImportError:
         debrief_title,
         debrief_window_title,
         early_learning_evidence,
+        early_learning_check_text,
         early_learning_next_step,
         early_learning_title,
         no_pattern_evidence,
@@ -160,6 +162,7 @@ def _next_step_card(
             rows=(
                 ("Evidence", early_learning_evidence(_early_learning_count(debrief))),
                 ("Next", early_learning_next_step()),
+                ("Check", early_learning_check_text()),
             ),
             actions=actions,
             featured=True,

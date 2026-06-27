@@ -11,6 +11,7 @@ from debrief_dialog_copy import (
     debrief_window_title,
     deck_debrief_button_text,
     early_learning_evidence,
+    early_learning_check_text,
     early_learning_next_step,
     early_learning_title,
     mixed_repair_signal_text,
@@ -59,7 +60,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(deck_debrief_button_text(), "Next Check")
 
     def test_debrief_action_copy_is_clear_and_cautious(self) -> None:
-        self.assertEqual(early_learning_title(), "Suggested next check: retry early material")
+        self.assertEqual(early_learning_title(), "Likely normal first-pass learning")
         self.assertEqual(card_search_button_text(), "Open this card in Browse")
         self.assertEqual(related_search_button_text(), "Open examples in Browse")
         self.assertEqual(supporting_cards_button_text(), "See supporting cards")
@@ -116,11 +117,13 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(short_label("A" * 70), "A" * 61 + "...")
 
     def test_early_learning_copy_frames_normal_first_pass_learning(self) -> None:
-        self.assertEqual(early_learning_evidence(2), "2 early cards are still in first-pass learning.")
+        self.assertEqual(early_learning_evidence(2), "2 early cards are still in first-pass learning, not mature lapses.")
         self.assertEqual(
             early_learning_next_step(),
-            "Treat this as normal learning first: quick source check, then retry.",
+            "Do a quick source refresh, then retry. Do not edit these cards yet.",
         )
+        self.assertIn("weak evidence", early_learning_check_text())
+        self.assertIn("after more reps", early_learning_check_text())
 
     def test_session_context_is_hidden_for_tiny_windows(self) -> None:
         context = session_context_text(SessionHabits(4, 1, 0.25, "Evening"))
