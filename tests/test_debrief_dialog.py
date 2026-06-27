@@ -67,7 +67,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("Last 2 days", debrief_intro_text(2))
 
     def test_debrief_action_copy_is_clear_and_cautious(self) -> None:
-        self.assertEqual(early_learning_title(), "Likely normal first-pass learning")
+        self.assertEqual(early_learning_title(), "Early cards need a light check")
         self.assertEqual(card_search_button_text(), "Open card in Browse")
         self.assertEqual(related_search_button_text(), "Review evidence in Browse")
         self.assertEqual(supporting_cards_button_text(), "See missed-card evidence")
@@ -143,13 +143,16 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(short_label("A" * 70), "A" * 61 + "...")
 
     def test_early_learning_copy_frames_normal_first_pass_learning(self) -> None:
-        self.assertEqual(early_learning_evidence(2), "2 early cards are still in first-pass learning, not mature lapses.")
+        self.assertEqual(
+            early_learning_evidence(2),
+            "2 early cards are new enough that misses may be first-pass learning, not mature lapses.",
+        )
         self.assertEqual(
             early_learning_next_step(),
             "If these felt unfamiliar, review the source briefly. Do not edit these cards yet.",
         )
         self.assertIn("weak evidence", early_learning_check_text())
-        self.assertIn("after more reps", early_learning_check_text())
+        self.assertIn("after a few more reps", early_learning_check_text())
 
     def test_session_context_is_hidden_for_tiny_windows(self) -> None:
         context = session_context_text(SessionHabits(4, 1, 0.25, "Evening"))
