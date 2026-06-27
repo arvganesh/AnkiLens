@@ -270,7 +270,7 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
         for index, summary in enumerate(cards_to_fix.cards[:3])
     )
     return panel_card(
-        "Card-format evidence",
+        "Card-format details",
         _cards_to_fix_body(cards_to_fix),
         rows=rows,
         actions=actions,
@@ -302,16 +302,16 @@ def _study_material_card(
         )
     top_target = targets[0]
     rows = (
-        ("Sample", _target_label(top_target)),
+        ("Check first", _target_label(top_target)),
         ("Why", _target_summary(top_target)),
-    ) + tuple(("Also sample", _target_summary(target)) for target in targets[1:3])
+    ) + tuple(("Also check", _target_summary(target)) for target in targets[1:3])
     actions = ()
     if open_material:
         button = secondary_button(related_search_button_text())
         button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(top_target)))
         actions = (button,)
     return panel_card(
-        "Material evidence to sample",
+        "Related material to check",
         rows=rows,
         actions=actions,
     )
@@ -385,7 +385,7 @@ def _plural(count: int) -> str:
 def _cards_to_fix_body(cards_to_fix: CardsToFix) -> str:
     return (
         f"{cards_to_fix.count} card{_plural(cards_to_fix.count)} "
-        f"{_verb(cards_to_fix.count, 'has', 'have')} surface clues worth checking."
+        "may need a card-format check."
     )
 
 

@@ -86,8 +86,8 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "Card-format evidence")
-        self.assertIn("1 card has surface clues worth checking", calls[0][0][1])
+        self.assertEqual(calls[0][0][0], "Card-format details")
+        self.assertIn("1 card may need a card-format check", calls[0][0][1])
         self.assertEqual(calls[0][1]["rows"][0][0], "Start here")
         self.assertIn("Aortic stenosis: Long card; needed another pass on 3/4 reviews", calls[0][1]["rows"][0][1])
 
@@ -125,7 +125,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(button_calls, ["Open card in Browse"])
+        self.assertEqual(button_calls, ["Show card in Browse"])
         self.assertIsInstance(panel_calls[0][1]["actions"][0], _FakeButton)
 
     def test_early_learning_support_panel_uses_material_language(self) -> None:
@@ -246,7 +246,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(calls[0][0][0], "One note to inspect: Aortic stenosis cloze")
         self.assertEqual(calls[0][1]["confidence"], "Same note repeated")
         self.assertIn("not proof the whole topic is weak", calls[0][1]["evidence"])
-        self.assertEqual(button_calls, ["Open card in Browse"])
+        self.assertEqual(button_calls, ["Show card in Browse"])
 
     def test_dominant_early_learning_recommendation_names_scope(self) -> None:
         _install_fake_aqt()
@@ -328,10 +328,10 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "Material evidence to sample")
-        self.assertEqual(calls[0][1]["rows"][0][0], "Sample")
+        self.assertEqual(calls[0][0][0], "Related material to check")
+        self.assertEqual(calls[0][1]["rows"][0][0], "Check first")
         self.assertEqual(calls[0][1]["rows"][1][0], "Why")
-        self.assertEqual(calls[0][1]["rows"][2][0], "Also sample")
+        self.assertEqual(calls[0][1]["rows"][2][0], "Also check")
         self.assertNotIn("signal", calls[0][0][0].lower())
 
 

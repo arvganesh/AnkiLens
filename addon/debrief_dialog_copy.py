@@ -22,7 +22,7 @@ def deck_debrief_button_text() -> str:
 
 
 def study_target_title(label: str) -> str:
-    return f"Material evidence to sample: {label}"
+    return f"Check related material: {label}"
 
 
 def target_display_label(label: str, kind: str) -> str:
@@ -45,9 +45,9 @@ def target_evidence_text(
     lapsed_count: int = 0,
 ) -> str:
     card_label = "card" if reviewed_count == 1 else "cards"
-    scope = "active " if active_cards else ""
-    sample = "Small sample: " if _is_small_sample(reviewed_count) else ""
-    evidence = f"{sample}{count} of {reviewed_count} {scope}{card_label} reviewed in {label} needed another pass."
+    scope = "related " if active_cards else ""
+    sample = "Small window: " if _is_small_sample(reviewed_count) else ""
+    evidence = f"{sample}{count} of {reviewed_count} {scope}{card_label} in {label} needed another pass."
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
     if maturity:
         evidence += f" {maturity}."
@@ -65,7 +65,7 @@ def scoped_early_learning_title(label: str) -> str:
 
 
 def card_search_button_text() -> str:
-    return "Open card in Browse"
+    return "Show card in Browse"
 
 
 def repair_title(label: str) -> str:
@@ -92,7 +92,7 @@ def same_note_cluster_check_text() -> str:
 
 
 def related_search_button_text() -> str:
-    return "Find related cards in Browse"
+    return "Show related cards"
 
 
 def evidence_confidence_text(
@@ -107,12 +107,12 @@ def evidence_confidence_text(
     if mixed_signals:
         return "Check both causes"
     if missed_count >= 4 and reviewed_count >= 10 and not mixed_signals:
-        return "More repeated evidence"
-    return "Limited evidence"
+        return "Repeated pattern"
+    return "Small pattern"
 
 
 def supporting_cards_button_text() -> str:
-    return "See supporting evidence"
+    return "View details"
 
 
 def repair_action_summary(card) -> str:
@@ -125,7 +125,7 @@ def repair_action_summary(card) -> str:
 
 def repair_evidence(card) -> str:
     clues = ", ".join(card.content_labels) if card.content_labels else "repeated misses"
-    return f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; surface clues: {clues}."
+    return f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; possible card issue: {clues}."
 
 
 def repair_next_step() -> str:
@@ -140,22 +140,22 @@ def study_next_step(kind: str, *, mostly_early: bool = False) -> str:
         )
     if kind == "tag":
         return (
-            "Open the active related cards first. If the prompts are clear and the examples still feel unfamiliar, "
+            "Open a few related cards first. If the prompts are clear and the examples still feel unfamiliar, "
             "revisit nearby material for this tag."
         )
     if kind == "term":
         return "Skim the examples with this repeated wording. If they still feel unfamiliar, review the material around that concept."
     if kind == "deck":
-        return "Treat this as broad deck evidence: sample related cards before deciding what, if anything, to study."
+        return "Treat this as broad deck context: check related cards before deciding what, if anything, to study."
     return "Review the related cards, then decide whether the surrounding material needs another pass."
 
 
 def no_repair_signal_text() -> str:
-    return "No obvious card-format issue stood out, so check related cards before editing."
+    return "No obvious card-format issue stood out, so check related cards before deciding to study more."
 
 
 def mixed_repair_signal_text() -> str:
-    return "One card also has surface clues; sample evidence before choosing edit vs study."
+    return "One card may also need editing; check the card before choosing edit vs study."
 
 
 def no_pattern_title(*, has_repeated_misses: bool = True) -> str:
@@ -173,7 +173,7 @@ def no_pattern_evidence(*, has_repeated_misses: bool = True) -> str:
 def no_pattern_next_step(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
         return "Keep reviewing normally. Bonsai will speak up when a stronger pattern appears."
-    return "Do not edit or cram from this alone. If one card felt wrong, check the supporting evidence; otherwise keep reviewing."
+    return "Do not edit or cram from this alone. If one card felt wrong, view the details; otherwise keep reviewing."
 
 
 def no_pattern_confidence_text(*, has_repeated_misses: bool = True) -> str:
@@ -185,7 +185,7 @@ def no_pattern_confidence_text(*, has_repeated_misses: bool = True) -> str:
 def no_pattern_check_text(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
         return "No card needs attention from this window."
-    return "Bonsai is intentionally staying quiet until the evidence points to a useful action."
+    return "Bonsai is intentionally staying quiet until the pattern points to a useful action."
 
 
 def early_learning_evidence(count: int) -> str:

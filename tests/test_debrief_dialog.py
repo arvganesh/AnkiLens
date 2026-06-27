@@ -48,7 +48,7 @@ class DebriefDialogTest(unittest.TestCase):
     def test_study_target_title_uses_review_language(self) -> None:
         self.assertEqual(
             study_target_title("Cardiology Valves"),
-            "Material evidence to sample: Cardiology Valves",
+            "Check related material: Cardiology Valves",
         )
 
     def test_tag_targets_are_readable_concepts_with_examples(self) -> None:
@@ -63,7 +63,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(
             target_evidence_text(2, 5, "Cardiology Valves", ("Murmur?", "Aortic stenosis murmur"), active_cards=True),
             (
-                "Small sample: 2 of 5 active cards reviewed in Cardiology Valves needed another pass. "
+                "Small window: 2 of 5 related cards in Cardiology Valves needed another pass. "
                 "Examples: Murmur?, Aortic stenosis murmur."
             ),
         )
@@ -79,11 +79,11 @@ class DebriefDialogTest(unittest.TestCase):
                 lapsed_count=1,
             ),
             (
-                "Small sample: 4 of 8 active cards reviewed in Cardiology Valves needed another pass. "
+                "Small window: 4 of 8 related cards in Cardiology Valves needed another pass. "
                 "Breakdown: 2 early/new, 1 mature, 1 lapsed. Examples: Murmur?."
             ),
         )
-        self.assertNotIn("Small sample", target_evidence_text(4, 12, "Cardiology Valves", active_cards=True))
+        self.assertNotIn("Small window", target_evidence_text(4, 12, "Cardiology Valves", active_cards=True))
 
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
         self.assertEqual(debrief_window_title(), "Bonsai Next Check")
@@ -96,16 +96,16 @@ class DebriefDialogTest(unittest.TestCase):
 
     def test_debrief_action_copy_is_clear_and_cautious(self) -> None:
         self.assertEqual(early_learning_title(), "Early cards need a light check")
-        self.assertEqual(card_search_button_text(), "Open card in Browse")
-        self.assertEqual(related_search_button_text(), "Find related cards in Browse")
-        self.assertEqual(supporting_cards_button_text(), "See supporting evidence")
+        self.assertEqual(card_search_button_text(), "Show card in Browse")
+        self.assertEqual(related_search_button_text(), "Show related cards")
+        self.assertEqual(supporting_cards_button_text(), "View details")
         self.assertEqual(
             no_repair_signal_text(),
-            "No obvious card-format issue stood out, so check related cards before editing.",
+            "No obvious card-format issue stood out, so check related cards before deciding to study more.",
         )
         self.assertEqual(
             mixed_repair_signal_text(),
-            "One card also has surface clues; sample evidence before choosing edit vs study.",
+            "One card may also need editing; check the card before choosing edit vs study.",
         )
 
     def test_featured_recommendation_copy_separates_evidence_from_action(self) -> None:
@@ -122,7 +122,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(repair_title("Aortic stenosis murmur"), "Card to inspect: Aortic stenosis murmur")
         self.assertEqual(
             repair_evidence(summary),
-            "Needed another pass on 3/5 recent reviews; surface clues: Long card, Dense card.",
+            "Needed another pass on 3/5 recent reviews; possible card issue: Long card, Dense card.",
         )
         self.assertIn("Open the card and read the prompt", repair_next_step())
         self.assertIn("Edit only if it asks too much", repair_next_step())
@@ -131,13 +131,16 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(
             study_next_step("tag"),
             (
-                "Open the active related cards first. If the prompts are clear and the examples still feel unfamiliar, "
+                "Open a few related cards first. If the prompts are clear and the examples still feel unfamiliar, "
                 "revisit nearby material for this tag."
             ),
         )
-        self.assertIn("active related cards", study_next_step("tag"))
+        self.assertIn("related cards", study_next_step("tag"))
         self.assertIn("prompts are clear", study_next_step("tag"))
         self.assertNotIn("class material", study_next_step("tag"))
+        self.assertNotIn("evidence", study_target_title("Cardiology Valves").lower())
+        self.assertNotIn("sample", study_target_title("Cardiology Valves").lower())
+        self.assertNotIn("surface clues", repair_evidence(summary).lower())
         self.assertIn("newly encountered material", study_next_step("tag", mostly_early=True))
         self.assertIn("Keep reviewing", study_next_step("tag", mostly_early=True))
 
@@ -161,16 +164,16 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("keep reviewing normally", same_note_cluster_check_text())
 
     def test_evidence_confidence_copy_does_not_overclaim_thin_signals(self) -> None:
-        self.assertEqual(evidence_confidence_text(2, 5), "Limited evidence")
-        self.assertEqual(evidence_confidence_text(3, 8), "Limited evidence")
-        self.assertEqual(evidence_confidence_text(4, 10), "More repeated evidence")
+        self.assertEqual(evidence_confidence_text(2, 5), "Small pattern")
+        self.assertEqual(evidence_confidence_text(3, 8), "Small pattern")
+        self.assertEqual(evidence_confidence_text(4, 10), "Repeated pattern")
         self.assertEqual(evidence_confidence_text(4, 10, mixed_signals=True), "Check both causes")
         self.assertEqual(evidence_confidence_text(3, 0, early_learning=True), "Early learning")
 
     def test_study_next_step_matches_target_kind(self) -> None:
         self.assertIn("repeated wording", study_next_step("term"))
         self.assertIn("still feel unfamiliar", study_next_step("term"))
-        self.assertIn("broad deck evidence", study_next_step("deck"))
+        self.assertIn("broad deck context", study_next_step("deck"))
         self.assertNotIn("signal", study_next_step("deck"))
         self.assertIn("related cards", study_next_step("unknown"))
         self.assertNotIn("source", study_next_step("tag").lower())
@@ -182,8 +185,9 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("do not yet point clearly", no_pattern_evidence())
         self.assertIn("broad study target", no_pattern_evidence())
         self.assertIn("Do not edit or cram from this alone", no_pattern_next_step())
-        self.assertIn("supporting evidence", no_pattern_next_step())
+        self.assertIn("view the details", no_pattern_next_step())
         self.assertIn("intentionally staying quiet", no_pattern_check_text())
+        self.assertIn("pattern points", no_pattern_check_text())
         self.assertNotIn("review evidence cards", no_pattern_next_step())
         self.assertNotIn("weak", no_pattern_confidence_text().lower())
 

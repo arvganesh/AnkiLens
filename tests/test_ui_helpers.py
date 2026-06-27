@@ -97,12 +97,12 @@ class UiHelpersTest(unittest.TestCase):
         ui_helpers = importlib.import_module("ui_helpers")
 
         ui_helpers.recommendation_card(
-            "Material evidence to sample: Cardiology Valves",
-            confidence="Limited evidence",
-            evidence="2 of 5 active cards reviewed in Cardiology Valves needed another pass.",
+            "Check related material: Cardiology Valves",
+            confidence="Small pattern",
+            evidence="2 of 5 related cards in Cardiology Valves needed another pass.",
             next_step="Open the related cards.",
             check="No obvious card-format issue stood out.",
-            actions=(_FakeWidget("Find related cards in Browse"),),
+            actions=(_FakeWidget("Show related cards"),),
         )
 
         self.assertIn("Recommended next check", _FakeWidget.labels)
@@ -110,12 +110,12 @@ class UiHelpersTest(unittest.TestCase):
         self.assertIn("Why", _FakeWidget.labels)
         self.assertIn("Double-check", _FakeWidget.labels)
         self.assertIn(
-            "Limited evidence: 2 of 5 active cards reviewed in Cardiology Valves needed another pass.",
+            "Small pattern: 2 of 5 related cards in Cardiology Valves needed another pass.",
             _FakeWidget.labels,
         )
         self.assertIn("Open the related cards.", _FakeWidget.labels)
         self.assertLess(_FakeWidget.labels.index("Next"), _FakeWidget.labels.index("Why"))
-        self.assertLess(_FakeWidget.labels.index("Find related cards in Browse"), _FakeWidget.labels.index("Why"))
+        self.assertLess(_FakeWidget.labels.index("Show related cards"), _FakeWidget.labels.index("Why"))
         self.assertEqual(_FakeLayout.stretch_count, 0)
 
     def test_detail_blocks_have_breathing_room(self) -> None:
@@ -123,9 +123,9 @@ class UiHelpersTest(unittest.TestCase):
         ui_helpers = importlib.import_module("ui_helpers")
 
         ui_helpers.recommendation_card(
-            "Material evidence to sample: Cardiology Valves",
-            confidence="Limited evidence",
-            evidence="2 of 5 active cards reviewed in Cardiology Valves needed another pass.",
+            "Check related material: Cardiology Valves",
+            confidence="Small pattern",
+            evidence="2 of 5 related cards in Cardiology Valves needed another pass.",
             next_step="Open the related cards.",
             check="No obvious card-format issue stood out.",
         )
