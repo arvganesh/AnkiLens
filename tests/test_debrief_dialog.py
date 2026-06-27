@@ -71,8 +71,14 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(card_search_button_text(), "Open card in Browse")
         self.assertEqual(related_search_button_text(), "Review evidence in Browse")
         self.assertEqual(supporting_cards_button_text(), "See missed-card evidence")
-        self.assertEqual(no_repair_signal_text(), "No obvious card-format issue stood out.")
-        self.assertIn("One card also has format clues", mixed_repair_signal_text())
+        self.assertEqual(
+            no_repair_signal_text(),
+            "No obvious card-format issue stood out, so check the source before editing cards.",
+        )
+        self.assertEqual(
+            mixed_repair_signal_text(),
+            "One card also has format clues; sample evidence before choosing edit vs study.",
+        )
 
     def test_featured_recommendation_copy_separates_evidence_from_action(self) -> None:
         summary = MissedCardSummary(

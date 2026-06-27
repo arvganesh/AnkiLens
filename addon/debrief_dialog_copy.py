@@ -103,11 +103,11 @@ def study_next_step(kind: str) -> str:
 
 
 def no_repair_signal_text() -> str:
-    return "No obvious card-format issue stood out."
+    return "No obvious card-format issue stood out, so check the source before editing cards."
 
 
 def mixed_repair_signal_text() -> str:
-    return "One card also has format clues; sample examples before deciding whether to edit or study."
+    return "One card also has format clues; sample evidence before choosing edit vs study."
 
 
 def no_pattern_title(*, has_repeated_misses: bool = True) -> str:
