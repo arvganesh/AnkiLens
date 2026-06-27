@@ -188,7 +188,7 @@ class UiHelpersTest(unittest.TestCase):
         _install_fake_aqt()
         ui_helpers = importlib.import_module("ui_helpers")
 
-        signal = ui_helpers._signal_label("2 of 5 related cards needed another pass.")
+        signal = ui_helpers._signal_label("2 of 5 cards in this group needed another pass.")
 
         self.assertIn("background: #f1f5e8", signal.style)
         self.assertIn("border-radius: 8px", signal.style)

@@ -732,7 +732,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "recommendation")
-        self.assertEqual(calls[0][1]["confidence"], "4 of 8 related cards needed another pass.")
+        self.assertEqual(calls[0][1]["confidence"], "4 of 8 cards in this group needed another pass.")
         self.assertIn("revisit the surrounding concept", calls[0][1]["next_step"])
         self.assertIn("3 mature", calls[0][1]["evidence"])
         self.assertNotIn("4 of 8", calls[0][1]["evidence"])
