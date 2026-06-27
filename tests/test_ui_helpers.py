@@ -103,7 +103,7 @@ class UiHelpersTest(unittest.TestCase):
 
         ui_helpers.recommendation_card(
             "Check related material: Cardiology Valves",
-            confidence="Small pattern",
+            confidence="Worth a quick check",
             evidence="2 of 5 related cards in Cardiology Valves needed another pass.",
             next_step="Open the related cards.",
             check="No obvious card-format issue stood out.",
@@ -115,7 +115,7 @@ class UiHelpersTest(unittest.TestCase):
         self.assertIn("Why", _FakeWidget.labels)
         self.assertIn("Double-check", _FakeWidget.labels)
         self.assertIn(
-            "Small pattern: 2 of 5 related cards in Cardiology Valves needed another pass.",
+            "Worth a quick check: 2 of 5 related cards in Cardiology Valves needed another pass.",
             _FakeWidget.labels,
         )
         self.assertIn("Open the related cards.", _FakeWidget.labels)
@@ -130,7 +130,7 @@ class UiHelpersTest(unittest.TestCase):
 
         ui_helpers.recommendation_card(
             "Check related material: Cardiology Valves",
-            confidence="Small pattern",
+            confidence="Worth a quick check",
             evidence="2 of 5 related cards in Cardiology Valves needed another pass.",
             next_step="Open the related cards.",
             check="No obvious card-format issue stood out.",

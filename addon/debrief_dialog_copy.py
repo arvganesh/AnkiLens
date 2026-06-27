@@ -107,8 +107,8 @@ def evidence_confidence_text(
     if mixed_signals:
         return "Check both causes"
     if missed_count >= 4 and reviewed_count >= 10 and not mixed_signals:
-        return "Repeated pattern"
-    return "Small pattern"
+        return "Consistent enough to check"
+    return "Worth a quick check"
 
 
 def supporting_cards_button_text() -> str:
