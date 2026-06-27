@@ -43,12 +43,15 @@ class _FakeLayout:
     stretch_count = 0
     margins: list[tuple] = []
     spacings: list[int] = []
+    action_rows: list[tuple] = []
 
     def __init__(self) -> None:
         self.items = []
 
     def addLayout(self, item, *args) -> None:
         self.items.append(("layout", item, args))
+        if any(getattr(child[1], "text", "") == "Show related cards" for child in getattr(item, "items", ())):
+            self.action_rows.append(tuple(self.items))
 
     def addSpacing(self, *args) -> None:
         self.items.append(("spacing", args))
@@ -77,6 +80,7 @@ def _install_fake_aqt() -> None:
     _FakeLayout.stretch_count = 0
     _FakeLayout.margins = []
     _FakeLayout.spacings = []
+    _FakeLayout.action_rows = []
     qt = types.ModuleType("aqt.qt")
     qt.QFrame = _FakeFrame
     qt.QHBoxLayout = _FakeLayout
@@ -117,6 +121,7 @@ class UiHelpersTest(unittest.TestCase):
         self.assertIn("Open the related cards.", _FakeWidget.labels)
         self.assertLess(_FakeWidget.labels.index("Next"), _FakeWidget.labels.index("Why"))
         self.assertLess(_FakeWidget.labels.index("Show related cards"), _FakeWidget.labels.index("Why"))
+        self.assertEqual(len(_FakeLayout.action_rows), 1)
         self.assertEqual(_FakeLayout.stretch_count, 0)
 
     def test_detail_blocks_have_breathing_room(self) -> None:

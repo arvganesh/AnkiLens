@@ -134,13 +134,7 @@ def recommendation_card(
     layout.addWidget(heading)
 
     layout.addSpacing(SPACE_4)
-    layout.addWidget(_next_step_callout(next_step))
-    if actions:
-        action_row = QHBoxLayout()
-        action_row.setContentsMargins(0, SPACE_2, 0, SPACE_1)
-        for action in actions:
-            action_row.addWidget(action)
-        layout.addLayout(action_row)
+    layout.addWidget(_next_step_callout(next_step, actions=actions))
     layout.addSpacing(SPACE_3)
     layout.addLayout(_detail_block("Why", f"{confidence}: {evidence}"))
     layout.addSpacing(SPACE_2)
@@ -156,7 +150,7 @@ def _plain_text(text: str, color: str, size: str, *, weight: int = 400) -> QLabe
     return label
 
 
-def _next_step_callout(text: str) -> QFrame:
+def _next_step_callout(text: str, *, actions: tuple[QPushButton, ...] = ()) -> QFrame:
     frame = QFrame()
     frame.setFrameShape(QFrame.Shape.StyledPanel)
     frame.setStyleSheet(
@@ -174,6 +168,12 @@ def _next_step_callout(text: str) -> QFrame:
     label.setStyleSheet("border: none; color: #4f674a; font-size: 12px; font-weight: 700;")
     layout.addWidget(label)
     layout.addWidget(_plain_text(text, "#263726", "14px", weight=700))
+    if actions:
+        action_row = QHBoxLayout()
+        action_row.setContentsMargins(0, SPACE_2, 0, 0)
+        for action in actions:
+            action_row.addWidget(action)
+        layout.addLayout(action_row)
     frame.setLayout(layout)
     return frame
 
