@@ -31,7 +31,7 @@ class ContentSignalsTest(unittest.TestCase):
             ]
         )
 
-        self.assertEqual(summaries[0].content_labels, ("Repeated miss", "Long card", "Dense card"))
+        self.assertEqual(summaries[0].content_labels, ("Long card", "Dense card"))
 
     def test_summarizes_content_patterns(self) -> None:
         summaries = summarize_missed_cards(
@@ -42,6 +42,16 @@ class ContentSignalsTest(unittest.TestCase):
         )
 
         self.assertEqual(summarize_content_patterns(summaries)["Long card"], 1)
+
+    def test_repeated_miss_is_not_a_content_pattern(self) -> None:
+        summaries = summarize_missed_cards(
+            [
+                ReviewLogEntry(1, 1, datetime(2026, 6, 1), "Deck", "Card", source_text="short prompt"),
+                ReviewLogEntry(1, 1, datetime(2026, 6, 2), "Deck", "Card", source_text="short prompt"),
+            ]
+        )
+
+        self.assertEqual(summarize_content_patterns(summaries), {})
 
 
 if __name__ == "__main__":
