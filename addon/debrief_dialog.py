@@ -22,6 +22,7 @@ try:
         related_search_button_text,
         repair_evidence,
         repair_next_step,
+        repair_title,
         short_label,
         target_display_label,
         target_evidence_text,
@@ -50,6 +51,7 @@ except ImportError:
         related_search_button_text,
         repair_evidence,
         repair_next_step,
+        repair_title,
         short_label,
         target_display_label,
         target_evidence_text,
@@ -141,7 +143,7 @@ def _next_step_card(
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(card.card_id)))
             actions = (button,)
         return panel_card(
-            f"Suggested next check: {short_label(card.card_label)}",
+            repair_title(short_label(card.card_label)),
             rows=(
                 ("Evidence", repair_evidence(card)),
                 ("Next", repair_next_step()),

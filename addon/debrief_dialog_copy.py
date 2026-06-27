@@ -41,6 +41,10 @@ def card_search_button_text() -> str:
     return "Open this card in Browse"
 
 
+def repair_title(label: str) -> str:
+    return f"Possible card issue: {label}"
+
+
 def related_search_button_text() -> str:
     return "Open examples in Browse"
 
