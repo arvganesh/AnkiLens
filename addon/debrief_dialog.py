@@ -212,7 +212,7 @@ def _next_step_card(
             actions = (button,)
         return recommendation_card(
             same_note_cluster_title(short_label(cluster_card.card_label)),
-            confidence="Clustered note evidence",
+            confidence="Same note repeated",
             evidence=same_note_cluster_evidence(cluster_card),
             next_step=same_note_cluster_next_step(),
             check=same_note_cluster_check_text(),

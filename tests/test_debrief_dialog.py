@@ -154,8 +154,8 @@ class DebriefDialogTest(unittest.TestCase):
             note_repeated_miss_count=3,
         )
 
-        self.assertEqual(same_note_cluster_title("Aortic stenosis cloze"), "Same-note cluster to inspect: Aortic stenosis cloze")
-        self.assertIn("3 sibling cards from the same note", same_note_cluster_evidence(summary))
+        self.assertEqual(same_note_cluster_title("Aortic stenosis cloze"), "One note to inspect: Aortic stenosis cloze")
+        self.assertIn("3 cards from the same note", same_note_cluster_evidence(summary))
         self.assertIn("not proof the whole topic is weak", same_note_cluster_evidence(summary))
         self.assertIn("inspect the note", same_note_cluster_next_step())
         self.assertIn("keep reviewing normally", same_note_cluster_check_text())

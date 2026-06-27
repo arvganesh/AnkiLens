@@ -73,22 +73,22 @@ def repair_title(label: str) -> str:
 
 
 def same_note_cluster_title(label: str) -> str:
-    return f"Same-note cluster to inspect: {label}"
+    return f"One note to inspect: {label}"
 
 
 def same_note_cluster_evidence(card) -> str:
     return (
-        f"{card.note_repeated_miss_count} sibling cards from the same note needed another pass. "
-        "Treat this as one clustered note, not proof the whole topic is weak."
+        f"{card.note_repeated_miss_count} cards from the same note needed another pass. "
+        "Treat this as one note to inspect, not proof the whole topic is weak."
     )
 
 
 def same_note_cluster_next_step() -> str:
-    return "Open one sibling card and inspect the note. Edit only if the prompts ask too much or overlap."
+    return "Open one of those cards and inspect the note. Edit only if the prompts ask too much or overlap."
 
 
 def same_note_cluster_check_text() -> str:
-    return "If the sibling prompts look clear, leave them alone and keep reviewing normally."
+    return "If the prompts look clear, leave them alone and keep reviewing normally."
 
 
 def related_search_button_text() -> str:

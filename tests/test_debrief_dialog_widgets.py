@@ -243,8 +243,8 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "recommendation")
-        self.assertEqual(calls[0][0][0], "Same-note cluster to inspect: Aortic stenosis cloze")
-        self.assertEqual(calls[0][1]["confidence"], "Clustered note evidence")
+        self.assertEqual(calls[0][0][0], "One note to inspect: Aortic stenosis cloze")
+        self.assertEqual(calls[0][1]["confidence"], "Same note repeated")
         self.assertIn("not proof the whole topic is weak", calls[0][1]["evidence"])
         self.assertEqual(button_calls, ["Open card in Browse"])
 
