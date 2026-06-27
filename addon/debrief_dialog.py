@@ -42,7 +42,7 @@ class DebriefDialog(QDialog):
         layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
         if debrief.cards_to_fix.cards:
             layout.addWidget(_cards_to_fix_card(debrief.cards_to_fix, dialog=self, open_card=None))
-        if debrief.cards_to_fix.cards and _early_learning_cards(debrief):
+        if (debrief.cards_to_fix.cards or debrief.study_next) and _early_learning_cards(debrief):
             layout.addWidget(_early_learning_card(debrief))
         if debrief.cards_to_fix.cards and debrief.study_next:
             layout.addWidget(_study_material_card(debrief.study_next, dialog=self, open_material=open_material))
@@ -89,7 +89,7 @@ def _next_step_card(
             actions=actions,
             featured=True,
         )
-    if _early_learning_cards(debrief):
+    if _early_learning_cards(debrief) and getattr(debrief, "early_learning_is_dominant", False):
         return panel_card(
             "Best next step: give early material another pass",
             _early_learning_body(debrief),
@@ -178,7 +178,7 @@ def _early_learning_card(debrief: Debrief):
         )
         for index, summary in enumerate(_early_learning_cards(debrief)[:3])
     )
-    return panel_card("Why not edit yet", _early_learning_body(debrief), rows=rows)
+    return panel_card("Early signal", _early_learning_body(debrief), rows=rows)
 
 
 def _target_summary(target: StudyTarget) -> str:
@@ -196,8 +196,8 @@ def _early_learning_body(debrief: Debrief) -> str:
     count = _early_learning_count(debrief)
     return (
         f"{count} repeated-miss card{_plural(count)} "
-        f"{_verb(count, 'looks', 'look')} early in learning. Treat this as weak evidence before "
-        "editing; preview the source topic, then retry."
+        f"{_verb(count, 'is', 'are')} still early in learning. Treat this as weak evidence before "
+        "editing from it alone; preview the source topic, then retry."
     )
 
 

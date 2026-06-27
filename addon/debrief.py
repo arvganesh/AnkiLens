@@ -74,6 +74,10 @@ class Debrief:
     session_habits: SessionHabits
     missed_cards: tuple[MissedCardSummary, ...]
 
+    @property
+    def early_learning_is_dominant(self) -> bool:
+        return self.early_learning.count >= 2 and self.early_learning.count == len(self.missed_cards)
+
 
 _STRONG_REPAIR_LABELS = frozenset(
     {

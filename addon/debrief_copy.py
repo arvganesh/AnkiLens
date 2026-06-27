@@ -58,8 +58,8 @@ def early_learning_caption(early_learning: EarlyLearning) -> str:
     lines = [
         "Early material:",
         f"- {early_learning.count} repeated-miss card{_plural(early_learning.count)} "
-        f"{_verb(early_learning.count, 'looks', 'look')} early in learning.",
-        "- Treat this as weak evidence before editing; preview the source topic, then retry.",
+        f"{_verb(early_learning.count, 'is', 'are')} still early in learning.",
+        "- Treat this as weak evidence before editing from it alone; preview the source topic, then retry.",
     ]
     return "\n".join(lines)
 
