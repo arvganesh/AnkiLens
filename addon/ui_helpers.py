@@ -135,14 +135,34 @@ def recommendation_card(
     heading.setStyleSheet("border: none; color: #1f2a20; font-size: 17px; font-weight: 700;")
     layout.addWidget(heading)
 
-    layout.addSpacing(SPACE_4)
+    layout.addSpacing(SPACE_2)
+    layout.addWidget(_signal_label(confidence))
+    layout.addSpacing(SPACE_3)
     layout.addLayout(_next_step_block(next_step, actions=actions))
     layout.addSpacing(SPACE_3)
-    layout.addLayout(_detail_block("What Bonsai saw", _why_text(confidence, evidence)))
+    layout.addLayout(_detail_block("Why this came up", _why_text(evidence)))
     layout.addSpacing(SPACE_2)
     layout.addLayout(_detail_block("Before studying more", check, quiet=True))
     frame.setLayout(layout)
     return frame
+
+
+def _signal_label(text: str) -> QLabel:
+    label = QLabel(text)
+    label.setWordWrap(False)
+    label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+    label.setStyleSheet(
+        "QLabel {"
+        "background: #f1f5e8;"
+        "border: 1px solid #d8e8cc;"
+        "border-radius: 8px;"
+        "color: #344232;"
+        "font-size: 12px;"
+        "font-weight: 700;"
+        "padding: 6px 9px;"
+        "}"
+    )
+    return label
 
 
 def _plain_text(text: str, color: str, size: str, *, weight: int = 400) -> QLabel:
@@ -152,8 +172,8 @@ def _plain_text(text: str, color: str, size: str, *, weight: int = 400) -> QLabe
     return label
 
 
-def _why_text(confidence: str, evidence: str) -> str:
-    return f"{confidence}\n{_soft_break_evidence(evidence)}"
+def _why_text(evidence: str) -> str:
+    return _soft_break_evidence(evidence)
 
 
 def _soft_break_evidence(text: str) -> str:

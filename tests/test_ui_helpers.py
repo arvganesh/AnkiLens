@@ -82,6 +82,7 @@ class _FakeSizePolicy:
     class Policy:
         Preferred = object()
         Fixed = object()
+        Maximum = object()
 
 
 def _install_fake_aqt() -> None:
@@ -122,15 +123,14 @@ class UiHelpersTest(unittest.TestCase):
 
         self.assertIn("Check first", _FakeWidget.labels)
         self.assertNotIn("Next", _FakeWidget.labels)
-        self.assertIn("What Bonsai saw", _FakeWidget.labels)
+        self.assertIn("Why this came up", _FakeWidget.labels)
         self.assertIn("Before studying more", _FakeWidget.labels)
-        self.assertIn(
-            "Worth a quick check\n2 of 5 related cards in Cardiology Valves needed another pass.",
-            _FakeWidget.labels,
-        )
+        self.assertIn("Worth a quick check", _FakeWidget.labels)
+        self.assertIn("2 of 5 related cards in Cardiology Valves needed another pass.", _FakeWidget.labels)
         self.assertIn("Open the related cards.", _FakeWidget.labels)
-        self.assertLess(_FakeWidget.labels.index("Open the related cards."), _FakeWidget.labels.index("What Bonsai saw"))
-        self.assertLess(_FakeWidget.labels.index("Show related cards"), _FakeWidget.labels.index("What Bonsai saw"))
+        self.assertLess(_FakeWidget.labels.index("Worth a quick check"), _FakeWidget.labels.index("Open the related cards."))
+        self.assertLess(_FakeWidget.labels.index("Open the related cards."), _FakeWidget.labels.index("Why this came up"))
+        self.assertLess(_FakeWidget.labels.index("Show related cards"), _FakeWidget.labels.index("Why this came up"))
         self.assertEqual(len(_FakeLayout.action_rows), 1)
         self.assertEqual(_FakeLayout.stretch_count, 1)
 
@@ -167,24 +167,32 @@ class UiHelpersTest(unittest.TestCase):
         self.assertIn("background: #fbfdf7", card.style)
         self.assertIn("border-radius: 12px", card.style)
 
-    def test_why_text_breaks_dense_evidence_into_short_lines(self) -> None:
+    def test_why_text_keeps_supporting_evidence_short(self) -> None:
         _install_fake_aqt()
         ui_helpers = importlib.import_module("ui_helpers")
 
         text = ui_helpers._why_text(
-            "Worth a quick check",
             "In this window, 2 of 5 cards needed another pass. Breakdown: 2 previously learned. Examples: Murmur?, AS murmur.",
         )
 
         self.assertEqual(
             text,
             (
-                "Worth a quick check\n"
                 "In this window, 2 of 5 cards needed another pass.\n"
                 "Breakdown: 2 previously learned.\n"
                 "Examples: Murmur?, AS murmur."
             ),
         )
+
+    def test_signal_label_is_compact_context_not_a_section(self) -> None:
+        _install_fake_aqt()
+        ui_helpers = importlib.import_module("ui_helpers")
+
+        signal = ui_helpers._signal_label("2 of 5 related cards needed another pass.")
+
+        self.assertIn("background: #f1f5e8", signal.style)
+        self.assertIn("border-radius: 8px", signal.style)
+        self.assertIn("font-size: 12px", signal.style)
 
     def test_quiet_panels_are_compact(self) -> None:
         _install_fake_aqt()
