@@ -48,7 +48,7 @@ def study_content_caption() -> str:
 
 
 def supporting_metric_labels() -> tuple[str, str, str]:
-    return ("cards to inspect", "repeated misses", "evidence window")
+    return ("cards to inspect", "repeated misses", "review window")
 
 
 def supporting_table_headers() -> tuple[str, ...]:

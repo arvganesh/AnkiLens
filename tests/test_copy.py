@@ -90,7 +90,7 @@ class AnalyticsCopyTest(unittest.TestCase):
     def test_supporting_metric_labels_are_evidence_oriented(self) -> None:
         self.assertEqual(
             supporting_metric_labels(),
-            ("cards to inspect", "repeated misses", "evidence window"),
+            ("cards to inspect", "repeated misses", "review window"),
         )
 
     def test_supporting_table_headers_name_card_clues(self) -> None:
