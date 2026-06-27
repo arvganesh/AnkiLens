@@ -130,6 +130,22 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertNotIn("actions", panel_calls[0][1])
         self.assertTrue(panel_calls[0][1]["quiet"])
 
+    def test_no_cards_to_fix_panel_uses_check_language(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        calls = []
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        try:
+            widget = debrief_dialog._cards_to_fix_card(CardsToFix(0, (), ()), dialog=None, open_card=None)
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+
+        self.assertEqual(widget, "panel")
+        self.assertIn("Related material may be more useful to check", calls[0][0][1])
+        self.assertNotIn("evidence", calls[0][0][1].lower())
+        self.assertTrue(calls[0][1]["quiet"])
+
     def test_early_learning_support_panel_uses_material_language(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")

@@ -7,9 +7,9 @@ notes, cards, decks, or review history.
 
 ## Product Shape
 
-Bonsai should lead with one recommended next check. Supporting cards and
-secondary evidence can appear below it, but the first screen should not feel like
-a dashboard. Every visible fact should help answer "what should I do next?"
+Bonsai should lead with one recommended next check. Supporting cards and details
+can appear below it, but the first screen should not feel like a dashboard.
+Every visible fact should help answer "what should I do next?"
 
 Current recommendation hierarchy:
 
@@ -24,15 +24,15 @@ Current recommendation hierarchy:
    - Action: keep reviewing normally; study extra only if the examples felt
      unfamiliar or clustered around the same concept.
 
-3. Sample material
+3. Check related material
    - Purpose: identify content that may need more review after card quality has
      been checked.
    - Inputs: repeated terms, deck concentration, tag concentration, and related
      missed cards.
-   - Guardrail: broad study targets require evidence across at least two
+   - Guardrail: broad study targets require support across at least two
      distinct notes/cards, so one cloze-heavy note does not masquerade as a weak
      topic.
-   - Action: sample related cards first. If prompts are clear and the examples
+   - Action: check related cards first. If prompts are clear and the examples
      still feel unfamiliar, revisit nearby material.
 
 4. Inspect one note
@@ -70,7 +70,7 @@ underlying lecture/topic yet. Bonsai should frame the debrief as a decision:
 - If misses cluster around one note, inspect that note before deciding to study
   more.
 - If construction clues are absent and misses span multiple notes in a
-  tag/deck/topic, treat the cluster as material to sample, not a card-edit
+  tag/deck/topic, treat the cluster as material to check, not a card-edit
   diagnosis.
 - If the cards are new or recently unsuspended, avoid over-interpreting early
   misses as either bad cards or weak knowledge.
@@ -81,11 +81,11 @@ For the first implementation, "post-session" means a recent review window, not a
 true Anki session boundary. Bonsai should label this clearly as a debrief for
 recent/today's reviews until session boundaries are modeled.
 
-- Study material means "content areas worth sampling if the cards look okay,"
+- Study material means "content areas worth checking if the cards look okay,"
   not a scheduler override.
 - Fix cards means repeated-miss cards with surface clues, not an automatic edit
   workflow.
-- Same-note evidence means one note/card family to inspect, not proof the whole
+- Same-note support means one note/card family to inspect, not proof the whole
   tag is weak.
 - Session habits means observed facts only, not judgment.
 
@@ -101,7 +101,7 @@ recent/today's reviews until session boundaries are modeled.
 2. Add a manual Session Debrief dialog.
    - Open it from the Bonsai front-page panel and/or Bonsai dialog.
    - Lead with one recommended next check.
-   - Keep support evidence below the recommendation and avoid dashboard-like
+   - Keep supporting details below the recommendation and avoid dashboard-like
      metric blocks.
    - Include a path back to full analytics.
 
@@ -117,7 +117,7 @@ recent/today's reviews until session boundaries are modeled.
 - Include empty/small-window tests so Bonsai does not overclaim from thin data.
 - Keep ranking deterministic for supported study targets.
 - Include cloze-heavy AnKing scenarios where sibling cards from one note should
-  not become broad study evidence.
+  not become broad study support.
 - Keep Anki UI code thin and manually verify it in the actual Anki app before
   committing UI slices.
 - Use adversarial review for product semantics before adding auto hooks.

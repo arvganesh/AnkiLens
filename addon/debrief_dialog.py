@@ -253,7 +253,7 @@ def _next_step_card(
 
 def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: Callable[[int], None] | None):
     if not cards_to_fix.cards:
-        body = "No repeated card-surface pattern stood out in this window. Study evidence may be more useful here."
+        body = "No repeated card-format pattern stood out in this window. Related material may be more useful to check."
         return panel_card(
             "No card repair stands out",
             body,

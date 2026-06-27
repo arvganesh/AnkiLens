@@ -96,13 +96,14 @@ class AnalyticsCopyTest(unittest.TestCase):
     def test_term_caption_lists_terms(self) -> None:
         caption = term_caption([("mitral", 2)])
 
-        self.assertIn("Repeated terms to sample", caption)
+        self.assertIn("Repeated wording to check", caption)
+        self.assertNotIn("sample", caption.lower())
         self.assertIn("mitral", caption)
 
     def test_workflow_copy_separates_card_fixing_from_study(self) -> None:
         self.assertIn("inspect the cards behind the recommendation", workflow_caption())
         self.assertEqual(check_cards_caption(), "Inspect card format")
-        self.assertEqual(study_content_caption(), "Material evidence to sample")
+        self.assertEqual(study_content_caption(), "Material to check")
 
     def test_supporting_metric_labels_are_evidence_oriented(self) -> None:
         self.assertEqual(

@@ -74,6 +74,11 @@ permissions:
 Not authorized to send Apple events to System Events. (-1743)
 ```
 
+On June 27, 2026, both `python3` and `/usr/bin/python3` also failed to import
+`Quartz` in this shell, and a full-screen `screencapture` showed only the
+desktop wallpaper while Anki was running. Treat that as process/symlink
+verification only, not visual UI verification.
+
 ## Acceptable Evidence When Visual Capture Fails
 
 For UI slices, record:

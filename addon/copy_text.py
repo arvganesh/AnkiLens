@@ -44,7 +44,7 @@ def check_cards_caption() -> str:
 
 
 def study_content_caption() -> str:
-    return "Material evidence to sample"
+    return "Material to check"
 
 
 def supporting_metric_labels() -> tuple[str, str, str]:
@@ -155,6 +155,6 @@ def content_pattern_caption(pattern_counts: dict[str, int]) -> str:
 def term_caption(terms: list[tuple[str, int]]) -> str:
     if not terms:
         return ""
-    lines = ["Repeated terms to sample:"]
+    lines = ["Repeated wording to check:"]
     lines.extend(f"- {term}: {count}" for term, count in terms)
     return "\n".join(lines)

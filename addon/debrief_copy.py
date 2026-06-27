@@ -10,18 +10,18 @@ def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
     if not targets:
         return "No study pattern yet:\n- No repeated material pattern in this window."
     top_target = targets[0]
-    lines = [f"Material to sample: {_target_label(top_target)}", f"- Why: {_target_summary(top_target)}"]
+    lines = [f"Material to check: {_target_label(top_target)}", f"- Why: {_target_summary(top_target)}"]
     if len(targets) > 1:
-        lines.append("- Also sample: " + "; ".join(_target_summary(target) for target in targets[1:3]))
+        lines.append("- Also check: " + "; ".join(_target_summary(target) for target in targets[1:3]))
     return "\n".join(lines)
 
 
 def _target_summary(target: StudyTarget) -> str:
     scope = " active" if target.kind == "tag" else ""
-    sample = "Small sample: " if _is_small_sample(target.reviewed_count) else ""
+    sample = "Small window: " if _is_small_sample(target.reviewed_count) else ""
     detail = (
         f"{sample}{target.count} of {target.reviewed_count} reviewed{scope} card{_plural(target.reviewed_count)} "
-        f"missed in {_target_kind_label(target.kind)}."
+        f"needed another pass in {_target_kind_label(target.kind)}."
     )
     if target.related_cards:
         detail += f" Examples: {', '.join(target.related_cards)}."

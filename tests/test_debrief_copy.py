@@ -11,16 +11,17 @@ class DebriefCopyTest(unittest.TestCase):
     def test_study_next_caption_lists_targets_without_scheduler_language(self) -> None:
         caption = study_next_caption((StudyTarget("mitral", "term", 2, 6, ("Card 1", "Card 2")),))
 
-        self.assertIn("Material to sample: mitral", caption)
+        self.assertIn("Material to check: mitral", caption)
         self.assertIn("Why:", caption)
-        self.assertIn("Small sample: 2 of 6 reviewed cards missed in word", caption)
+        self.assertIn("Small window: 2 of 6 reviewed cards needed another pass in word", caption)
         self.assertIn("Examples: Card 1, Card 2", caption)
+        self.assertNotIn("sample", caption.lower())
         self.assertNotIn("if the card", caption.lower())
         self.assertNotIn("due", caption.lower())
         self.assertNotIn("must", caption.lower())
         self.assertNotIn("Review:", caption)
 
-    def test_study_next_caption_uses_sample_language_for_secondary_targets(self) -> None:
+    def test_study_next_caption_uses_check_language_for_secondary_targets(self) -> None:
         caption = study_next_caption(
             (
                 StudyTarget("mitral", "term", 2, 6, ("Card 1",)),
@@ -28,19 +29,20 @@ class DebriefCopyTest(unittest.TestCase):
             )
         )
 
-        self.assertIn("Also sample:", caption)
+        self.assertIn("Also check:", caption)
+        self.assertNotIn("Also sample", caption)
         self.assertNotIn("Also watch", caption)
 
     def test_tag_study_next_caption_names_active_cards(self) -> None:
         caption = study_next_caption((StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",)),))
 
-        self.assertIn("Small sample: 2 of 5 reviewed active cards missed in tag", caption)
+        self.assertIn("Small window: 2 of 5 reviewed active cards needed another pass in tag", caption)
 
     def test_study_next_caption_omits_sample_warning_for_larger_windows(self) -> None:
         caption = study_next_caption((StudyTarget("cardiology", "deck", 4, 12, ("Card 1",)),))
 
-        self.assertIn("4 of 12 reviewed cards missed in deck", caption)
-        self.assertNotIn("Small sample", caption)
+        self.assertIn("4 of 12 reviewed cards needed another pass in deck", caption)
+        self.assertNotIn("Small window", caption)
 
     def test_cards_to_fix_caption_lists_capped_cards_to_inspect(self) -> None:
         card = MissedCardSummary(
