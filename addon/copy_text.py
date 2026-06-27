@@ -62,7 +62,7 @@ def card_detail_caption(summary: MissedCardSummary) -> str:
     text = _preview_text(summary.source_text)
     lines = [
         f"Selected card: {summary.card_label}",
-        f"Clues: {clues}",
+        f"Card clues: {clues}",
         f"Misses: {summary.misses}/{summary.total_reviews} reviews ({summary.miss_rate:.0%})",
         f"Browser search: {browser_search_for_card(summary.card_id)}",
     ]

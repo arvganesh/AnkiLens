@@ -114,7 +114,7 @@ class AnalyticsCopyTest(unittest.TestCase):
         caption = card_detail_caption(summary)
 
         self.assertIn("Selected card: Mitral regurgitation", caption)
-        self.assertIn("Clues: Comparison", caption)
+        self.assertIn("Card clues: Comparison", caption)
         self.assertIn("Misses: 3/4 reviews (75%)", caption)
         self.assertIn("Browser search: cid:123", caption)
         self.assertIn("Text: Mitral regurgitation murmur", caption)
