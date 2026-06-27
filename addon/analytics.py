@@ -15,6 +15,7 @@ class ReviewLogEntry:
     deck_name: str
     card_label: str
     tags: tuple[str, ...] = ()
+    source_text: str = ""
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,7 @@ class MissedCardSummary:
     total_reviews: int
     last_missed_at: datetime | None
     tags: tuple[str, ...] = ()
+    source_text: str = ""
 
     @property
     def miss_rate(self) -> float:
@@ -113,6 +115,7 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
         total_reviews=len(ordered),
         last_missed_at=missed[-1].reviewed_at if missed else None,
         tags=latest.tags,
+        source_text=latest.source_text,
     )
 
 

@@ -4,8 +4,10 @@ from datetime import datetime
 
 try:
     from .analytics import ReviewLogEntry
+    from .content_text import clean_card_text
 except ImportError:
     from analytics import ReviewLogEntry
+    from content_text import clean_card_text
 
 
 def load_review_entries(mw) -> list[ReviewLogEntry]:
@@ -17,7 +19,8 @@ def load_review_entries(mw) -> list[ReviewLogEntry]:
           revlog.id,
           cards.did,
           coalesce(notes.sfld, cast(revlog.cid as text)),
-          notes.tags
+          notes.tags,
+          notes.flds
         from revlog
         join cards on cards.id = revlog.cid
         join notes on notes.id = cards.nid
@@ -33,6 +36,7 @@ def load_review_entries(mw) -> list[ReviewLogEntry]:
             deck_name=mw.col.decks.name(deck_id) or "Unknown deck",
             card_label=card_label,
             tags=tuple(tag for tag in tags.split() if tag),
+            source_text=clean_card_text(fields),
         )
-        for card_id, ease, reviewed_at_ms, deck_id, card_label, tags in rows
+        for card_id, ease, reviewed_at_ms, deck_id, card_label, tags, fields in rows
     ]
