@@ -279,12 +279,15 @@ class DebriefTest(unittest.TestCase):
                 _entry(2, 1, 1, text="mitral regurgitation murmur", tags=("AnKing_Cardiology_Valves",), card_reps=1, card_lapses=0),
                 _entry(3, 1, 2, text="tricuspid regurgitation murmur", tags=("AnKing_Cardiology_Valves",), card_reps=1, card_lapses=0),
                 _entry(4, 3, 3, text="pulmonic stenosis murmur", tags=("AnKing_Cardiology_Valves",), card_reps=1, card_lapses=0),
+                _entry(5, 3, 4, text="mitral stenosis murmur", tags=("AnKing_Cardiology_Valves",), card_reps=1, card_lapses=0),
             ]
         )
 
         self.assertEqual(debrief.missed_cards, ())
         self.assertEqual(debrief.early_learning.count, 3)
         self.assertTrue(debrief.early_learning_is_dominant)
+        self.assertEqual(debrief.study_next[0].label, "AnKing_Cardiology_Valves")
+        self.assertEqual(debrief.study_next[0].related_cards, ("Card 3", "Card 2", "Card 1"))
 
     def test_early_learning_dominates_only_when_all_repeated_misses_are_early(self) -> None:
         debrief = build_debrief(

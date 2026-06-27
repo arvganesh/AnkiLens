@@ -100,10 +100,14 @@ def build_debrief(
     missed_cards = summarize_missed_cards(entries, minimum_misses=minimum_misses, limit=result_limit)
     all_missed_cards = summarize_missed_cards(entries, minimum_misses=minimum_misses, limit=len(entries))
     early_candidates = summarize_missed_cards(entries, minimum_misses=1, limit=len(entries))
+    early_learning = _early_learning(early_candidates)
+    study_targets = tuple(_study_targets(entries, all_missed_cards, limit=study_limit))
+    if not study_targets and early_learning.count >= 2:
+        study_targets = tuple(_study_targets(entries, list(early_learning.cards), limit=study_limit))
     return Debrief(
-        study_next=tuple(_study_targets(entries, all_missed_cards, limit=study_limit)),
+        study_next=study_targets,
         cards_to_fix=_cards_to_fix(missed_cards),
-        early_learning=_early_learning(early_candidates),
+        early_learning=early_learning,
         session_habits=_session_habits(entries),
         missed_cards=tuple(missed_cards),
     )
