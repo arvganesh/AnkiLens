@@ -209,13 +209,13 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
         actions = (button,)
     rows = tuple(
         (
-            "Top card" if index == 0 else "Also",
+            "Start here" if index == 0 else "Also check",
             f"{summary.card_label}: {_repair_clues(summary)}; needed another pass on {summary.misses}/{summary.total_reviews} reviews",
         )
         for index, summary in enumerate(cards_to_fix.cards[:3])
     )
     return panel_card(
-        "Why this recommendation",
+        "Card-format evidence",
         _cards_to_fix_body(cards_to_fix),
         rows=rows,
         actions=actions,

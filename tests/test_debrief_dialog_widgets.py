@@ -86,9 +86,9 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "Why this recommendation")
+        self.assertEqual(calls[0][0][0], "Card-format evidence")
         self.assertIn("1 card shows stronger card-specific clues", calls[0][0][1])
-        self.assertEqual(calls[0][1]["rows"][0][0], "Top card")
+        self.assertEqual(calls[0][1]["rows"][0][0], "Start here")
         self.assertIn("Aortic stenosis: Long card; needed another pass on 3/4 reviews", calls[0][1]["rows"][0][1])
 
     def test_cards_to_fix_support_action_is_secondary(self) -> None:
