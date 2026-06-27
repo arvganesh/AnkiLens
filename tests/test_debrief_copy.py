@@ -35,10 +35,11 @@ class DebriefCopyTest(unittest.TestCase):
         self.assertIn("Mitral regurgitation: Weak cue, Comparison; missed 3/4 reviews", caption)
 
     def test_cards_to_fix_caption_handles_no_construction_clues(self) -> None:
-        caption = cards_to_fix_caption(CardsToFix(0, (), ()))
+        caption = cards_to_fix_caption(CardsToFix(0, (), (), early_exposure_count=1))
 
         self.assertIn("No card repair stands out", caption)
         self.assertIn("choose what to study", caption)
+        self.assertIn("1 card looks early in learning", caption)
 
     def test_session_habits_caption_reports_observed_facts(self) -> None:
         caption = review_habits_caption(SessionHabits(10, 2, 0.2, "Evening", 10, 75.0, 7.5))

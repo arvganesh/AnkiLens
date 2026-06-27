@@ -17,6 +17,7 @@ def _entry(
     tags: tuple[str, ...] = (),
     duration_ms: int | None = None,
     label: str | None = None,
+    card_reps: int | None = None,
 ) -> ReviewLogEntry:
     return ReviewLogEntry(
         card_id=card_id,
@@ -27,6 +28,7 @@ def _entry(
         tags=tags,
         source_text=text,
         duration_ms=duration_ms,
+        card_reps=card_reps,
     )
 
 
@@ -117,8 +119,9 @@ class DebriefTest(unittest.TestCase):
     def test_cards_to_fix_only_counts_cards_with_content_clues(self) -> None:
         debrief = build_debrief(
             [
-                _entry(1, 1, 0, text="weak cue"),
-                _entry(1, 1, 1, text="weak cue"),
+                _entry(1, 1, 0, text="weak cue", card_reps=8),
+                _entry(1, 1, 1, text="weak cue", card_reps=8),
+                _entry(1, 3, 2, text="weak cue", card_reps=8),
                 _entry(2, 1, 2, text="one clear focused prompt"),
                 _entry(2, 1, 3, text="one clear focused prompt"),
             ]
@@ -126,6 +129,20 @@ class DebriefTest(unittest.TestCase):
 
         self.assertEqual(debrief.cards_to_fix.count, 1)
         self.assertEqual(debrief.cards_to_fix.clues, (("Weak cue", 1),))
+
+    def test_cards_to_fix_excludes_early_exposure_cards(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="weak cue", tags=("AnKing_Cardiology_Valves",), card_reps=2),
+                _entry(1, 1, 1, text="weak cue", tags=("AnKing_Cardiology_Valves",), card_reps=2),
+                _entry(2, 1, 2, text="focused aortic stenosis murmur prompt", tags=("AnKing_Cardiology_Valves",), card_reps=8),
+                _entry(2, 1, 3, text="focused aortic stenosis murmur prompt", tags=("AnKing_Cardiology_Valves",), card_reps=8),
+            ]
+        )
+
+        self.assertEqual(debrief.cards_to_fix.count, 0)
+        self.assertEqual(debrief.cards_to_fix.early_exposure_count, 1)
+        self.assertEqual(debrief.study_next[0].label, "AnKing_Cardiology_Valves")
 
     def test_session_habits_report_observed_facts(self) -> None:
         debrief = build_debrief(

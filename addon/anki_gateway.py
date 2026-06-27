@@ -18,7 +18,12 @@ def load_review_entries(mw) -> list[ReviewLogEntry]:
           revlog.ease,
           revlog.id,
           revlog.time,
+          revlog.type,
           cards.did,
+          cards.reps,
+          cards.lapses,
+          cards.type,
+          cards.queue,
           coalesce(notes.sfld, cast(revlog.cid as text)),
           notes.tags,
           notes.flds
@@ -39,6 +44,25 @@ def load_review_entries(mw) -> list[ReviewLogEntry]:
             tags=tuple(tag for tag in tags.split() if tag),
             source_text=clean_card_text(fields),
             duration_ms=duration_ms,
+            review_type=review_type,
+            card_reps=card_reps,
+            card_lapses=card_lapses,
+            card_type=card_type,
+            card_queue=card_queue,
         )
-        for card_id, ease, reviewed_at_ms, duration_ms, deck_id, card_label, tags, fields in rows
+        for (
+            card_id,
+            ease,
+            reviewed_at_ms,
+            duration_ms,
+            review_type,
+            deck_id,
+            card_reps,
+            card_lapses,
+            card_type,
+            card_queue,
+            card_label,
+            tags,
+            fields,
+        ) in rows
     ]

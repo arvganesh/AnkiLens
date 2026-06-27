@@ -40,6 +40,7 @@ class CardsToFix:
     count: int
     clues: tuple[tuple[str, int], ...]
     cards: tuple[MissedCardSummary, ...]
+    early_exposure_count: int = 0
 
 
 @dataclass(frozen=True)
@@ -106,9 +107,10 @@ def _study_targets(summaries: list[MissedCardSummary], *, limit: int) -> list[St
 
 
 def _cards_to_fix(summaries: list[MissedCardSummary]) -> CardsToFix:
-    cards = tuple(summary for summary in summaries if summary.content_labels)
+    cards = tuple(summary for summary in summaries if summary.content_labels and not summary.is_early_exposure)
+    early_exposure_count = sum(1 for summary in summaries if summary.content_labels and summary.is_early_exposure)
     clues = tuple(summarize_content_patterns(list(cards)).items())
-    return CardsToFix(count=len(cards), clues=clues, cards=cards)
+    return CardsToFix(count=len(cards), clues=clues, cards=cards, early_exposure_count=early_exposure_count)
 
 
 def _kind_priority(kind: str) -> int:

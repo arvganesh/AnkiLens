@@ -22,6 +22,19 @@ def _entry(card_id: int, ease: int, day: int) -> ReviewLogEntry:
     )
 
 
+def _lifecycle_entry(card_id: int, ease: int, day: int, *, card_reps: int, review_type: int = 1) -> ReviewLogEntry:
+    return ReviewLogEntry(
+        card_id=card_id,
+        ease=ease,
+        reviewed_at=datetime(2026, 6, day),
+        deck_name="Cardiology",
+        card_label=f"Card {card_id}",
+        review_type=review_type,
+        card_reps=card_reps,
+        source_text="weak cue",
+    )
+
+
 def _tagged_entry(card_id: int, ease: int, day: int, *tags: str) -> ReviewLogEntry:
     return ReviewLogEntry(
         card_id=card_id,
@@ -74,6 +87,30 @@ class MissedCardAnalyticsTest(unittest.TestCase):
         summaries = summarize_missed_cards([_entry(1, 1, 1)], minimum_misses=1)
 
         self.assertEqual(len(summaries), 1)
+
+    def test_marks_low_repetition_all_again_cards_as_early_exposure(self) -> None:
+        summaries = summarize_missed_cards(
+            [
+                _lifecycle_entry(1, 1, 1, card_reps=2),
+                _lifecycle_entry(1, 1, 2, card_reps=2),
+            ]
+        )
+
+        self.assertTrue(summaries[0].is_early_exposure)
+        self.assertEqual(summaries[0].first_reviewed_at, datetime(2026, 6, 1))
+        self.assertEqual(summaries[0].learning_review_count, 2)
+
+    def test_mature_repeated_miss_cards_are_not_early_exposure(self) -> None:
+        summaries = summarize_missed_cards(
+            [
+                _lifecycle_entry(1, 1, 1, card_reps=20),
+                _lifecycle_entry(1, 3, 2, card_reps=20),
+                _lifecycle_entry(1, 1, 3, card_reps=20),
+                _lifecycle_entry(1, 3, 4, card_reps=20),
+            ]
+        )
+
+        self.assertFalse(summaries[0].is_early_exposure)
 
     def test_applies_result_limit(self) -> None:
         summaries = summarize_missed_cards(

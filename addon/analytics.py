@@ -24,6 +24,11 @@ class ReviewLogEntry:
     tags: tuple[str, ...] = ()
     source_text: str = ""
     duration_ms: int | None = None
+    review_type: int | None = None
+    card_reps: int | None = None
+    card_lapses: int | None = None
+    card_type: int | None = None
+    card_queue: int | None = None
 
 
 @dataclass(frozen=True)
@@ -37,6 +42,9 @@ class MissedCardSummary:
     tags: tuple[str, ...] = ()
     source_text: str = ""
     content_labels: tuple[str, ...] = ()
+    first_reviewed_at: datetime | None = None
+    learning_review_count: int = 0
+    is_early_exposure: bool = False
 
     @property
     def miss_rate(self) -> float:
@@ -127,6 +135,7 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
     ordered = sorted(entries, key=lambda entry: entry.reviewed_at)
     missed = [entry for entry in ordered if entry.ease == AGAIN_EASE]
     latest = ordered[-1]
+    learning_reviews = sum(1 for entry in ordered if entry.review_type in (0, 1, 3))
 
     return MissedCardSummary(
         card_id=latest.card_id,
@@ -138,9 +147,21 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
         tags=latest.tags,
         source_text=latest.source_text,
         content_labels=content_labels(latest.source_text),
+        first_reviewed_at=ordered[0].reviewed_at,
+        learning_review_count=learning_reviews,
+        is_early_exposure=_is_early_exposure(ordered, learning_reviews),
     )
 
 
 def _priority(summary: MissedCardSummary) -> tuple[float, int, datetime]:
     last_missed = summary.last_missed_at or datetime.min
     return (summary.miss_rate, summary.misses, last_missed)
+
+
+def _is_early_exposure(entries: list[ReviewLogEntry], learning_reviews: int) -> bool:
+    latest = entries[-1]
+    if latest.card_reps is not None:
+        return latest.card_reps <= 4
+    if len(entries) <= 3:
+        return True
+    return learning_reviews > len(entries) / 2

@@ -18,16 +18,24 @@ def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
 
 def cards_to_fix_caption(cards_to_fix: CardsToFix) -> str:
     if cards_to_fix.count == 0:
-        return (
-            "No card repair stands out:\n"
-            "- Use the material patterns below to choose what to study."
-        )
+        lines = ["No card repair stands out:", "- Use the material patterns below to choose what to study."]
+        if cards_to_fix.early_exposure_count:
+            lines.append(
+                f"- {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "
+                f"{_verb(cards_to_fix.early_exposure_count, 'looks', 'look')} early in learning."
+            )
+        return "\n".join(lines)
     lines = [
         "Cards worth checking:",
         f"- {cards_to_fix.count} card{_plural(cards_to_fix.count)} may be worth checking before studying more.",
     ]
     for card in cards_to_fix.cards[:3]:
         lines.append(f"- {card.card_label}: {', '.join(card.content_labels)}; missed {card.misses}/{card.total_reviews} reviews")
+    if cards_to_fix.early_exposure_count:
+        lines.append(
+            f"- {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "
+            f"{_verb(cards_to_fix.early_exposure_count, 'looks', 'look')} early in learning."
+        )
     if cards_to_fix.clues:
         clues = ", ".join(f"{label}: {count}" for label, count in cards_to_fix.clues)
         lines.append(f"- Common clues: {clues}")
@@ -51,6 +59,10 @@ def review_habits_caption(habits: SessionHabits) -> str:
 
 def _plural(count: int) -> str:
     return "" if count == 1 else "s"
+
+
+def _verb(count: int, singular: str, plural: str) -> str:
+    return singular if count == 1 else plural
 
 
 def _format_seconds(seconds: float) -> str:

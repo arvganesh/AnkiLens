@@ -55,9 +55,15 @@ def _intro_text(lookback_days: int) -> str:
 
 def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: Callable[[int], None] | None):
     if not cards_to_fix.cards:
+        body = "The missed cards do not show obvious construction clues. Use the material patterns below to choose what to study."
+        if cards_to_fix.early_exposure_count:
+            body += (
+                f" {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "
+                f"{_verb(cards_to_fix.early_exposure_count, 'looks', 'look')} early in learning."
+            )
         return panel_card(
             "No card repair stands out",
-            "The missed cards do not show obvious construction clues. Use the material patterns below to choose what to study.",
+            body,
             featured=True,
         )
     card = cards_to_fix.cards[0]
@@ -72,7 +78,7 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
     )
     return panel_card(
         "Cards worth checking",
-        f"{cards_to_fix.count} card{_plural(cards_to_fix.count)} may be worth checking before studying more.",
+        _cards_to_fix_body(cards_to_fix),
         rows=rows,
         actions=actions,
         featured=True,
@@ -118,6 +124,20 @@ def _target_label(target: StudyTarget) -> str:
 
 def _plural(count: int) -> str:
     return "" if count == 1 else "s"
+
+
+def _cards_to_fix_body(cards_to_fix: CardsToFix) -> str:
+    body = f"{cards_to_fix.count} card{_plural(cards_to_fix.count)} may be worth checking before studying more."
+    if cards_to_fix.early_exposure_count:
+        body += (
+            f" {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "
+            f"{_verb(cards_to_fix.early_exposure_count, 'looks', 'look')} early in learning."
+        )
+    return body
+
+
+def _verb(count: int, singular: str, plural: str) -> str:
+    return singular if count == 1 else plural
 
 
 def _run_then_accept(dialog: QDialog, callback: Callable[[], None]) -> None:
