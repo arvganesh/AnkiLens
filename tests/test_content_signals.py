@@ -8,6 +8,9 @@ from content_signals import content_labels
 
 
 class ContentSignalsTest(unittest.TestCase):
+    def test_labels_weak_cues(self) -> None:
+        self.assertIn("Weak cue", content_labels("Broca area"))
+
     def test_labels_long_cards(self) -> None:
         self.assertIn("Long card", content_labels("word " * 80))
 
@@ -19,6 +22,12 @@ class ContentSignalsTest(unittest.TestCase):
 
     def test_labels_cloze_heavy_cards(self) -> None:
         self.assertIn("Cloze-heavy", content_labels("{{c1::alpha}} {{c2::beta}}"))
+
+    def test_labels_list_like_cards(self) -> None:
+        self.assertIn("List-like", content_labels("alpha, beta, gamma, delta"))
+
+    def test_labels_comparison_cards(self) -> None:
+        self.assertIn("Comparison", content_labels("Aortic stenosis vs mitral regurgitation"))
 
     def test_labels_media_references(self) -> None:
         self.assertIn("Media reference", content_labels("Look at heart_sound.png"))
@@ -47,7 +56,7 @@ class ContentSignalsTest(unittest.TestCase):
         summaries = summarize_missed_cards(
             [
                 ReviewLogEntry(1, 1, datetime(2026, 6, 1), "Deck", "Card", source_text="short prompt"),
-                ReviewLogEntry(1, 1, datetime(2026, 6, 2), "Deck", "Card", source_text="short prompt"),
+                ReviewLogEntry(1, 1, datetime(2026, 6, 2), "Deck", "Card", source_text="one clear focused prompt"),
             ]
         )
 

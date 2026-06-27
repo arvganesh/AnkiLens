@@ -80,7 +80,7 @@ class MissedCardsDialog(QDialog):
 
         table = QTableWidget(len(summaries), 8, self)
         table.setHorizontalHeaderLabels(
-            ["Card", "Deck", "Priority", "Signals", "Misses", "Reviews", "Miss rate", "Last missed"]
+            ["Card", "Deck", "Priority", "Content clues", "Misses", "Reviews", "Miss rate", "Last missed"]
         )
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -140,4 +140,4 @@ def _copy_selected_card_search(table: QTableWidget, status: QLabel) -> None:
 
 
 def _signals_label(summary: MissedCardSummary) -> str:
-    return ", ".join(summary.content_labels) if summary.content_labels else "No obvious pattern"
+    return ", ".join(summary.content_labels) if summary.content_labels else "No obvious clue"
