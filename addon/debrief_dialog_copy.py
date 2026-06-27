@@ -87,7 +87,7 @@ def evidence_confidence_text(
     if mixed_signals:
         return "Check both causes"
     if missed_count >= 4 and reviewed_count >= 10 and not mixed_signals:
-        return "Stronger evidence"
+        return "More repeated evidence"
     return "Limited evidence"
 
 
@@ -98,14 +98,14 @@ def supporting_cards_button_text() -> str:
 def repair_action_summary(card) -> str:
     clues = ", ".join(card.content_labels) if card.content_labels else "repeated misses"
     return (
-        f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; format clues: {clues}. "
+        f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; surface clues: {clues}. "
         "Open it first and read the prompt. Edit only if it asks too much; if it is clear, leave it alone and study nearby material."
     )
 
 
 def repair_evidence(card) -> str:
     clues = ", ".join(card.content_labels) if card.content_labels else "repeated misses"
-    return f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; format clues: {clues}."
+    return f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; surface clues: {clues}."
 
 
 def repair_next_step() -> str:
@@ -135,7 +135,7 @@ def no_repair_signal_text() -> str:
 
 
 def mixed_repair_signal_text() -> str:
-    return "One card also has format clues; sample evidence before choosing edit vs study."
+    return "One card also has surface clues; sample evidence before choosing edit vs study."
 
 
 def no_pattern_title(*, has_repeated_misses: bool = True) -> str:

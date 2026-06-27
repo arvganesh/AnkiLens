@@ -50,14 +50,14 @@ class DebriefCopyTest(unittest.TestCase):
         caption = cards_to_fix_caption(CardsToFix(1, (("Weak cue", 1),), (card,)))
 
         self.assertIn("Cards worth checking", caption)
-        self.assertIn("1 mature card shows stronger card-specific clues", caption)
+        self.assertIn("1 mature card has surface clues worth checking", caption)
         self.assertIn("Mitral regurgitation: Weak cue, Comparison; missed 3/4 reviews", caption)
 
     def test_cards_to_fix_caption_handles_no_construction_clues(self) -> None:
         caption = cards_to_fix_caption(CardsToFix(0, (), ()))
 
         self.assertIn("No card repair stands out", caption)
-        self.assertIn("No strong card-specific pattern surfaced", caption)
+        self.assertIn("No repeated card-surface pattern stood out", caption)
 
     def test_early_learning_caption_keeps_evidence_cautious(self) -> None:
         caption = early_learning_caption(EarlyLearning(2, ()))

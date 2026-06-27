@@ -87,7 +87,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
 
         self.assertEqual(widget, "panel")
         self.assertEqual(calls[0][0][0], "Card-format evidence")
-        self.assertIn("1 card shows stronger card-specific clues", calls[0][0][1])
+        self.assertIn("1 card has surface clues worth checking", calls[0][0][1])
         self.assertEqual(calls[0][1]["rows"][0][0], "Start here")
         self.assertIn("Aortic stenosis: Long card; needed another pass on 3/4 reviews", calls[0][1]["rows"][0][1])
 

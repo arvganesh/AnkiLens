@@ -39,11 +39,11 @@ def _target_kind_label(kind: str) -> str:
 
 def cards_to_fix_caption(cards_to_fix: CardsToFix) -> str:
     if cards_to_fix.count == 0:
-        return "No card repair stands out:\n- No strong card-specific pattern surfaced in this window."
+        return "No card repair stands out:\n- No repeated card-surface pattern stood out in this window."
     lines = [
         "Cards worth checking:",
         f"- {cards_to_fix.count} mature card{_plural(cards_to_fix.count)} "
-        f"{_verb(cards_to_fix.count, 'shows', 'show')} stronger card-specific clues.",
+        f"{_verb(cards_to_fix.count, 'has', 'have')} surface clues worth checking.",
     ]
     for card in cards_to_fix.cards[:3]:
         lines.append(f"- {card.card_label}: {', '.join(card.content_labels)}; missed {card.misses}/{card.total_reviews} reviews")

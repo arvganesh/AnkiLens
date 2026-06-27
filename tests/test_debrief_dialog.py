@@ -97,7 +97,7 @@ class DebriefDialogTest(unittest.TestCase):
         )
         self.assertEqual(
             mixed_repair_signal_text(),
-            "One card also has format clues; sample evidence before choosing edit vs study.",
+            "One card also has surface clues; sample evidence before choosing edit vs study.",
         )
 
     def test_featured_recommendation_copy_separates_evidence_from_action(self) -> None:
@@ -114,7 +114,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(repair_title("Aortic stenosis murmur"), "Card to inspect: Aortic stenosis murmur")
         self.assertEqual(
             repair_evidence(summary),
-            "Needed another pass on 3/5 recent reviews; format clues: Long card, Dense card.",
+            "Needed another pass on 3/5 recent reviews; surface clues: Long card, Dense card.",
         )
         self.assertIn("Open the card and read the prompt", repair_next_step())
         self.assertIn("Edit only if it asks too much", repair_next_step())
@@ -136,7 +136,7 @@ class DebriefDialogTest(unittest.TestCase):
     def test_evidence_confidence_copy_does_not_overclaim_thin_signals(self) -> None:
         self.assertEqual(evidence_confidence_text(2, 5), "Limited evidence")
         self.assertEqual(evidence_confidence_text(3, 8), "Limited evidence")
-        self.assertEqual(evidence_confidence_text(4, 10), "Stronger evidence")
+        self.assertEqual(evidence_confidence_text(4, 10), "More repeated evidence")
         self.assertEqual(evidence_confidence_text(4, 10, mixed_signals=True), "Check both causes")
         self.assertEqual(evidence_confidence_text(3, 0, early_learning=True), "Early learning")
 
@@ -180,7 +180,7 @@ class DebriefDialogTest(unittest.TestCase):
         body = repair_action_summary(summary)
 
         self.assertIn("Needed another pass on 3/5 recent reviews", body)
-        self.assertIn("format clues: Long card, Dense card", body)
+        self.assertIn("surface clues: Long card, Dense card", body)
         self.assertIn("Open it first and read the prompt", body)
         self.assertIn("Edit only if it asks too much", body)
         self.assertIn("leave it alone and study nearby material", body)

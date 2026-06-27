@@ -208,7 +208,7 @@ def _next_step_card(
 
 def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: Callable[[int], None] | None):
     if not cards_to_fix.cards:
-        body = "No strong card-specific pattern surfaced in this window. Study signals may be more useful here."
+        body = "No repeated card-surface pattern stood out in this window. Study evidence may be more useful here."
         return panel_card(
             "No card repair stands out",
             body,
@@ -342,7 +342,7 @@ def _plural(count: int) -> str:
 def _cards_to_fix_body(cards_to_fix: CardsToFix) -> str:
     return (
         f"{cards_to_fix.count} card{_plural(cards_to_fix.count)} "
-        f"{_verb(cards_to_fix.count, 'shows', 'show')} stronger card-specific clues."
+        f"{_verb(cards_to_fix.count, 'has', 'have')} surface clues worth checking."
     )
 
 
