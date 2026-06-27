@@ -8,7 +8,6 @@ import unittest
 
 class _FakeWidget:
     labels: list[str] = []
-    fixed_widths: list[int] = []
 
     def __init__(self, text: str = "") -> None:
         self.text = text
@@ -17,9 +16,6 @@ class _FakeWidget:
 
     def setAlignment(self, *_args) -> None:
         pass
-
-    def setFixedWidth(self, width) -> None:
-        self.fixed_widths.append(width)
 
     def setFrameShape(self, *_args) -> None:
         pass
@@ -77,7 +73,6 @@ class _FakeSizePolicy:
 
 def _install_fake_aqt() -> None:
     _FakeWidget.labels = []
-    _FakeWidget.fixed_widths = []
     _FakeLayout.stretch_count = 0
     _FakeLayout.margins = []
     _FakeLayout.spacings = []
@@ -122,7 +117,7 @@ class UiHelpersTest(unittest.TestCase):
         self.assertLess(_FakeWidget.labels.index("Next"), _FakeWidget.labels.index("Why"))
         self.assertEqual(_FakeLayout.stretch_count, 0)
 
-    def test_detail_rows_have_breathing_room(self) -> None:
+    def test_detail_blocks_have_breathing_room(self) -> None:
         _install_fake_aqt()
         ui_helpers = importlib.import_module("ui_helpers")
 
@@ -134,9 +129,10 @@ class UiHelpersTest(unittest.TestCase):
             check="No obvious card-format issue stood out.",
         )
 
-        self.assertIn(ui_helpers.DETAIL_LABEL_WIDTH, _FakeWidget.fixed_widths)
-        self.assertIn((0, 2, 0, 2), _FakeLayout.margins)
-        self.assertIn(14, _FakeLayout.spacings)
+        self.assertIn((0, 3, 0, 3), _FakeLayout.margins)
+        self.assertIn(4, _FakeLayout.spacings)
+        self.assertIn(5, _FakeLayout.spacings)
+        self.assertNotIn(14, _FakeLayout.spacings)
 
 
 if __name__ == "__main__":

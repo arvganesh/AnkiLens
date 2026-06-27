@@ -3,9 +3,6 @@ from __future__ import annotations
 from aqt.qt import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, Qt
 
 
-DETAIL_LABEL_WIDTH = 88
-
-
 def title_label(text: str) -> QLabel:
     label = QLabel(text)
     label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
@@ -69,7 +66,7 @@ def panel_card(
     margin_x = 20 if featured else 17
     margin_y = 16 if featured else 13
     layout.setContentsMargins(margin_x, margin_y, margin_x, margin_y)
-    layout.setSpacing(9 if featured else 7)
+    layout.setSpacing(11 if featured else 9)
 
     heading = QLabel(title)
     heading.setWordWrap(True)
@@ -86,7 +83,7 @@ def panel_card(
         content.setStyleSheet(f"border: none; color: #3f473e; font-size: {content_size}; line-height: 120%;")
         layout.addWidget(content)
     for label, value in rows:
-        layout.addLayout(_detail_row(label, value))
+        layout.addLayout(_detail_block(label, value))
     if actions:
         action_row = QHBoxLayout()
         action_row.setContentsMargins(0, 8 if featured else 6, 0, 0)
@@ -118,8 +115,8 @@ def recommendation_card(
         "}"
     )
     layout = QVBoxLayout()
-    layout.setContentsMargins(22, 18, 22, 18)
-    layout.setSpacing(8)
+    layout.setContentsMargins(22, 18, 22, 20)
+    layout.setSpacing(10)
 
     eyebrow = QLabel("Recommended next check")
     eyebrow.setStyleSheet("border: none; color: #64705f; font-size: 12px; font-weight: 700;")
@@ -131,8 +128,8 @@ def recommendation_card(
     layout.addWidget(heading)
 
     layout.addWidget(_next_step_callout(next_step))
-    layout.addLayout(_detail_row("Why", f"{confidence}: {evidence}"))
-    layout.addLayout(_detail_row("Double-check", check, quiet=True))
+    layout.addLayout(_detail_block("Why", f"{confidence}: {evidence}"))
+    layout.addLayout(_detail_block("Double-check", check, quiet=True))
 
     if actions:
         action_row = QHBoxLayout()
@@ -161,26 +158,24 @@ def _next_step_callout(text: str) -> QFrame:
         "border-radius: 10px;"
         "}"
     )
-    layout = QHBoxLayout()
-    layout.setSpacing(10)
+    layout = QVBoxLayout()
+    layout.setSpacing(5)
     layout.setContentsMargins(12, 10, 12, 10)
     label = QLabel("Next")
-    label.setFixedWidth(DETAIL_LABEL_WIDTH)
     label.setAlignment(Qt.AlignmentFlag.AlignTop)
     label.setStyleSheet("border: none; color: #4f674a; font-size: 12px; font-weight: 700;")
     layout.addWidget(label)
-    layout.addWidget(_plain_text(text, "#263726", "14px", weight=700), 1)
+    layout.addWidget(_plain_text(text, "#263726", "14px", weight=700))
     frame.setLayout(layout)
     return frame
 
 
-def _detail_row(label: str, value: str, *, quiet: bool = False) -> QHBoxLayout:
-    row = QHBoxLayout()
-    row.setSpacing(14)
-    row.setContentsMargins(0, 2, 0, 2)
+def _detail_block(label: str, value: str, *, quiet: bool = False) -> QVBoxLayout:
+    row = QVBoxLayout()
+    row.setSpacing(4)
+    row.setContentsMargins(0, 3, 0, 3)
 
     label_widget = QLabel(label)
-    label_widget.setFixedWidth(DETAIL_LABEL_WIDTH)
     label_widget.setAlignment(Qt.AlignmentFlag.AlignTop)
     label_widget.setStyleSheet("border: none; color: #667064; font-size: 12px; font-weight: 600;")
     row.addWidget(label_widget)
@@ -190,7 +185,7 @@ def _detail_row(label: str, value: str, *, quiet: bool = False) -> QHBoxLayout:
     value_color = "#5a6358" if quiet else "#2f382f"
     value_size = "12px" if quiet else "13px"
     value_widget.setStyleSheet(f"border: none; color: {value_color}; font-size: {value_size}; line-height: 125%;")
-    row.addWidget(value_widget, 1)
+    row.addWidget(value_widget)
     return row
 
 
