@@ -8,11 +8,13 @@ from debrief_copy import cards_to_fix_caption, review_habits_caption, study_next
 
 class DebriefCopyTest(unittest.TestCase):
     def test_study_next_caption_lists_targets_without_scheduler_language(self) -> None:
-        caption = study_next_caption((StudyTarget("mitral", "term", 2),))
+        caption = study_next_caption((StudyTarget("mitral", "term", 2, ("Card 1", "Card 2")),))
 
         self.assertIn("Study next", caption)
         self.assertIn("mitral", caption)
+        self.assertIn("examples: Card 1, Card 2", caption)
         self.assertNotIn("due", caption.lower())
+        self.assertNotIn("must", caption.lower())
 
     def test_cards_to_fix_caption_is_conditional(self) -> None:
         caption = cards_to_fix_caption(CardsToFix(1, (("Weak cue", 1),), ()))

@@ -10,7 +10,9 @@ def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
     if not targets:
         return "Study next:\n- No repeated content targets found in this window."
     lines = ["Study next:"]
-    lines.extend(f"- {target.label} ({target.kind}, {target.count} cards)" for target in targets)
+    for target in targets:
+        related = f"; examples: {', '.join(target.related_cards)}" if target.related_cards else ""
+        lines.append(f"- {target.label} ({target.kind}, {target.count} cards{related})")
     return "\n".join(lines)
 
 

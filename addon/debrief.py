@@ -32,6 +32,7 @@ class StudyTarget:
     label: str
     kind: str
     count: int
+    related_cards: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -78,9 +79,23 @@ def build_debrief(
 
 def _study_targets(summaries: list[MissedCardSummary], *, limit: int) -> list[StudyTarget]:
     targets: list[StudyTarget] = []
-    targets.extend(StudyTarget(term, "term", count) for term, count in summarize_terms(summaries))
-    targets.extend(StudyTarget(deck.deck_name, "deck", deck.missed_cards) for deck in summarize_deck_misses(summaries))
-    targets.extend(StudyTarget(tag.tag, "tag", tag.missed_cards) for tag in summarize_tag_misses(summaries))
+    targets.extend(
+        StudyTarget(term, "term", count, _related_cards(summaries, lambda summary, term=term: term in summary.source_text.lower()))
+        for term, count in summarize_terms(summaries)
+    )
+    targets.extend(
+        StudyTarget(
+            deck.deck_name,
+            "deck",
+            deck.missed_cards,
+            _related_cards(summaries, lambda summary, deck_name=deck.deck_name: summary.deck_name == deck_name),
+        )
+        for deck in summarize_deck_misses(summaries)
+    )
+    targets.extend(
+        StudyTarget(tag.tag, "tag", tag.missed_cards, _related_cards(summaries, lambda summary, tag=tag.tag: tag in summary.tags))
+        for tag in summarize_tag_misses(summaries)
+    )
     return sorted(targets, key=lambda target: (-target.count, _kind_priority(target.kind), target.label))[:limit]
 
 
@@ -92,6 +107,16 @@ def _cards_to_fix(summaries: list[MissedCardSummary]) -> CardsToFix:
 
 def _kind_priority(kind: str) -> int:
     return {"term": 0, "deck": 1, "tag": 2}.get(kind, 3)
+
+
+def _related_cards(summaries: list[MissedCardSummary], matches) -> tuple[str, ...]:
+    labels = []
+    seen_card_ids = set()
+    for summary in summaries:
+        if matches(summary) and summary.card_id not in seen_card_ids:
+            seen_card_ids.add(summary.card_id)
+            labels.append(summary.card_label)
+    return tuple(labels[:3])
 
 
 def _session_habits(entries: list[ReviewLogEntry]) -> SessionHabits:

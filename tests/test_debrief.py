@@ -16,13 +16,14 @@ def _entry(
     text: str = "mitral murmur",
     tags: tuple[str, ...] = (),
     duration_ms: int | None = None,
+    label: str | None = None,
 ) -> ReviewLogEntry:
     return ReviewLogEntry(
         card_id=card_id,
         ease=ease,
         reviewed_at=datetime(2026, 6, 26, 9, minute),
         deck_name=deck,
-        card_label=f"Card {card_id}",
+        card_label=label or f"Card {card_id}",
         tags=tags,
         source_text=text,
         duration_ms=duration_ms,
@@ -51,6 +52,38 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.study_next[0].label, "mitral")
         self.assertEqual(debrief.study_next[0].kind, "term")
         self.assertEqual(debrief.study_next[0].count, 2)
+        self.assertEqual(debrief.study_next[0].related_cards, ("Card 2", "Card 1"))
+
+    def test_study_targets_include_capped_deterministic_examples(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="renal sodium", label="Duplicate"),
+                _entry(1, 1, 1, text="renal sodium", label="Duplicate"),
+                _entry(2, 1, 2, text="renal sodium", label="Duplicate"),
+                _entry(2, 1, 3, text="renal sodium", label="Duplicate"),
+                _entry(3, 1, 4, text="renal sodium", label="Third"),
+                _entry(3, 1, 5, text="renal sodium", label="Third"),
+                _entry(4, 1, 6, text="renal sodium", label="Fourth"),
+                _entry(4, 1, 7, text="renal sodium", label="Fourth"),
+            ]
+        )
+
+        self.assertEqual(debrief.study_next[0].related_cards, ("Fourth", "Third", "Duplicate"))
+
+    def test_deck_and_tag_targets_include_matching_examples(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, deck="Cardiology", text="alpha beta", tags=("murmurs",)),
+                _entry(1, 1, 1, deck="Cardiology", text="alpha beta", tags=("murmurs",)),
+                _entry(2, 1, 2, deck="Renal", text="gamma delta", tags=("electrolytes",)),
+                _entry(2, 1, 3, deck="Renal", text="gamma delta", tags=("electrolytes",)),
+            ],
+            study_limit=5,
+        )
+
+        by_kind_label = {(target.kind, target.label): target for target in debrief.study_next}
+        self.assertEqual(by_kind_label[("deck", "Cardiology")].related_cards, ("Card 1",))
+        self.assertEqual(by_kind_label[("tag", "murmurs")].related_cards, ("Card 1",))
 
     def test_cards_to_fix_only_counts_cards_with_content_clues(self) -> None:
         debrief = build_debrief(
