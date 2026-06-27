@@ -90,7 +90,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(early_learning_title(), "Early cards need a light check")
         self.assertEqual(card_search_button_text(), "Open card in Browse")
         self.assertEqual(related_search_button_text(), "Find related cards in Browse")
-        self.assertEqual(supporting_cards_button_text(), "Open evidence table")
+        self.assertEqual(supporting_cards_button_text(), "See supporting evidence")
         self.assertEqual(
             no_repair_signal_text(),
             "No obvious card-format issue stood out, so check related cards before editing.",
@@ -154,7 +154,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(no_pattern_confidence_text(), "Not enough signal")
         self.assertIn("do not cluster enough", no_pattern_evidence())
         self.assertIn("Do not edit or cram from this alone", no_pattern_next_step())
-        self.assertIn("open the evidence table", no_pattern_next_step())
+        self.assertIn("supporting evidence", no_pattern_next_step())
         self.assertIn("intentionally staying quiet", no_pattern_check_text())
         self.assertNotIn("review evidence cards", no_pattern_next_step())
         self.assertNotIn("weak", no_pattern_confidence_text().lower())

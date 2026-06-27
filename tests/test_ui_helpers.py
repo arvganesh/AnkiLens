@@ -115,6 +115,7 @@ class UiHelpersTest(unittest.TestCase):
         )
         self.assertIn("Open the related cards.", _FakeWidget.labels)
         self.assertLess(_FakeWidget.labels.index("Next"), _FakeWidget.labels.index("Why"))
+        self.assertLess(_FakeWidget.labels.index("Find related cards in Browse"), _FakeWidget.labels.index("Why"))
         self.assertEqual(_FakeLayout.stretch_count, 0)
 
     def test_detail_blocks_have_breathing_room(self) -> None:

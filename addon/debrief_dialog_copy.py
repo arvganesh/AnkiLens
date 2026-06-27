@@ -92,7 +92,7 @@ def evidence_confidence_text(
 
 
 def supporting_cards_button_text() -> str:
-    return "Open evidence table"
+    return "See supporting evidence"
 
 
 def repair_action_summary(card) -> str:
@@ -153,7 +153,7 @@ def no_pattern_evidence(*, has_repeated_misses: bool = True) -> str:
 def no_pattern_next_step(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
         return "Keep reviewing normally. Bonsai will speak up when a stronger pattern appears."
-    return "Do not edit or cram from this alone. If one card felt wrong, open the evidence table; otherwise keep reviewing."
+    return "Do not edit or cram from this alone. If one card felt wrong, check the supporting evidence; otherwise keep reviewing."
 
 
 def no_pattern_confidence_text(*, has_repeated_misses: bool = True) -> str:

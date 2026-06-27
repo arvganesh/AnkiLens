@@ -128,15 +128,14 @@ def recommendation_card(
     layout.addWidget(heading)
 
     layout.addWidget(_next_step_callout(next_step))
-    layout.addLayout(_detail_block("Why", f"{confidence}: {evidence}"))
-    layout.addLayout(_detail_block("Double-check", check, quiet=True))
-
     if actions:
         action_row = QHBoxLayout()
-        action_row.setContentsMargins(0, 8, 0, 0)
+        action_row.setContentsMargins(0, 2, 0, 2)
         for action in actions:
             action_row.addWidget(action)
         layout.addLayout(action_row)
+    layout.addLayout(_detail_block("Why", f"{confidence}: {evidence}"))
+    layout.addLayout(_detail_block("Double-check", check, quiet=True))
     frame.setLayout(layout)
     return frame
 
