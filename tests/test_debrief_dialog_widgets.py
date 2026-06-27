@@ -161,8 +161,9 @@ class DebriefDialogWidgetTest(unittest.TestCase):
 
         self.assertEqual(widget, "panel")
         self.assertEqual(calls[0][0][0], "Early learning")
-        self.assertIn("material check", calls[0][0][1])
+        self.assertIn("normal first-pass learning", calls[0][0][1])
         self.assertIn("not a card-edit signal", calls[0][0][1])
+        self.assertIn("study extra only if these felt unfamiliar or clustered", calls[0][0][1])
         self.assertNotIn("source", calls[0][0][1].lower())
         self.assertNotIn("weak evidence", calls[0][0][1].lower())
 

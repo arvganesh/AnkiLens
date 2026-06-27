@@ -70,8 +70,9 @@ class DebriefCopyTest(unittest.TestCase):
 
         self.assertIn("Early material", caption)
         self.assertIn("2 early cards are still early in learning", caption)
-        self.assertIn("material check, not a card-edit signal", caption)
-        self.assertIn("revisit the material briefly", caption)
+        self.assertIn("normal first-pass learning, not a card-edit signal", caption)
+        self.assertIn("study extra only if these felt unfamiliar or clustered", caption)
+        self.assertNotIn("revisit the material", caption)
         self.assertNotIn("unlearned", caption.lower())
         self.assertNotIn("bad card", caption.lower())
         self.assertNotIn("weak evidence", caption.lower())

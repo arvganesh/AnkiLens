@@ -199,10 +199,11 @@ class DebriefDialogTest(unittest.TestCase):
         )
         self.assertEqual(
             early_learning_next_step(),
-            "If these felt unfamiliar, revisit the material briefly. Do not edit these cards yet.",
+            "Keep reviewing normally. Study extra only if these felt unfamiliar or cluster around the same concept.",
         )
         self.assertIn("normal early learning", early_learning_check_text())
         self.assertIn("after a few more reps", early_learning_check_text())
+        self.assertNotIn("revisit", early_learning_next_step().lower())
         self.assertNotIn("weak", early_learning_check_text().lower())
 
     def test_scoped_early_learning_copy_names_the_sampled_material(self) -> None:

@@ -61,7 +61,7 @@ def early_learning_caption(early_learning: EarlyLearning) -> str:
         "Early material:",
         f"- {early_learning.count} early card{_plural(early_learning.count)} "
         f"{_verb(early_learning.count, 'is', 'are')} still early in learning.",
-        "- Treat this as a material check, not a card-edit signal; revisit the material briefly, then retry.",
+        "- Treat this as normal first-pass learning, not a card-edit signal; study extra only if these felt unfamiliar or clustered.",
     ]
     return "\n".join(lines)
 

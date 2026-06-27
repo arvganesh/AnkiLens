@@ -180,7 +180,7 @@ def scoped_early_learning_evidence(count: int, label: str) -> str:
 
 
 def early_learning_next_step() -> str:
-    return "If these felt unfamiliar, revisit the material briefly. Do not edit these cards yet."
+    return "Keep reviewing normally. Study extra only if these felt unfamiliar or cluster around the same concept."
 
 
 def early_learning_check_text() -> str:
