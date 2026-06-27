@@ -89,11 +89,12 @@ Recent UI simplifications:
 - Debrief action callbacks now close the dialog, then schedule Browse/open callbacks on the next Qt tick.
 - Evidence examples are capped to two shortened labels plus `+N more missed cards` when the full missed
   set is larger than the visible examples.
+- A repeatable E2E seeder now exists at `scripts/seed_e2e_deck.py`. It creates a named
+  `Bonsai E2E Large Review Window` deck with 300 cards and 380 review-log rows.
 
 ## Latest Completed Slice
 
-The latest committed slice makes the debrief read less like a diagnostic report
-and more like a next checkpoint.
+The latest working slice adds a real large-deck E2E fixture and fixes two issues it exposed.
 
 Behavior:
 
@@ -106,6 +107,10 @@ Behavior:
 - Debrief action callbacks are scheduled after dialog close so Browser opening does not race modal teardown.
 - A 380-review workflow test covers many misses in one tag and verifies the exact-card target remains capped
   while the visible examples line stays short and names the hidden missed-card count truthfully.
+- Supported large clusters now outrank tiny high-rate quick checks. In the real E2E profile, the debrief leads
+  with `80 of 300 cards...` instead of the older `2 of 5 cards...` fixture.
+- The deck-browser panel now counts all repeated missed cards in the lookback window instead of the display cap.
+  In the real E2E profile, it changed from `20 cards needed another pass...` to `82 cards...`.
 - The exact missed-card Browse behavior is unchanged.
 
 Why:
@@ -118,6 +123,8 @@ Why:
 - Long AnKing-style labels should not make `Why this came up` unreadable as study volume grows.
 - If Bonsai shows only a few exact examples from a large cluster, the evidence should still acknowledge
   the full cluster size instead of implying only one hidden example exists.
+- Real review windows should not let a tiny, high-rate cluster outrank a much better-supported pattern.
+- The deck-browser panel should summarize the actual repeated-miss count, not the capped number of detail rows.
 
 Commit:
 
@@ -133,7 +140,7 @@ make test
 
 Result:
 
-- 189 tests passed.
+- 191 tests passed.
 
 Also run before commits:
 
@@ -151,6 +158,13 @@ Visual verification:
   `80 of 300 cards...`, `Show 3 missed examples`, and
   `Examples: Valve physiology missed example 239...; Valve physiology missed example 240...; +78 more missed cards.`
   After removing the hook and sentinel, the real profile dialog returned to the normal 2-card fixture.
+- On June 27, 2026, `scripts/seed_e2e_deck.py` seeded a real Anki deck named
+  `Bonsai E2E Large Review Window`. The script created backups at:
+  `~/Library/Application Support/Anki2/User 1/collection.anki2.bonsai-e2e-backup-20260627-125139`
+  and `~/Library/Application Support/Anki2/User 1/collection.anki2.bonsai-e2e-backup-20260627-125350`.
+  Computer Use verified the deck browser showed `Studied 380 cards...`, the Bonsai panel showed
+  `82 cards needed another pass...`, and the debrief led with `80 of 300 cards...` plus
+  `Show 3 missed examples`.
 
 ## Known Caveats
 
@@ -158,7 +172,8 @@ Visual verification:
 - Some changes, especially `anki_entry.py`, dataclass shape changes, and loader-list changes, may require restarting Anki.
 - The deck page can remain stale after code changes until Anki/deck browser rerenders.
 - In the current Codex/Computer Use setup, clicking the debrief Browse action has intermittently returned `noWindowsAvailable`
-  even though Browse is visible to the user. This reproduced after clicking `Show 2 missed examples`; the clipboard was empty.
+  even though Browse is visible to the user. This reproduced after clicking `Show 2 missed examples` and again after
+  clicking `Show 3 missed examples` in the real E2E deck; the clipboard was empty.
   Scheduling the callback after dialog close did not make Computer Use able to verify the transition in this session.
   Treat exact Browse visual proof as incomplete if this recurs.
 - The dense `Bonsai Details` / missed-card table still exists via the Tools menu, but it is not part of the primary debrief flow.

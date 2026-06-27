@@ -297,15 +297,24 @@ def _kind_priority(kind: str) -> int:
     return {"tag": 0, "term": 1, "deck": 2}.get(kind, 3)
 
 
-def _target_priority(target: StudyTarget) -> tuple[int, float, int, int, int, str]:
+def _target_priority(target: StudyTarget) -> tuple[int, int, int, float, int, int, str]:
     return (
         _specific_topic_priority(target),
-        -target.miss_rate,
+        _support_priority(target),
         -target.count,
+        -target.miss_rate,
         _kind_priority(target.kind),
         -_tag_specificity(target),
         target.label,
     )
+
+
+def _support_priority(target: StudyTarget) -> int:
+    if target.count >= 4 and target.reviewed_count >= 10:
+        return 0
+    if target.reviewed_count >= 10:
+        return 1
+    return 2
 
 
 _BROAD_TAG_PARTS = frozenset({"ak", "anking", "deck", "decks", "step", "step1", "step2", "v11", "v12"})

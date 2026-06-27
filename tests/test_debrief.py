@@ -303,6 +303,62 @@ class DebriefTest(unittest.TestCase):
         self.assertIn("+78 more missed cards", detail)
         self.assertLessEqual(len(detail.split("Breakdown:")[0]), 150)
 
+    def test_large_supported_cluster_beats_tiny_high_rate_signal(self) -> None:
+        small_tag = "AnKing_Cardiology_Valves"
+        large_tag = "AnKing::Cardiology::Valves"
+        entries = [
+            _entry(1, 1, 0, text="murmur", tags=(small_tag,), label="Murmur?", card_reps=20),
+            _entry(1, 1, 1, text="murmur", tags=(small_tag,), label="Murmur?", card_reps=20),
+            _entry(2, 1, 2, text="stenosis", tags=(small_tag,), label="Aortic stenosis murmur", card_reps=20),
+            _entry(2, 1, 3, text="stenosis", tags=(small_tag,), label="Aortic stenosis murmur", card_reps=20),
+            _entry(3, 3, 4, text="stable murmur", tags=(small_tag,), card_reps=20),
+            _entry(4, 3, 5, text="stable stenosis", tags=(small_tag,), card_reps=20),
+            _entry(5, 3, 6, text="stable regurgitation", tags=(small_tag,), card_reps=20),
+        ]
+        entries.extend(
+            _entry(
+                card_id,
+                3,
+                card_id % 60,
+                text=f"stable valve review {card_id}",
+                tags=(large_tag,),
+                label=f"Stable valve review card {card_id}",
+                card_reps=20,
+            )
+            for card_id in range(10, 230)
+        )
+        for card_id in range(230, 310):
+            label = f"Valve physiology missed example {card_id} with long AnKing-style clinical wording"
+            entries.extend(
+                (
+                    _entry(
+                        card_id,
+                        1,
+                        card_id % 60,
+                        text=f"unique{card_id}",
+                        tags=(large_tag,),
+                        label=label,
+                        card_reps=20,
+                    ),
+                    _entry(
+                        card_id,
+                        1,
+                        (card_id + 1) % 60,
+                        text=f"unique{card_id}",
+                        tags=(large_tag,),
+                        label=label,
+                        card_reps=20,
+                    ),
+                )
+            )
+
+        debrief = build_debrief(entries)
+
+        self.assertEqual(debrief.study_next[0].label, large_tag)
+        self.assertEqual(debrief.study_next[0].count, 80)
+        self.assertEqual(debrief.study_next[0].reviewed_count, 300)
+        self.assertEqual(debrief.study_next[1].label, small_tag)
+
     def test_study_targets_prefer_repeated_tags_over_deck_fallback(self) -> None:
         debrief = build_debrief(
             [

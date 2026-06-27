@@ -72,14 +72,19 @@ def _deck_browser_summary() -> dict[str, int | None]:
             lookback_days=config.lookback_days,
             now=datetime.now(),
         )
-        summaries = summarize_missed_cards(
-            entries,
-            minimum_misses=config.minimum_misses,
-            limit=config.result_limit,
-        )
+        missed_cards = _missed_card_count(entries, config)
     except Exception:
         return {"missed_cards": None, "lookback_days": None}
-    return {"missed_cards": len(summaries), "lookback_days": config.lookback_days}
+    return {"missed_cards": missed_cards, "lookback_days": config.lookback_days}
+
+
+def _missed_card_count(entries, config) -> int:
+    summaries = summarize_missed_cards(
+        entries,
+        minimum_misses=config.minimum_misses,
+        limit=len(entries),
+    )
+    return len(summaries)
 
 
 def _handle_js_message(handled, message: str, _context):

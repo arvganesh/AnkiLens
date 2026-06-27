@@ -95,6 +95,23 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         self.assertEqual([entry.card_label for entry in filtered], ["Recent"])
 
+    def test_deck_panel_count_uses_all_repeated_misses_not_display_cap(self) -> None:
+        entries = []
+        for card_id in range(1, 26):
+            entries.extend(
+                (
+                    ReviewLogEntry(card_id, 1, datetime(2026, 6, 26, 8), "Deck", f"Card {card_id}"),
+                    ReviewLogEntry(card_id, 1, datetime(2026, 6, 26, 9), "Deck", f"Card {card_id}"),
+                )
+            )
+
+        missed_count = anki_entry._missed_card_count(
+            entries,
+            BonsaiConfig(minimum_misses=2, result_limit=20),
+        )
+
+        self.assertEqual(missed_count, 25)
+
     def test_debrief_details_can_use_same_short_window_as_debrief(self) -> None:
         entries = [
             ReviewLogEntry(1, 1, datetime(2026, 3, 26, 8), "Deck", "Stale"),
