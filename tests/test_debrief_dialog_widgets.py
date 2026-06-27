@@ -161,8 +161,10 @@ class DebriefDialogWidgetTest(unittest.TestCase):
 
         self.assertEqual(widget, "panel")
         self.assertEqual(calls[0][0][0], "Early learning")
-        self.assertIn("revisit the material briefly", calls[0][0][1])
+        self.assertIn("material check", calls[0][0][1])
+        self.assertIn("not a card-edit signal", calls[0][0][1])
         self.assertNotIn("source", calls[0][0][1].lower())
+        self.assertNotIn("weak evidence", calls[0][0][1].lower())
 
     def test_no_pattern_recommendation_uses_quiet_confidence(self) -> None:
         _install_fake_aqt()

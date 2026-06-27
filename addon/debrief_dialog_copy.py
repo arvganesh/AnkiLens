@@ -160,7 +160,7 @@ def early_learning_next_step() -> str:
 
 
 def early_learning_check_text() -> str:
-    return "Treat this as weak evidence unless the same cards keep failing after a few more reps."
+    return "Treat this as normal early learning unless the same cards keep failing after a few more reps."
 
 
 def short_label(label: str) -> str:

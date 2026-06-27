@@ -167,8 +167,9 @@ class DebriefDialogTest(unittest.TestCase):
             early_learning_next_step(),
             "If these felt unfamiliar, revisit the material briefly. Do not edit these cards yet.",
         )
-        self.assertIn("weak evidence", early_learning_check_text())
+        self.assertIn("normal early learning", early_learning_check_text())
         self.assertIn("after a few more reps", early_learning_check_text())
+        self.assertNotIn("weak", early_learning_check_text().lower())
 
     def test_session_context_is_hidden_for_tiny_windows(self) -> None:
         context = session_context_text(SessionHabits(4, 1, 0.25, "Evening"))

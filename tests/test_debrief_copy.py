@@ -51,10 +51,11 @@ class DebriefCopyTest(unittest.TestCase):
 
         self.assertIn("Early material", caption)
         self.assertIn("2 early cards are still early in learning", caption)
-        self.assertIn("weak evidence before editing from it alone", caption)
+        self.assertIn("material check, not a card-edit signal", caption)
         self.assertIn("revisit the material briefly", caption)
         self.assertNotIn("unlearned", caption.lower())
         self.assertNotIn("bad card", caption.lower())
+        self.assertNotIn("weak evidence", caption.lower())
 
     def test_session_habits_caption_reports_observed_facts(self) -> None:
         caption = review_habits_caption(SessionHabits(10, 2, 0.2, "Evening", 10, 75.0, 7.5))
