@@ -172,8 +172,11 @@ class AnalyticsCopyTest(unittest.TestCase):
         )
 
         self.assertEqual(same_note_context(unavailable), "")
-        self.assertEqual(same_note_context(isolated), "Same note: only this card flagged out of 4")
-        self.assertEqual(same_note_context(clustered), "Same note: 3 of 4 cards flagged")
+        self.assertEqual(same_note_context(isolated), "Same note: only this card needed another pass out of 4")
+        self.assertEqual(
+            same_note_context(clustered),
+            "Same note: 3 of 4 sibling cards also needed another pass; inspect them together before editing or studying more",
+        )
 
 
 if __name__ == "__main__":

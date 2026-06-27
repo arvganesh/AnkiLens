@@ -21,6 +21,8 @@ def _entry(
     card_lapses: int | None = None,
     review_type: int | None = None,
     card_queue: int | None = None,
+    note_id: int | None = None,
+    note_card_count: int | None = None,
 ) -> ReviewLogEntry:
     return ReviewLogEntry(
         card_id=card_id,
@@ -35,6 +37,8 @@ def _entry(
         card_lapses=card_lapses,
         review_type=review_type,
         card_queue=card_queue,
+        note_id=note_id,
+        note_card_count=note_card_count,
     )
 
 
@@ -252,6 +256,55 @@ class DebriefTest(unittest.TestCase):
                 _entry(1, 3, 2, text="weak cue", card_reps=8),
                 _entry(2, 1, 2, text="one clear focused prompt"),
                 _entry(2, 1, 3, text="one clear focused prompt"),
+            ]
+        )
+
+        self.assertEqual(debrief.cards_to_fix.count, 0)
+        self.assertEqual(debrief.cards_to_fix.clues, ())
+
+    def test_same_note_siblings_are_context_not_repair_signal(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(
+                    1,
+                    1,
+                    0,
+                    text="focused aortic stenosis murmur",
+                    tags=("AnKing_Cardiology_Valves",),
+                    card_reps=8,
+                    note_id=50,
+                    note_card_count=4,
+                ),
+                _entry(
+                    1,
+                    1,
+                    1,
+                    text="focused aortic stenosis murmur",
+                    tags=("AnKing_Cardiology_Valves",),
+                    card_reps=8,
+                    note_id=50,
+                    note_card_count=4,
+                ),
+                _entry(
+                    2,
+                    1,
+                    2,
+                    text="focused aortic stenosis murmur",
+                    tags=("AnKing_Cardiology_Valves",),
+                    card_reps=8,
+                    note_id=50,
+                    note_card_count=4,
+                ),
+                _entry(
+                    2,
+                    1,
+                    3,
+                    text="focused aortic stenosis murmur",
+                    tags=("AnKing_Cardiology_Valves",),
+                    card_reps=8,
+                    note_id=50,
+                    note_card_count=4,
+                ),
             ]
         )
 

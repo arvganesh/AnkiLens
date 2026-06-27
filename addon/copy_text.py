@@ -88,8 +88,11 @@ def same_note_context(summary: MissedCardSummary) -> str:
         return ""
     repeated = summary.note_repeated_miss_count or 1
     if repeated <= 1:
-        return f"Same note: only this card flagged out of {summary.note_card_count}"
-    return f"Same note: {repeated} of {summary.note_card_count} cards flagged"
+        return f"Same note: only this card needed another pass out of {summary.note_card_count}"
+    return (
+        f"Same note: {repeated} of {summary.note_card_count} sibling cards also needed another pass; "
+        "inspect them together before editing or studying more"
+    )
 
 
 def _plural(count: int) -> str:
