@@ -28,6 +28,8 @@ try:
         repair_next_step,
         repair_title,
         short_label,
+        scoped_early_learning_evidence,
+        scoped_early_learning_title,
         target_display_label,
         target_evidence_text,
         study_target_title,
@@ -62,6 +64,8 @@ except ImportError:
         repair_next_step,
         repair_title,
         short_label,
+        scoped_early_learning_evidence,
+        scoped_early_learning_title,
         target_display_label,
         target_evidence_text,
         study_target_title,
@@ -155,16 +159,20 @@ def _next_step_card(
             actions=actions,
         )
     if _early_learning_cards(debrief) and getattr(debrief, "early_learning_is_dominant", False):
+        target = debrief.study_next[0] if debrief.study_next else None
         actions = ()
-        if open_material and debrief.study_next:
-            target = debrief.study_next[0]
+        if open_material and target:
             button = secondary_button(related_search_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
         return recommendation_card(
-            early_learning_title(),
+            scoped_early_learning_title(_target_label(target)) if target else early_learning_title(),
             confidence=evidence_confidence_text(_early_learning_count(debrief), 0, early_learning=True),
-            evidence=early_learning_evidence(_early_learning_count(debrief)),
+            evidence=(
+                scoped_early_learning_evidence(_early_learning_count(debrief), _target_label(target))
+                if target
+                else early_learning_evidence(_early_learning_count(debrief))
+            ),
             next_step=early_learning_next_step(),
             check=early_learning_check_text(),
             actions=actions,

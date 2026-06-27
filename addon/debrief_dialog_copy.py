@@ -53,6 +53,10 @@ def early_learning_title() -> str:
     return "Early cards need a light check"
 
 
+def scoped_early_learning_title(label: str) -> str:
+    return f"Early cards in {label} need a light check"
+
+
 def card_search_button_text() -> str:
     return "Open card in Browse"
 
@@ -156,6 +160,11 @@ def no_pattern_check_text(*, has_repeated_misses: bool = True) -> str:
 def early_learning_evidence(count: int) -> str:
     label = "card is" if count == 1 else "cards are"
     return f"{count} early {label} new enough that misses may be first-pass learning, not mature lapses."
+
+
+def scoped_early_learning_evidence(count: int, label: str) -> str:
+    card_label = "card is" if count == 1 else "cards are"
+    return f"{count} early {card_label} in {label}. Treat this as first-pass learning, not proof the whole topic is weak."
 
 
 def early_learning_next_step() -> str:

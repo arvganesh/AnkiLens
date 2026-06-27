@@ -202,6 +202,40 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertIn("intentionally staying quiet", calls[0][1]["check"])
         self.assertNotIn("Weak evidence", calls[0][1]["confidence"])
 
+    def test_dominant_early_learning_recommendation_names_scope(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_recommendation_card = debrief_dialog.recommendation_card
+        calls = []
+        debrief_dialog.recommendation_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "recommendation"
+        try:
+            widget = debrief_dialog._next_step_card(
+                Debrief(
+                    study_next=(StudyTarget("AnKing::Cardiology::Valves", "tag", 3, 5, ("Murmur?",)),),
+                    cards_to_fix=CardsToFix(0, (), ()),
+                    early_learning=EarlyLearning(
+                        3,
+                        (
+                            MissedCardSummary(1, "AnKing", "Murmur?", 1, 1, datetime(2026, 6, 26)),
+                            MissedCardSummary(2, "AnKing", "Aortic stenosis", 1, 1, datetime(2026, 6, 26)),
+                            MissedCardSummary(3, "AnKing", "Mitral regurgitation", 1, 1, datetime(2026, 6, 26)),
+                        ),
+                    ),
+                    session_habits=SessionHabits(5, 3, 0.6, "Morning"),
+                    missed_cards=(),
+                ),
+                dialog=None,
+                open_card=None,
+                open_material=None,
+            )
+        finally:
+            debrief_dialog.recommendation_card = original_recommendation_card
+
+        self.assertEqual(widget, "recommendation")
+        self.assertEqual(calls[0][0][0], "Early cards in Cardiology Valves need a light check")
+        self.assertIn("3 early cards are in Cardiology Valves", calls[0][1]["evidence"])
+        self.assertIn("not proof the whole topic is weak", calls[0][1]["evidence"])
+
     def test_study_material_support_panel_is_action_oriented(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")

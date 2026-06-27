@@ -29,6 +29,8 @@ from debrief_dialog_copy import (
     repair_next_step,
     repair_title,
     short_label,
+    scoped_early_learning_evidence,
+    scoped_early_learning_title,
     study_target_title,
     study_next_step,
     supporting_cards_button_text,
@@ -180,6 +182,20 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("normal early learning", early_learning_check_text())
         self.assertIn("after a few more reps", early_learning_check_text())
         self.assertNotIn("weak", early_learning_check_text().lower())
+
+    def test_scoped_early_learning_copy_names_the_sampled_material(self) -> None:
+        self.assertEqual(
+            scoped_early_learning_title("Cardiology Valves"),
+            "Early cards in Cardiology Valves need a light check",
+        )
+        self.assertEqual(
+            scoped_early_learning_evidence(3, "Cardiology Valves"),
+            (
+                "3 early cards are in Cardiology Valves. Treat this as first-pass learning, "
+                "not proof the whole topic is weak."
+            ),
+        )
+        self.assertNotIn("unlearned", scoped_early_learning_evidence(3, "Cardiology Valves").lower())
 
     def test_session_context_is_hidden_for_tiny_windows(self) -> None:
         context = session_context_text(SessionHabits(4, 1, 0.25, "Evening"))
