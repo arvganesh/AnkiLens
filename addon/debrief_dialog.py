@@ -297,10 +297,17 @@ def _cards_to_fix_card(
         )
         for index, summary in enumerate(cards[:3])
     )
+    actions = ()
+    if open_card:
+        first_card = cards[0]
+        button = secondary_button(card_search_button_text())
+        button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(first_card.card_id)))
+        actions = (button,)
     return panel_card(
         "Also check card format",
         _cards_to_fix_body(len(cards), more=exclude_card_id is not None),
         rows=rows,
+        actions=actions,
         quiet=True,
     )
 

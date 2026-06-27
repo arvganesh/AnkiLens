@@ -98,7 +98,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertIn("Aortic stenosis: Long card; needed another pass on 3/4 reviews", calls[0][1]["rows"][0][1])
         self.assertTrue(calls[0][1]["quiet"])
 
-    def test_cards_to_fix_support_panel_does_not_compete_with_primary_action(self) -> None:
+    def test_cards_to_fix_support_panel_can_open_top_card(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")
         original_panel_card = debrief_dialog.panel_card
@@ -132,8 +132,8 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(button_calls, [])
-        self.assertNotIn("actions", panel_calls[0][1])
+        self.assertEqual(button_calls, ["Show card in Browse"])
+        self.assertEqual(panel_calls[0][1]["actions"][0].text, "Show card in Browse")
         self.assertTrue(panel_calls[0][1]["quiet"])
 
     def test_primary_repair_card_is_not_repeated_as_support_panel(self) -> None:
@@ -167,8 +167,11 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")
         original_panel_card = debrief_dialog.panel_card
+        original_secondary_button = debrief_dialog.secondary_button
         calls = []
+        button_calls = []
         debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        debrief_dialog.secondary_button = lambda text: button_calls.append(text) or _FakeButton(text)
         try:
             widget = debrief_dialog._cards_to_fix_card(
                 CardsToFix(
@@ -196,11 +199,12 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                     ),
                 ),
                 dialog=None,
-                open_card=None,
+                open_card=lambda _card_id: None,
                 exclude_card_id=1,
             )
         finally:
             debrief_dialog.panel_card = original_panel_card
+            debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "panel")
         self.assertEqual(calls[0][0][0], "Also check card format")
@@ -208,6 +212,8 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(calls[0][1]["rows"][0][0], "Also check")
         self.assertIn("Mitral regurgitation: Dense card", calls[0][1]["rows"][0][1])
         self.assertNotIn("Aortic stenosis", calls[0][1]["rows"][0][1])
+        self.assertEqual(button_calls, ["Show card in Browse"])
+        self.assertEqual(calls[0][1]["actions"][0].text, "Show card in Browse")
 
     def test_no_cards_to_fix_panel_uses_check_language(self) -> None:
         _install_fake_aqt()
