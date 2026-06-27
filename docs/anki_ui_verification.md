@@ -44,9 +44,35 @@ if let windows = CGWindowListCopyWindowInfo(opts, kCGNullWindowID) as? [[String:
 SWIFT
 ```
 
+If the listed Anki window includes:
+
+```text
+"kCGWindowSharingState": 0
+```
+
+then macOS is reporting an on-screen window but refusing image capture for that
+window. In that state, this command can fail:
+
+```sh
+screencapture -x -l <window-id> tmp/anki-window.png
+```
+
+Observed failure:
+
+```text
+could not create image from window
+```
+
 If `screencapture` shows only the desktop wallpaper, Anki is likely on another
 Space/display or otherwise not visible to the active capture session. Do not
 claim visual verification in that state.
+
+AppleScript accessibility inspection may also be blocked by local automation
+permissions:
+
+```text
+Not authorized to send Apple events to System Events. (-1743)
+```
 
 ## Acceptable Evidence When Visual Capture Fails
 
@@ -56,6 +82,7 @@ For UI slices, record:
 - `git diff --check`
 - Anki process status
 - Add-on symlink target
+- CoreGraphics window metadata, including `kCGWindowSharingState` when present
 - The exact Computer Use or capture failure
 
 This is weaker than actual visual verification. Use it only when the app window
