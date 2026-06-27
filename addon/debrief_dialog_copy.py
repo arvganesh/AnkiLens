@@ -66,9 +66,11 @@ def evidence_confidence_text(
 ) -> str:
     if early_learning:
         return "Early signal"
+    if mixed_signals:
+        return "Mixed signal"
     if missed_count >= 4 and reviewed_count >= 10 and not mixed_signals:
         return "Supported pattern"
-    return "Limited evidence"
+    return "Small pattern"
 
 
 def supporting_cards_button_text() -> str:
