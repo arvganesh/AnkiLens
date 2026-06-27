@@ -72,7 +72,7 @@ def evidence_confidence_text(
 
 
 def supporting_cards_button_text() -> str:
-    return "See missed-card evidence"
+    return "Open full evidence"
 
 
 def repair_action_summary(card) -> str:

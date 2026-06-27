@@ -70,7 +70,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(early_learning_title(), "Early cards need a light check")
         self.assertEqual(card_search_button_text(), "Open card in Browse")
         self.assertEqual(related_search_button_text(), "Review evidence in Browse")
-        self.assertEqual(supporting_cards_button_text(), "See missed-card evidence")
+        self.assertEqual(supporting_cards_button_text(), "Open full evidence")
         self.assertEqual(
             no_repair_signal_text(),
             "No obvious card-format issue stood out, so check the source before editing cards.",
