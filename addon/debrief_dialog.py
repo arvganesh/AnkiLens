@@ -210,7 +210,7 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
     rows = tuple(
         (
             "Top card" if index == 0 else "Also",
-            f"{summary.card_label}: {_repair_clues(summary)}; missed {summary.misses}/{summary.total_reviews} reviews",
+            f"{summary.card_label}: {_repair_clues(summary)}; needed another pass on {summary.misses}/{summary.total_reviews} reviews",
         )
         for index, summary in enumerate(cards_to_fix.cards[:3])
     )
@@ -266,7 +266,7 @@ def _early_learning_card(debrief: Debrief):
     rows = tuple(
         (
             "Early card" if index == 0 else "Also",
-            f"{summary.card_label}: missed {summary.misses}/{summary.total_reviews} reviews",
+            f"{summary.card_label}: needed another pass on {summary.misses}/{summary.total_reviews} reviews",
         )
         for index, summary in enumerate(_early_learning_cards(debrief)[:3])
     )

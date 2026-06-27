@@ -78,7 +78,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(calls[0][0][0], "Why this recommendation")
         self.assertIn("1 card shows stronger card-specific clues", calls[0][0][1])
         self.assertEqual(calls[0][1]["rows"][0][0], "Top card")
-        self.assertIn("Aortic stenosis: Long card; missed 3/4 reviews", calls[0][1]["rows"][0][1])
+        self.assertIn("Aortic stenosis: Long card; needed another pass on 3/4 reviews", calls[0][1]["rows"][0][1])
 
 
 if __name__ == "__main__":

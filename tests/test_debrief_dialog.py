@@ -92,7 +92,10 @@ class DebriefDialogTest(unittest.TestCase):
         )
 
         self.assertEqual(repair_title("Aortic stenosis murmur"), "Card worth inspecting: Aortic stenosis murmur")
-        self.assertEqual(repair_evidence(summary), "Missed 3/5 recent reviews; clues: Long card, Dense card.")
+        self.assertEqual(
+            repair_evidence(summary),
+            "Needed another pass on 3/5 recent reviews; clues: Long card, Dense card.",
+        )
         self.assertIn("Inspect the prompt first", repair_next_step())
         self.assertEqual(
             study_next_step("tag"),
@@ -135,7 +138,7 @@ class DebriefDialogTest(unittest.TestCase):
 
         body = repair_action_summary(summary)
 
-        self.assertIn("Missed 3/5 recent reviews", body)
+        self.assertIn("Needed another pass on 3/5 recent reviews", body)
         self.assertIn("clues: Long card, Dense card", body)
         self.assertIn("leave it and review the source if the card is clear", body)
 
