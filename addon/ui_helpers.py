@@ -69,10 +69,10 @@ def panel_card(
         "}"
     )
     layout = QVBoxLayout()
-    margin_x = 20 if featured else 17
-    margin_y = 16 if featured else 13
+    margin_x = 20 if featured else 14 if quiet else 17
+    margin_y = 16 if featured else 10 if quiet else 13
     layout.setContentsMargins(margin_x, margin_y, margin_x, margin_y)
-    layout.setSpacing(SPACE_3 if featured else SPACE_2)
+    layout.setSpacing(SPACE_3 if featured else SPACE_1 if quiet else SPACE_2)
 
     heading = QLabel(title)
     heading.setWordWrap(True)
@@ -127,6 +127,7 @@ def recommendation_card(
     eyebrow = QLabel("Recommended next check")
     eyebrow.setStyleSheet("border: none; color: #64705f; font-size: 11px; font-weight: 700;")
     layout.addWidget(eyebrow)
+    layout.addSpacing(SPACE_1)
 
     heading = QLabel(title)
     heading.setWordWrap(True)

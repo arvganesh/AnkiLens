@@ -135,7 +135,7 @@ class DebriefDialog(QDialog):
         content.setStyleSheet("background: transparent;")
         content_layout = QVBoxLayout()
         content_layout.setContentsMargins(0, SPACE_1, 0, 0)
-        content_layout.setSpacing(SPACE_4)
+        content_layout.setSpacing(SPACE_3)
         content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         content_layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
         if debrief.cards_to_fix.cards:

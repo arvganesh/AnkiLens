@@ -141,6 +141,16 @@ class UiHelpersTest(unittest.TestCase):
         self.assertNotIn(5, _FakeLayout.spacings)
         self.assertNotIn(14, _FakeLayout.spacings)
 
+    def test_quiet_panels_are_compact(self) -> None:
+        _install_fake_aqt()
+        ui_helpers = importlib.import_module("ui_helpers")
+
+        ui_helpers.panel_card("Session note", "Keep reviewing normally.", quiet=True)
+
+        self.assertIn((14, 10, 14, 10), _FakeLayout.margins)
+        self.assertIn(4, _FakeLayout.spacings)
+        self.assertNotIn(8, _FakeLayout.spacings)
+
     def test_tertiary_button_is_low_emphasis(self) -> None:
         _install_fake_aqt()
         ui_helpers = importlib.import_module("ui_helpers")
