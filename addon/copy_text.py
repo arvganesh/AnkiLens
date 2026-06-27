@@ -17,8 +17,7 @@ def analytics_caption(
     if shown_count == 0:
         return (
             f"No repeated misses found {window}.\n\n"
-            f"When a card needs another pass at least {minimum_misses} times, "
-            "Bonsai will show it here."
+            f"Cards appear here after {minimum_misses} Again rating{_plural(minimum_misses)} {window}."
         )
     return (
         f"Showing {shown_count} card{_plural(shown_count)} that needed another pass "
