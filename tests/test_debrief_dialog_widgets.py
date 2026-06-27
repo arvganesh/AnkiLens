@@ -465,6 +465,44 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertTrue(calls[0][1]["quiet"])
         self.assertNotIn("signal", calls[0][0][0].lower())
 
+    def test_primary_study_target_is_not_repeated_as_support_panel(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        target = StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",))
+
+        widget = debrief_dialog._study_material_card(
+            (target,),
+            dialog=None,
+            open_material=None,
+            exclude_target=target,
+        )
+
+        self.assertIsNone(widget)
+
+    def test_study_support_panel_shows_other_targets_only(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        calls = []
+        top_target = StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",))
+        other_target = StudyTarget("mitral", "term", 2, 6, ("Mitral regurgitation",))
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        try:
+            widget = debrief_dialog._study_material_card(
+                (top_target, other_target),
+                dialog=None,
+                open_material=None,
+                exclude_target=top_target,
+            )
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+
+        self.assertEqual(widget, "panel")
+        self.assertEqual(calls[0][0][0], "More related material")
+        self.assertEqual(calls[0][1]["rows"][0][0], "Also check")
+        self.assertIn("Mitral regurgitation", calls[0][1]["rows"][0][1])
+        self.assertNotIn("Murmur?", calls[0][1]["rows"][0][1])
+
     def test_study_recommendation_uses_maturity_specific_next_step(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")

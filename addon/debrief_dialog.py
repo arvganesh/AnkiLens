@@ -151,7 +151,15 @@ class DebriefDialog(QDialog):
         if (debrief.cards_to_fix.cards or debrief.study_next) and _early_learning_cards(debrief):
             content_layout.addWidget(_early_learning_card(debrief))
         if debrief.cards_to_fix.cards and debrief.study_next:
-            content_layout.addWidget(_study_material_card(debrief.study_next, dialog=self, open_material=open_material))
+            primary_target = debrief.study_next[0] if debrief.next_check_kind == "study" else None
+            study_details = _study_material_card(
+                debrief.study_next,
+                dialog=self,
+                open_material=open_material,
+                exclude_target=primary_target,
+            )
+            if study_details:
+                content_layout.addWidget(study_details)
         context = session_context_text(debrief.session_habits)
         if context:
             content_layout.addWidget(panel_card("Session note", context, quiet=True))
@@ -313,20 +321,23 @@ def _study_material_card(
     *,
     dialog: QDialog,
     open_material: Callable[[StudyTarget], None] | None,
+    exclude_target: StudyTarget | None = None,
 ):
-    if not targets:
+    visible_targets = tuple(target for target in targets if target != exclude_target)
+    if not visible_targets:
         return panel_card(
             "No study pattern yet",
             "No repeated material pattern in this window.",
             quiet=True,
-        )
-    top_target = targets[0]
+        ) if exclude_target is None else None
+    top_target = visible_targets[0]
     rows = (
-        ("Check first", _target_label(top_target)),
-        ("Why", _target_summary(top_target)),
-    ) + tuple(("Also check", _target_summary(target)) for target in targets[1:3])
+        (("Also check", _target_summary(top_target)),)
+        if exclude_target is not None
+        else (("Check first", _target_label(top_target)), ("Why", _target_summary(top_target)))
+    ) + tuple(("Also check", _target_summary(target)) for target in visible_targets[1:3])
     return panel_card(
-        "Related material to check",
+        "More related material" if exclude_target is not None else "Related material to check",
         rows=rows,
         quiet=True,
     )
