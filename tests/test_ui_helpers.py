@@ -44,6 +44,7 @@ class _FakeLayout:
     margins: list[tuple] = []
     spacings: list[int] = []
     action_rows: list[tuple] = []
+    panel_action_orders: list[tuple[str, ...]] = []
 
     def __init__(self) -> None:
         self.items = []
@@ -52,12 +53,20 @@ class _FakeLayout:
         self.items.append(("layout", item, args))
         if any(getattr(child[1], "text", "") == "Show related cards" for child in getattr(item, "items", ())):
             self.action_rows.append(tuple(self.items))
+        action_order = tuple(
+            child[0] if child[0] == "stretch" else getattr(child[1], "text", "")
+            for child in getattr(item, "items", ())
+            if child[0] == "stretch" or getattr(child[1], "text", "")
+        )
+        if "Show missed examples" in action_order:
+            self.panel_action_orders.append(action_order)
 
     def addSpacing(self, *args) -> None:
         self.items.append(("spacing", args))
 
     def addStretch(self, *_args) -> None:
         _FakeLayout.stretch_count += 1
+        self.items.append(("stretch", None, ()))
 
     def addWidget(self, item, *args) -> None:
         self.items.append(("widget", item, args))
@@ -81,6 +90,7 @@ def _install_fake_aqt() -> None:
     _FakeLayout.margins = []
     _FakeLayout.spacings = []
     _FakeLayout.action_rows = []
+    _FakeLayout.panel_action_orders = []
     qt = types.ModuleType("aqt.qt")
     qt.QFrame = _FakeFrame
     qt.QHBoxLayout = _FakeLayout
@@ -185,6 +195,19 @@ class UiHelpersTest(unittest.TestCase):
         self.assertIn((14, 10, 14, 10), _FakeLayout.margins)
         self.assertIn(4, _FakeLayout.spacings)
         self.assertNotIn(8, _FakeLayout.spacings)
+
+    def test_panel_actions_stay_close_to_guidance(self) -> None:
+        _install_fake_aqt()
+        ui_helpers = importlib.import_module("ui_helpers")
+
+        ui_helpers.panel_card(
+            "Also check related material",
+            rows=(("Also check", "Cardiology Valves"),),
+            actions=(_FakeWidget("Show missed examples"),),
+            quiet=True,
+        )
+
+        self.assertEqual(_FakeLayout.panel_action_orders, [("Show missed examples", "stretch")])
 
     def test_tertiary_button_is_low_emphasis(self) -> None:
         _install_fake_aqt()

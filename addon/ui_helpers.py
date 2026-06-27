@@ -93,9 +93,10 @@ def panel_card(
     if actions:
         action_row = QHBoxLayout()
         action_row.setContentsMargins(0, SPACE_3 if featured else SPACE_2, 0, 0)
-        action_row.addStretch(1)
         for action in actions:
+            action.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             action_row.addWidget(action)
+        action_row.addStretch(1)
         layout.addLayout(action_row)
     frame.setLayout(layout)
     return frame
