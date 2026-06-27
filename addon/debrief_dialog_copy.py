@@ -35,7 +35,7 @@ def target_display_label(label: str, kind: str) -> str:
 
 def target_evidence_text(count: int, reviewed_count: int, label: str, related_cards: tuple[str, ...] = ()) -> str:
     card_label = "card" if reviewed_count == 1 else "cards"
-    evidence = f"{count} of {reviewed_count} reviewed {card_label} missed in {label}."
+    evidence = f"{count} of {reviewed_count} {card_label} reviewed in {label} needed another pass."
     if related_cards:
         evidence += f" Examples: {', '.join(related_cards)}."
     return evidence
@@ -65,9 +65,9 @@ def evidence_confidence_text(
     mixed_signals: bool = False,
 ) -> str:
     if early_learning:
-        return "Weak evidence"
-    if missed_count >= 3 and reviewed_count >= 8 and not mixed_signals:
-        return "Stronger evidence"
+        return "Early signal"
+    if missed_count >= 4 and reviewed_count >= 10 and not mixed_signals:
+        return "Supported pattern"
     return "Limited evidence"
 
 
@@ -96,7 +96,7 @@ def study_next_step(kind: str) -> str:
     if kind == "tag":
         return "Do a short source refresh for this topic, then retry the related cards."
     if kind == "term":
-        return "Skim the examples for the shared concept, then review the source if they still feel unclear."
+        return "Skim the examples with this repeated wording, then review the source if they still feel unclear."
     if kind == "deck":
         return "Treat this as a broad deck signal: sample the related cards before deciding what to study."
     return "Review the related cards, then decide whether the source material needs another pass."
@@ -134,7 +134,7 @@ def early_learning_evidence(count: int) -> str:
 
 
 def early_learning_next_step() -> str:
-    return "Do a quick source refresh, then retry. Do not edit these cards yet."
+    return "If these felt unfamiliar, review the source briefly. Do not edit these cards yet."
 
 
 def early_learning_check_text() -> str:

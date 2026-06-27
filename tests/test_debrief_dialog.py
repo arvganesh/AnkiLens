@@ -54,7 +54,7 @@ class DebriefDialogTest(unittest.TestCase):
         )
         self.assertEqual(
             target_evidence_text(2, 5, "Cardiology Valves", ("Murmur?", "Aortic stenosis murmur")),
-            "2 of 5 reviewed cards missed in Cardiology Valves. Examples: Murmur?, Aortic stenosis murmur.",
+            "2 of 5 cards reviewed in Cardiology Valves needed another pass. Examples: Murmur?, Aortic stenosis murmur.",
         )
 
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
@@ -95,12 +95,13 @@ class DebriefDialogTest(unittest.TestCase):
 
     def test_evidence_confidence_copy_does_not_overclaim_thin_signals(self) -> None:
         self.assertEqual(evidence_confidence_text(2, 5), "Limited evidence")
-        self.assertEqual(evidence_confidence_text(3, 8), "Stronger evidence")
-        self.assertEqual(evidence_confidence_text(3, 8, mixed_signals=True), "Limited evidence")
-        self.assertEqual(evidence_confidence_text(3, 0, early_learning=True), "Weak evidence")
+        self.assertEqual(evidence_confidence_text(3, 8), "Limited evidence")
+        self.assertEqual(evidence_confidence_text(4, 10), "Supported pattern")
+        self.assertEqual(evidence_confidence_text(4, 10, mixed_signals=True), "Limited evidence")
+        self.assertEqual(evidence_confidence_text(3, 0, early_learning=True), "Early signal")
 
     def test_study_next_step_matches_target_kind(self) -> None:
-        self.assertIn("shared concept", study_next_step("term"))
+        self.assertIn("repeated wording", study_next_step("term"))
         self.assertIn("broad deck signal", study_next_step("deck"))
         self.assertIn("related cards", study_next_step("unknown"))
 
@@ -139,7 +140,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(early_learning_evidence(2), "2 early cards are still in first-pass learning, not mature lapses.")
         self.assertEqual(
             early_learning_next_step(),
-            "Do a quick source refresh, then retry. Do not edit these cards yet.",
+            "If these felt unfamiliar, review the source briefly. Do not edit these cards yet.",
         )
         self.assertIn("weak evidence", early_learning_check_text())
         self.assertIn("after more reps", early_learning_check_text())
