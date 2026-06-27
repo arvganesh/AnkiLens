@@ -65,7 +65,7 @@ class AnalyticsCopyTest(unittest.TestCase):
     def test_content_pattern_caption_lists_patterns(self) -> None:
         caption = content_pattern_caption({"Dense card": 2})
 
-        self.assertIn("Card construction clues", caption)
+        self.assertIn("Possible format clues", caption)
         self.assertIn("Dense card", caption)
         self.assertIn("2 cards", caption)
 
@@ -77,7 +77,7 @@ class AnalyticsCopyTest(unittest.TestCase):
 
     def test_workflow_copy_separates_card_fixing_from_study(self) -> None:
         self.assertIn("inspect the cards behind the recommendation", workflow_caption())
-        self.assertEqual(check_cards_caption(), "Inspect card quality")
+        self.assertEqual(check_cards_caption(), "Inspect card format")
         self.assertEqual(study_content_caption(), "Study evidence if cards look clear")
 
     def test_supporting_metric_labels_are_evidence_oriented(self) -> None:
@@ -89,7 +89,7 @@ class AnalyticsCopyTest(unittest.TestCase):
     def test_supporting_table_headers_name_card_clues(self) -> None:
         self.assertEqual(
             supporting_table_headers(),
-            ("Card", "Deck", "Triage", "Card clues", "Misses", "Reviews", "Miss rate", "Last missed"),
+            ("Card", "Deck", "Triage", "Format clues", "Misses", "Reviews", "Miss rate", "Last missed"),
         )
 
     def test_selected_card_action_opens_browse_with_copy_fallback(self) -> None:
@@ -115,7 +115,7 @@ class AnalyticsCopyTest(unittest.TestCase):
         caption = card_detail_caption(summary)
 
         self.assertIn("Selected card: Mitral regurgitation", caption)
-        self.assertIn("Card clues: Comparison", caption)
+        self.assertIn("Format clues: Comparison", caption)
         self.assertNotIn("Same note:", caption)
         self.assertIn("Misses: 3/4 reviews (75%)", caption)
         self.assertIn("Browser search: cid:123", caption)

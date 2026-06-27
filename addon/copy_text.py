@@ -32,7 +32,7 @@ def workflow_caption() -> str:
 
 
 def check_cards_caption() -> str:
-    return "Inspect card quality"
+    return "Inspect card format"
 
 
 def study_content_caption() -> str:
@@ -44,7 +44,7 @@ def supporting_metric_labels() -> tuple[str, str, str]:
 
 
 def supporting_table_headers() -> tuple[str, ...]:
-    return ("Card", "Deck", "Triage", "Card clues", "Misses", "Reviews", "Miss rate", "Last missed")
+    return ("Card", "Deck", "Triage", "Format clues", "Misses", "Reviews", "Miss rate", "Last missed")
 
 
 def selected_card_button_text() -> str:
@@ -62,7 +62,7 @@ def card_detail_caption(summary: MissedCardSummary) -> str:
     text = _preview_text(summary.source_text)
     lines = [
         f"Selected card: {summary.card_label}",
-        f"Card clues: {clues}",
+        f"Format clues: {clues}",
         f"Misses: {summary.misses}/{summary.total_reviews} reviews ({summary.miss_rate:.0%})",
         f"Browser search: {browser_search_for_card(summary.card_id)}",
     ]
@@ -125,7 +125,7 @@ def tag_concentration_caption(tags: list[TagMissSummary]) -> str:
 def content_pattern_caption(pattern_counts: dict[str, int]) -> str:
     if not pattern_counts:
         return ""
-    lines = ["Card construction clues:"]
+    lines = ["Possible format clues:"]
     lines.extend(f"- {label}: {count} card{_plural(count)}" for label, count in pattern_counts.items())
     return "\n".join(lines)
 
