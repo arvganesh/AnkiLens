@@ -6,15 +6,14 @@ from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, deck_button_html
 
 
 class DeckButtonTest(unittest.TestCase):
-    def test_button_sends_bonsai_open_message(self) -> None:
+    def test_panel_prioritizes_next_check_only(self) -> None:
         html = deck_button_html()
 
-        self.assertIn(BUTTON_MESSAGE, html)
-        self.assertIn("See supporting cards", html)
+        self.assertNotIn(BUTTON_MESSAGE, html)
+        self.assertNotIn("See supporting cards", html)
         self.assertNotIn("Review evidence", html)
         self.assertIn(DEBRIEF_MESSAGE, html)
         self.assertIn("What should I check?", html)
-        self.assertLess(html.index(DEBRIEF_MESSAGE), html.index(BUTTON_MESSAGE))
         self.assertIn("background: #2f6f3e", html)
         self.assertIn("Read-only: decide whether to inspect a card or check related material", html)
         self.assertIn("Check whether missed cards point to an edit or a study pass", html)

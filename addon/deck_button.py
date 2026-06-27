@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 try:
-    from .debrief_dialog_copy import deck_debrief_button_text, supporting_cards_button_text
+    from .debrief_dialog_copy import deck_debrief_button_text
 except ImportError:
-    from debrief_dialog_copy import deck_debrief_button_text, supporting_cards_button_text
+    from debrief_dialog_copy import deck_debrief_button_text
 
 
 BUTTON_MESSAGE = "bonsai:open"
@@ -44,20 +44,6 @@ def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | No
       "
     >
       {deck_debrief_button_text()}
-    </button>
-    <button
-      onclick="pycmd('bonsai:open')"
-      style="
-        border: 1px solid #d9d0c1;
-        border-radius: 999px;
-        background: #fff;
-        color: #26231e;
-        cursor: pointer;
-        font-size: 13px;
-        padding: 7px 14px;
-      "
-    >
-      {supporting_cards_button_text()}
     </button>
   </div>
   <div style="color: #7a7267; font-size: 11px; line-height: 1.35; margin-top: 9px;">
