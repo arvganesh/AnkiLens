@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 try:
-    from .analytics import DeckMissSummary
+    from .analytics import DeckMissSummary, TagMissSummary
 except ImportError:
-    from analytics import DeckMissSummary
+    from analytics import DeckMissSummary, TagMissSummary
 
 
 def analytics_caption(
@@ -42,5 +42,16 @@ def deck_concentration_caption(decks: list[DeckMissSummary]) -> str:
     lines.extend(
         f"- {deck.deck_name}: {deck.missed_cards} card{_plural(deck.missed_cards)}, {deck.misses} misses"
         for deck in decks
+    )
+    return "\n".join(lines)
+
+
+def tag_concentration_caption(tags: list[TagMissSummary]) -> str:
+    if not tags:
+        return ""
+    lines = ["Tags with repeated misses:"]
+    lines.extend(
+        f"- {tag.tag}: {tag.missed_cards} card{_plural(tag.missed_cards)}, {tag.misses} misses"
+        for tag in tags
     )
     return "\n".join(lines)

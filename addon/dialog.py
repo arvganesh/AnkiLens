@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from aqt.qt import QDialog, QLabel, QTableWidget, QTableWidgetItem, QVBoxLayout
 
-from .analytics import MissedCardSummary, summarize_deck_misses
-from .copy_text import analytics_caption, deck_concentration_caption
+from .analytics import MissedCardSummary, summarize_deck_misses, summarize_tag_misses
+from .copy_text import analytics_caption, deck_concentration_caption, tag_concentration_caption
 from .formatting import format_review_date, priority_label
 
 
@@ -37,6 +37,9 @@ class MissedCardsDialog(QDialog):
             return
 
         layout.addWidget(QLabel(deck_concentration_caption(summarize_deck_misses(summaries))))
+        tag_caption = tag_concentration_caption(summarize_tag_misses(summaries))
+        if tag_caption:
+            layout.addWidget(QLabel(tag_caption))
 
         table = QTableWidget(len(summaries), 7, self)
         table.setHorizontalHeaderLabels(

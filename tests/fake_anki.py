@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 
+ReviewRow = tuple[int, int, int, int, str, str]
+
+
 class FakeDb:
-    def __init__(self, rows: list[tuple[int, int, int, int, str]]) -> None:
+    def __init__(self, rows: list[ReviewRow]) -> None:
         self.rows = rows
         self.queries: list[str] = []
 
-    def all(self, query: str) -> list[tuple[int, int, int, int, str]]:
+    def all(self, query: str) -> list[ReviewRow]:
         self.queries.append(query)
         return self.rows
 
@@ -22,7 +25,7 @@ class FakeDecks:
 class FakeCollection:
     def __init__(
         self,
-        rows: list[tuple[int, int, int, int, str]],
+        rows: list[ReviewRow],
         deck_names: dict[int, str],
     ) -> None:
         self.db = FakeDb(rows)
@@ -32,7 +35,7 @@ class FakeCollection:
 class FakeMainWindow:
     def __init__(
         self,
-        rows: list[tuple[int, int, int, int, str]],
+        rows: list[ReviewRow],
         deck_names: dict[int, str],
     ) -> None:
         self.col = FakeCollection(rows, deck_names)

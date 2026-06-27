@@ -16,7 +16,8 @@ def load_review_entries(mw) -> list[ReviewLogEntry]:
           revlog.ease,
           revlog.id,
           cards.did,
-          coalesce(notes.sfld, cast(revlog.cid as text))
+          coalesce(notes.sfld, cast(revlog.cid as text)),
+          notes.tags
         from revlog
         join cards on cards.id = revlog.cid
         join notes on notes.id = cards.nid
@@ -31,6 +32,7 @@ def load_review_entries(mw) -> list[ReviewLogEntry]:
             reviewed_at=datetime.fromtimestamp(reviewed_at_ms / 1000),
             deck_name=mw.col.decks.name(deck_id) or "Unknown deck",
             card_label=card_label,
+            tags=tuple(tag for tag in tags.split() if tag),
         )
-        for card_id, ease, reviewed_at_ms, deck_id, card_label in rows
+        for card_id, ease, reviewed_at_ms, deck_id, card_label, tags in rows
     ]

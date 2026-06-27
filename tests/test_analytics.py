@@ -8,6 +8,7 @@ from analytics import (
     filter_review_entries_by_lookback,
     summarize_deck_misses,
     summarize_missed_cards,
+    summarize_tag_misses,
 )
 
 
@@ -18,6 +19,17 @@ def _entry(card_id: int, ease: int, day: int) -> ReviewLogEntry:
         reviewed_at=datetime(2026, 6, day),
         deck_name="Cardiology",
         card_label=f"Card {card_id}",
+    )
+
+
+def _tagged_entry(card_id: int, ease: int, day: int, *tags: str) -> ReviewLogEntry:
+    return ReviewLogEntry(
+        card_id=card_id,
+        ease=ease,
+        reviewed_at=datetime(2026, 6, day),
+        deck_name="Cardiology",
+        card_label=f"Card {card_id}",
+        tags=tags,
     )
 
 
@@ -116,6 +128,22 @@ class MissedCardAnalyticsTest(unittest.TestCase):
         self.assertEqual(decks[0].deck_name, "Cardiology")
         self.assertEqual(decks[0].missed_cards, 2)
         self.assertEqual(decks[0].misses, 4)
+
+    def test_summarizes_tag_miss_concentration(self) -> None:
+        missed_cards = summarize_missed_cards(
+            [
+                _tagged_entry(1, 1, 1, "cardiology", "murmurs"),
+                _tagged_entry(1, 1, 2, "cardiology", "murmurs"),
+                _tagged_entry(2, 1, 3, "cardiology"),
+                _tagged_entry(2, 1, 4, "cardiology"),
+            ]
+        )
+
+        tags = summarize_tag_misses(missed_cards)
+
+        self.assertEqual(tags[0].tag, "cardiology")
+        self.assertEqual(tags[0].missed_cards, 2)
+        self.assertEqual(tags[0].misses, 4)
 
 
 if __name__ == "__main__":

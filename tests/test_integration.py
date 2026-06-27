@@ -11,9 +11,9 @@ class GatewayAnalyticsIntegrationTest(unittest.TestCase):
     def test_fake_collection_flows_into_missed_card_summary(self) -> None:
         mw = FakeMainWindow(
             rows=[
-                (1, 1, 1782432000000, 10, "Mitral regurgitation"),
-                (1, 1, 1782518400000, 10, "Mitral regurgitation"),
-                (2, 1, 1782604800000, 11, "Loop diuretics"),
+                (1, 1, 1782432000000, 10, "Mitral regurgitation", "cardiology"),
+                (1, 1, 1782518400000, 10, "Mitral regurgitation", "cardiology"),
+                (2, 1, 1782604800000, 11, "Loop diuretics", "renal"),
             ],
             deck_names={10: "Cardiology", 11: "Renal"},
         )
