@@ -12,6 +12,17 @@ class DeckButtonTest(unittest.TestCase):
         self.assertIn(BUTTON_MESSAGE, html)
         self.assertIn("Open Bonsai", html)
 
+    def test_summary_shows_repeated_miss_count(self) -> None:
+        html = deck_button_html(missed_cards=2, lookback_days=90)
+
+        self.assertIn("2 cards needing another pass", html)
+        self.assertIn("last 90 days", html)
+
+    def test_summary_handles_zero_repeated_misses(self) -> None:
+        html = deck_button_html(missed_cards=0, lookback_days=90)
+
+        self.assertIn("No repeated misses found", html)
+
 
 if __name__ == "__main__":
     unittest.main()

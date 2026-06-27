@@ -26,7 +26,27 @@ def _register_deck_browser_button() -> None:
 
 
 def _add_deck_browser_button(_deck_browser, content) -> None:
-    content.stats += deck_button_html()
+    content.stats += deck_button_html(**_deck_browser_summary())
+
+
+def _deck_browser_summary() -> dict[str, int | None]:
+    from aqt import mw
+
+    try:
+        config = load_config(mw.addonManager.getConfig(__package__))
+        entries = filter_review_entries_by_lookback(
+            load_review_entries(mw),
+            lookback_days=config.lookback_days,
+            now=datetime.now(),
+        )
+        summaries = summarize_missed_cards(
+            entries,
+            minimum_misses=config.minimum_misses,
+            limit=config.result_limit,
+        )
+    except Exception:
+        return {"missed_cards": None, "lookback_days": None}
+    return {"missed_cards": len(summaries), "lookback_days": config.lookback_days}
 
 
 def _handle_js_message(handled, message: str, _context):
