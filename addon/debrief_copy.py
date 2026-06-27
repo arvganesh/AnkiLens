@@ -18,7 +18,7 @@ def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
 
 def _target_summary(target: StudyTarget) -> str:
     scope = " active" if target.kind == "tag" else ""
-    sample = "Small window: " if _is_small_sample(target.reviewed_count) else ""
+    sample = "In this window, " if _is_small_sample(target.reviewed_count) else ""
     detail = (
         f"{sample}{target.count} of {target.reviewed_count} reviewed{scope} card{_plural(target.reviewed_count)} "
         f"needed another pass in {_target_kind_label(target.kind)}."

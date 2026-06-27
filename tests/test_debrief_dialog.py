@@ -90,7 +90,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(
             target_evidence_text(2, 5, "Cardiology Valves", ("Murmur?", "Aortic stenosis murmur"), active_cards=True),
             (
-                "Small window: 2 of 5 related cards in Cardiology Valves needed another pass. "
+                "In this window, 2 of 5 related cards in Cardiology Valves needed another pass. "
                 "Examples: Murmur?, Aortic stenosis murmur."
             ),
         )
@@ -106,11 +106,11 @@ class DebriefDialogTest(unittest.TestCase):
                 lapsed_count=1,
             ),
             (
-                "Small window: 4 of 8 related cards in Cardiology Valves needed another pass. "
+                "In this window, 4 of 8 related cards in Cardiology Valves needed another pass. "
                 "Breakdown: 2 early/new, 1 mature, 1 lapsed. Examples: Murmur?."
             ),
         )
-        self.assertNotIn("Small window", target_evidence_text(4, 12, "Cardiology Valves", active_cards=True))
+        self.assertNotIn("In this window", target_evidence_text(4, 12, "Cardiology Valves", active_cards=True))
 
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
         self.assertEqual(debrief_window_title(), "Bonsai Missed Cards")

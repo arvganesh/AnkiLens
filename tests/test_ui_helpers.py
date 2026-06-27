@@ -163,14 +163,14 @@ class UiHelpersTest(unittest.TestCase):
 
         text = ui_helpers._why_text(
             "Worth a quick check",
-            "Small window: 2 of 5 cards needed another pass. Breakdown: 2 lapsed. Examples: Murmur?, AS murmur.",
+            "In this window, 2 of 5 cards needed another pass. Breakdown: 2 lapsed. Examples: Murmur?, AS murmur.",
         )
 
         self.assertEqual(
             text,
             (
                 "Worth a quick check\n"
-                "Small window: 2 of 5 cards needed another pass.\n"
+                "In this window, 2 of 5 cards needed another pass.\n"
                 "Breakdown: 2 lapsed.\n"
                 "Examples: Murmur?, AS murmur."
             ),

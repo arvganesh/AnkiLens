@@ -60,7 +60,7 @@ def target_evidence_text(
 ) -> str:
     card_label = "card" if reviewed_count == 1 else "cards"
     scope = "related " if active_cards else ""
-    sample = "Small window: " if _is_small_sample(reviewed_count) else ""
+    sample = "In this window, " if _is_small_sample(reviewed_count) else ""
     evidence = f"{sample}{count} of {reviewed_count} {scope}{card_label} in {label} needed another pass."
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
     if maturity:
