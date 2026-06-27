@@ -210,6 +210,18 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         original_secondary_button = debrief_dialog.secondary_button
         calls = []
         button_calls = []
+        cluster = MissedCardSummary(
+            1,
+            "AnKing",
+            "Aortic stenosis cloze",
+            2,
+            3,
+            datetime(2026, 6, 26),
+            note_id=50,
+            note_card_count=4,
+            note_repeated_miss_count=2,
+            card_reps=8,
+        )
         debrief_dialog.recommendation_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "recommendation"
         debrief_dialog.secondary_button = lambda text: button_calls.append(text) or _FakeButton(text)
         try:
@@ -219,20 +231,8 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                     cards_to_fix=CardsToFix(0, (), ()),
                     early_learning=EarlyLearning(0, ()),
                     session_habits=SessionHabits(4, 2, 0.5, "Morning"),
-                    missed_cards=(
-                        MissedCardSummary(
-                            1,
-                            "AnKing",
-                            "Aortic stenosis cloze",
-                            2,
-                            3,
-                            datetime(2026, 6, 26),
-                            note_id=50,
-                            note_card_count=4,
-                            note_repeated_miss_count=2,
-                            card_reps=8,
-                        ),
-                    ),
+                    missed_cards=(cluster,),
+                    same_note_cluster=cluster,
                 ),
                 dialog=None,
                 open_card=lambda _card_id: None,

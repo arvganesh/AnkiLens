@@ -204,7 +204,7 @@ def _next_step_card(
             check=_study_check_text(debrief),
             actions=actions,
         )
-    if cluster_card := _same_note_cluster_card(debrief):
+    if cluster_card := debrief.same_note_cluster:
         actions = ()
         if open_card:
             button = secondary_button(card_search_button_text())
@@ -265,19 +265,6 @@ def _repair_evidence_with_note_context(card) -> str:
 
 def _repair_clues(summary) -> str:
     return ", ".join(summary.content_labels) if summary.content_labels else "repeated misses"
-
-
-def _same_note_cluster_card(debrief: Debrief):
-    candidates = [
-        summary
-        for summary in debrief.missed_cards
-        if summary.note_id
-        and summary.note_card_count
-        and summary.note_card_count > 1
-        and summary.note_repeated_miss_count >= 2
-        and not summary.is_early_exposure
-    ]
-    return candidates[0] if candidates else None
 
 
 def _study_material_card(

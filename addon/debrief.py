@@ -81,6 +81,7 @@ class Debrief:
     early_learning: EarlyLearning
     session_habits: SessionHabits
     missed_cards: tuple[MissedCardSummary, ...]
+    same_note_cluster: MissedCardSummary | None = None
 
     @property
     def early_learning_is_dominant(self) -> bool:
@@ -136,6 +137,7 @@ def build_debrief(
         early_learning=early_learning,
         session_habits=_session_habits(entries),
         missed_cards=tuple(missed_cards),
+        same_note_cluster=_same_note_cluster(missed_cards),
     )
 
 
@@ -197,6 +199,19 @@ def _cards_to_fix(summaries: list[MissedCardSummary]) -> CardsToFix:
 def _early_learning(summaries: list[MissedCardSummary]) -> EarlyLearning:
     cards = tuple(summary for summary in summaries if summary.is_early_exposure)
     return EarlyLearning(count=len(cards), cards=cards)
+
+
+def _same_note_cluster(summaries: list[MissedCardSummary]) -> MissedCardSummary | None:
+    candidates = [
+        summary
+        for summary in summaries
+        if summary.note_id
+        and summary.note_card_count
+        and summary.note_card_count > 1
+        and summary.note_repeated_miss_count >= 2
+        and not summary.is_early_exposure
+    ]
+    return candidates[0] if candidates else None
 
 
 def _is_fresh_exposure(summary: MissedCardSummary) -> bool:
