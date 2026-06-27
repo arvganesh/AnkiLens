@@ -27,6 +27,14 @@ def analytics_caption(
     )
 
 
+def evidence_window_title() -> str:
+    return "Bonsai Evidence Table"
+
+
+def evidence_title() -> str:
+    return "Evidence Table"
+
+
 def workflow_caption() -> str:
     return "Use this to inspect the cards behind the recommendation before deciding to edit or study more."
 

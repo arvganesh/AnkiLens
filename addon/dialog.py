@@ -31,6 +31,8 @@ from .copy_text import (
     check_cards_caption,
     content_pattern_caption,
     deck_concentration_caption,
+    evidence_title,
+    evidence_window_title,
     selected_card_button_text,
     selected_card_status_text,
     study_content_caption,
@@ -56,13 +58,13 @@ class MissedCardsDialog(QDialog):
         parent=None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Bonsai Supporting Cards")
+        self.setWindowTitle(evidence_window_title())
         self.resize(1040, 660)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(24, 22, 24, 20)
         layout.setSpacing(12)
-        layout.addWidget(title_label("Supporting Cards"))
+        layout.addWidget(title_label(evidence_title()))
         layout.addWidget(
             body_label(
                 analytics_caption(

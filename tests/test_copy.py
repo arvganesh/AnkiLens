@@ -10,6 +10,8 @@ from copy_text import (
     check_cards_caption,
     content_pattern_caption,
     deck_concentration_caption,
+    evidence_title,
+    evidence_window_title,
     selected_card_button_text,
     selected_card_status_text,
     same_note_context,
@@ -47,6 +49,10 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("at least 2 times", caption)
         self.assertIn("Limit: 10", caption)
         self.assertIn("all time", caption)
+
+    def test_evidence_dialog_title_matches_debrief_button_language(self) -> None:
+        self.assertEqual(evidence_window_title(), "Bonsai Evidence Table")
+        self.assertEqual(evidence_title(), "Evidence Table")
 
     def test_deck_concentration_caption_lists_decks(self) -> None:
         caption = deck_concentration_caption([DeckMissSummary("Cardiology", 2, 5)])
