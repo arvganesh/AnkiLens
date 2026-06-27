@@ -48,7 +48,7 @@ class AnalyticsCopyTest(unittest.TestCase):
 
         self.assertIn("Details for the current check: 2 cards", caption)
         self.assertIn("at least 2 times", caption)
-        self.assertIn("Limit: 10", caption)
+        self.assertNotIn("Limit", caption)
         self.assertIn("all time", caption)
 
     def test_evidence_caption_handles_one_day_window_cleanly(self) -> None:

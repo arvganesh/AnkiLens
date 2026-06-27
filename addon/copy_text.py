@@ -23,7 +23,7 @@ def analytics_caption(
         )
     return (
         f"Details for the current check: {shown_count} card{_plural(shown_count)} "
-        f"needed another pass at least {minimum_misses} times {window}. Limit: {result_limit}."
+        f"needed another pass at least {minimum_misses} times {window}."
     )
 
 
