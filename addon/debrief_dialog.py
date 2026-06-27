@@ -289,7 +289,7 @@ def _cards_to_fix_card(
         for index, summary in enumerate(cards[:3])
     )
     return panel_card(
-        "More card-format details" if exclude_card_id is not None else "Card-format details",
+        "Also check card format",
         _cards_to_fix_body(len(cards), more=exclude_card_id is not None),
         rows=rows,
         quiet=True,
@@ -328,7 +328,7 @@ def _study_material_card(
         else (("Check first", _target_label(top_target)), ("Why", _target_summary(top_target)))
     ) + tuple(("Also check", _target_summary(target)) for target in visible_targets[1:3])
     return panel_card(
-        "More related material" if exclude_target is not None else "Related material to check",
+        "Also check related material",
         rows=rows,
         quiet=True,
     )
@@ -342,7 +342,7 @@ def _early_learning_card(debrief: Debrief):
         )
         for index, summary in enumerate(_early_learning_cards(debrief)[:3])
     )
-    return panel_card("Early learning", _early_learning_body(debrief), rows=rows, quiet=True)
+    return panel_card("Ignore for now: early cards", _early_learning_body(debrief), rows=rows, quiet=True)
 
 
 def _target_summary(target: StudyTarget) -> str:

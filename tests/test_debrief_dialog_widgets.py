@@ -92,7 +92,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "Card-format details")
+        self.assertEqual(calls[0][0][0], "Also check card format")
         self.assertIn("1 card may need a card-format check", calls[0][0][1])
         self.assertEqual(calls[0][1]["rows"][0][0], "Start here")
         self.assertIn("Aortic stenosis: Long card; needed another pass on 3/4 reviews", calls[0][1]["rows"][0][1])
@@ -203,7 +203,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "More card-format details")
+        self.assertEqual(calls[0][0][0], "Also check card format")
         self.assertIn("1 other card may need a card-format check", calls[0][0][1])
         self.assertEqual(calls[0][1]["rows"][0][0], "Also check")
         self.assertIn("Mitral regurgitation: Dense card", calls[0][1]["rows"][0][1])
@@ -257,7 +257,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "Early learning")
+        self.assertEqual(calls[0][0][0], "Ignore for now: early cards")
         self.assertIn("normal first-pass learning", calls[0][0][1])
         self.assertIn("not a card-edit signal", calls[0][0][1])
         self.assertIn("study extra only if these felt unfamiliar or clustered", calls[0][0][1])
@@ -464,7 +464,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "Related material to check")
+        self.assertEqual(calls[0][0][0], "Also check related material")
         self.assertEqual(calls[0][1]["rows"][0][0], "Check first")
         self.assertEqual(calls[0][1]["rows"][1][0], "Why")
         self.assertEqual(calls[0][1]["rows"][2][0], "Also check")
@@ -504,7 +504,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "More related material")
+        self.assertEqual(calls[0][0][0], "Also check related material")
         self.assertEqual(calls[0][1]["rows"][0][0], "Also check")
         self.assertIn("Mitral regurgitation", calls[0][1]["rows"][0][1])
         self.assertNotIn("Murmur?", calls[0][1]["rows"][0][1])
