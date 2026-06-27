@@ -233,6 +233,24 @@ def secondary_button(text: str) -> QPushButton:
     return button
 
 
+def tertiary_button(text: str) -> QPushButton:
+    button = QPushButton(text)
+    button.setStyleSheet(
+        "QPushButton {"
+        "background: transparent;"
+        "border: none;"
+        "color: #5f675e;"
+        "font-size: 12px;"
+        "font-weight: 600;"
+        "padding: 4px 2px;"
+        "text-decoration: underline;"
+        "}"
+        "QPushButton:hover { color: #2f382f; }"
+        "QPushButton:pressed { color: #1f2a20; }"
+    )
+    return button
+
+
 def metric_card(label: str, value: str) -> QFrame:
     frame = QFrame()
     frame.setFrameShape(QFrame.Shape.StyledPanel)

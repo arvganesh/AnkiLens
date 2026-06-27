@@ -52,6 +52,7 @@ try:
         primary_button,
         recommendation_card,
         secondary_button,
+        tertiary_button,
         title_label,
     )
 except ImportError:
@@ -102,6 +103,7 @@ except ImportError:
         primary_button,
         recommendation_card,
         secondary_button,
+        tertiary_button,
         title_label,
     )
 
@@ -154,7 +156,7 @@ class DebriefDialog(QDialog):
         scroll.setWidget(content)
         layout.addWidget(scroll, 1)
         if open_full_analytics:
-            button = secondary_button(supporting_cards_button_text())
+            button = tertiary_button(supporting_cards_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(self, open_full_analytics))
             actions = QHBoxLayout()
             actions.setContentsMargins(0, SPACE_1, 0, 0)

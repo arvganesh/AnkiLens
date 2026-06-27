@@ -11,6 +11,7 @@ class _FakeWidget:
 
     def __init__(self, text: str = "") -> None:
         self.text = text
+        self.style = ""
         if text:
             self.labels.append(text)
 
@@ -26,8 +27,8 @@ class _FakeWidget:
     def setSizePolicy(self, *_args) -> None:
         pass
 
-    def setStyleSheet(self, *_args) -> None:
-        pass
+    def setStyleSheet(self, style: str) -> None:
+        self.style = style
 
     def setWordWrap(self, *_args) -> None:
         pass
@@ -134,6 +135,17 @@ class UiHelpersTest(unittest.TestCase):
         self.assertIn(4, _FakeLayout.spacings)
         self.assertNotIn(5, _FakeLayout.spacings)
         self.assertNotIn(14, _FakeLayout.spacings)
+
+    def test_tertiary_button_is_low_emphasis(self) -> None:
+        _install_fake_aqt()
+        ui_helpers = importlib.import_module("ui_helpers")
+
+        button = ui_helpers.tertiary_button("View details")
+
+        self.assertEqual(button.text, "View details")
+        self.assertIn("background: transparent", button.style)
+        self.assertIn("border: none", button.style)
+        self.assertIn("text-decoration: underline", button.style)
 
 
 if __name__ == "__main__":
