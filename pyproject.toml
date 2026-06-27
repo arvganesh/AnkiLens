@@ -1,0 +1,5 @@
+[project]
+name = "anki-missed-card-analytics"
+version = "0.1.0"
+description = "Read-only missed-card analytics for Anki."
+requires-python = ">=3.10"
