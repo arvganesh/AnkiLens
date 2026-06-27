@@ -133,7 +133,7 @@ def tag_concentration_caption(tags: list[TagMissSummary]) -> str:
 def content_pattern_caption(pattern_counts: dict[str, int]) -> str:
     if not pattern_counts:
         return ""
-    lines = ["Possible format clues:"]
+    lines = ["Format clues to inspect:"]
     lines.extend(f"- {label}: {count} card{_plural(count)}" for label, count in pattern_counts.items())
     return "\n".join(lines)
 

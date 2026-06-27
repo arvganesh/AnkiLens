@@ -71,7 +71,8 @@ class AnalyticsCopyTest(unittest.TestCase):
     def test_content_pattern_caption_lists_patterns(self) -> None:
         caption = content_pattern_caption({"Dense card": 2})
 
-        self.assertIn("Possible format clues", caption)
+        self.assertIn("Format clues to inspect", caption)
+        self.assertNotIn("Possible", caption)
         self.assertIn("Dense card", caption)
         self.assertIn("2 cards", caption)
 
