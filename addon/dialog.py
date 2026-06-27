@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from aqt.qt import QAbstractItemView, QDialog, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, Qt
+from aqt.qt import QAbstractItemView, QDialog, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QTimer, QVBoxLayout, Qt
 
 from .analytics import MissedCardSummary, summarize_deck_misses, summarize_tag_misses
 from .copy_text import analytics_caption, deck_concentration_caption, tag_concentration_caption
@@ -90,4 +90,6 @@ def _open_selected_card(table: QTableWidget, on_open_card: Callable[[int], None]
     item = table.item(row, 0)
     if item is None:
         return
-    on_open_card(int(item.data(Qt.ItemDataRole.UserRole)))
+    card_id = int(item.data(Qt.ItemDataRole.UserRole))
+    table.window().close()
+    QTimer.singleShot(0, lambda: on_open_card(card_id))
