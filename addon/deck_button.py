@@ -29,35 +29,37 @@ def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | No
   <div style="color: #676056; font-size: 12px; line-height: 1.35; margin-bottom: 10px;">
     {summary}
   </div>
-  <button
-    onclick="pycmd('bonsai:open')"
-    style="
-      border: 1px solid #d9d0c1;
-      border-radius: 999px;
-      background: #fff;
-      color: #26231e;
-      cursor: pointer;
-      font-size: 13px;
-      padding: 7px 14px;
-    "
-  >
-    Review evidence
-  </button>
-  <button
-    onclick="pycmd('bonsai:debrief')"
-    style="
-      border: 1px solid #d9d0c1;
-      border-radius: 999px;
-      background: #fff;
-      color: #26231e;
-      cursor: pointer;
-      font-size: 13px;
-      margin-left: 6px;
-      padding: 7px 14px;
-    "
-  >
-    {deck_debrief_button_text()}
-  </button>
+  <div style="display: flex; flex-wrap: wrap; gap: 9px; align-items: center;">
+    <button
+      onclick="pycmd('bonsai:debrief')"
+      style="
+        border: 1px solid #275f34;
+        border-radius: 999px;
+        background: #2f6f3e;
+        color: #fff;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 7px 14px;
+      "
+    >
+      {deck_debrief_button_text()}
+    </button>
+    <button
+      onclick="pycmd('bonsai:open')"
+      style="
+        border: 1px solid #d9d0c1;
+        border-radius: 999px;
+        background: #fff;
+        color: #26231e;
+        cursor: pointer;
+        font-size: 13px;
+        padding: 7px 14px;
+      "
+    >
+      Review evidence
+    </button>
+  </div>
   <div style="color: #7a7267; font-size: 11px; line-height: 1.35; margin-top: 9px;">
     Read-only: decide whether to inspect a card or review the source.
   </div>
