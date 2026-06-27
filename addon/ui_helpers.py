@@ -137,7 +137,7 @@ def recommendation_card(
     layout.addSpacing(SPACE_4)
     layout.addLayout(_next_step_block(next_step, actions=actions))
     layout.addSpacing(SPACE_3)
-    layout.addLayout(_detail_block("Why this came up", f"{confidence}: {evidence}"))
+    layout.addLayout(_detail_block("Why this came up", _why_text(confidence, evidence)))
     layout.addSpacing(SPACE_2)
     layout.addLayout(_detail_block("Before studying more", check, quiet=True))
     frame.setLayout(layout)
@@ -149,6 +149,14 @@ def _plain_text(text: str, color: str, size: str, *, weight: int = 400) -> QLabe
     label.setWordWrap(True)
     label.setStyleSheet(f"border: none; color: {color}; font-size: {size}; font-weight: {weight}; line-height: 125%;")
     return label
+
+
+def _why_text(confidence: str, evidence: str) -> str:
+    return f"{confidence}\n{_soft_break_evidence(evidence)}"
+
+
+def _soft_break_evidence(text: str) -> str:
+    return text.replace(". Breakdown:", ".\nBreakdown:").replace(". Examples:", ".\nExamples:")
 
 
 def _next_step_block(text: str, *, actions: tuple[QPushButton, ...] = ()) -> QVBoxLayout:

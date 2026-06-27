@@ -115,7 +115,7 @@ class DebriefDialogTest(unittest.TestCase):
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
         self.assertEqual(debrief_window_title(), "Bonsai Checks")
         self.assertEqual(debrief_title(), "What to check")
-        self.assertEqual(deck_debrief_button_text(), "What should I check?")
+        self.assertEqual(deck_debrief_button_text(), "Check missed cards")
 
     def test_debrief_intro_names_short_recent_window(self) -> None:
         self.assertEqual(debrief_intro_text(1), "Last 24 hours · read-only · Bonsai does not change scheduling.")

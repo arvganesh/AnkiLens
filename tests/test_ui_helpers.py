@@ -115,7 +115,7 @@ class UiHelpersTest(unittest.TestCase):
         self.assertIn("Why this came up", _FakeWidget.labels)
         self.assertIn("Before studying more", _FakeWidget.labels)
         self.assertIn(
-            "Worth a quick check: 2 of 5 related cards in Cardiology Valves needed another pass.",
+            "Worth a quick check\n2 of 5 related cards in Cardiology Valves needed another pass.",
             _FakeWidget.labels,
         )
         self.assertIn("Open the related cards.", _FakeWidget.labels)
@@ -156,6 +156,25 @@ class UiHelpersTest(unittest.TestCase):
 
         self.assertIn("background: #fbfdf7", card.style)
         self.assertIn("border-radius: 12px", card.style)
+
+    def test_why_text_breaks_dense_evidence_into_short_lines(self) -> None:
+        _install_fake_aqt()
+        ui_helpers = importlib.import_module("ui_helpers")
+
+        text = ui_helpers._why_text(
+            "Worth a quick check",
+            "Small window: 2 of 5 cards needed another pass. Breakdown: 2 lapsed. Examples: Murmur?, AS murmur.",
+        )
+
+        self.assertEqual(
+            text,
+            (
+                "Worth a quick check\n"
+                "Small window: 2 of 5 cards needed another pass.\n"
+                "Breakdown: 2 lapsed.\n"
+                "Examples: Murmur?, AS murmur."
+            ),
+        )
 
     def test_quiet_panels_are_compact(self) -> None:
         _install_fake_aqt()

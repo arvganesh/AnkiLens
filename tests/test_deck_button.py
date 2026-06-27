@@ -13,7 +13,7 @@ class DeckButtonTest(unittest.TestCase):
         self.assertNotIn("See supporting cards", html)
         self.assertNotIn("Review evidence", html)
         self.assertIn(DEBRIEF_MESSAGE, html)
-        self.assertIn("What should I check?", html)
+        self.assertIn("Check missed cards", html)
         self.assertIn("background: #2f6f3e", html)
         self.assertIn("Read-only: decide whether to inspect a card or check related material", html)
         self.assertIn("Check whether missed cards point to an edit or a study pass", html)
