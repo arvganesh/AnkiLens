@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib
+import sys
 from datetime import datetime
 
 try:
@@ -74,7 +76,7 @@ def _handle_js_message(handled, message: str, _context):
 def show_session_debrief() -> None:
     from aqt import mw
 
-    from .debrief_dialog import DebriefDialog
+    DebriefDialog = _load_debrief_dialog_class()
 
     config = load_config(mw.addonManager.getConfig(__package__))
     entries = _debrief_entries(load_review_entries(mw), config, now=datetime.now())
@@ -87,6 +89,27 @@ def show_session_debrief() -> None:
         parent=mw,
     )
     dialog.exec()
+
+
+def _load_debrief_dialog_class():
+    if __package__:
+        for module_name in _debrief_dialog_module_names(__package__):
+            module = sys.modules.get(module_name)
+            if module:
+                importlib.reload(module)
+        module = importlib.import_module(f"{__package__}.debrief_dialog")
+    else:
+        module = importlib.import_module("debrief_dialog")
+    return module.DebriefDialog
+
+
+def _debrief_dialog_module_names(package: str) -> tuple[str, ...]:
+    return (
+        f"{package}.debrief_dialog_copy",
+        f"{package}.copy_text",
+        f"{package}.ui_helpers",
+        f"{package}.debrief_dialog",
+    )
 
 
 def _debrief_entries(entries, config, *, now: datetime):

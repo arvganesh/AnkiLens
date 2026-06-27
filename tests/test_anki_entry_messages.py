@@ -76,6 +76,17 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         self.assertEqual([entry.card_label for entry in filtered], ["Recent"])
 
+    def test_debrief_loader_refreshes_dialog_dependencies_first(self) -> None:
+        self.assertEqual(
+            anki_entry._debrief_dialog_module_names("bonsai"),
+            (
+                "bonsai.debrief_dialog_copy",
+                "bonsai.copy_text",
+                "bonsai.ui_helpers",
+                "bonsai.debrief_dialog",
+            ),
+        )
+
     def test_broad_analytics_can_still_use_configured_long_window(self) -> None:
         entries = [
             ReviewLogEntry(1, 1, datetime(2026, 4, 26, 8), "Deck", "Stale"),
