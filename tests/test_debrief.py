@@ -509,6 +509,29 @@ class DebriefTest(unittest.TestCase):
         self.assertTrue(debrief.repair_is_top_check)
         self.assertEqual(debrief.next_check_kind, "repair")
 
+    def test_repair_check_uses_full_window_not_visible_result_cap(self) -> None:
+        entries = [
+            _entry(1, 1, 0, text="focused aortic stenosis", tags=("cardiology",), card_reps=8),
+            _entry(1, 1, 1, text="focused aortic stenosis", tags=("cardiology",), card_reps=8),
+            _entry(2, 1, 2, text="focused mitral regurgitation", tags=("cardiology",), card_reps=8),
+            _entry(2, 1, 3, text="focused mitral regurgitation", tags=("cardiology",), card_reps=8),
+            _entry(3, 1, 4, text="word " * 80, tags=("cardiology",), card_reps=8),
+            _entry(3, 1, 5, text="word " * 80, tags=("cardiology",), card_reps=8),
+            _entry(3, 1, 6, text="word " * 80, tags=("cardiology",), card_reps=8),
+            _entry(3, 3, 7, text="word " * 80, tags=("cardiology",), card_reps=8),
+        ]
+        entries.extend(
+            _entry(card_id, 3, card_id + 10, text="stable cardiology prompt", tags=("cardiology",), card_reps=8)
+            for card_id in range(4, 13)
+        )
+
+        debrief = build_debrief(entries, result_limit=1)
+
+        self.assertEqual(len(debrief.missed_cards), 1)
+        self.assertNotEqual(debrief.missed_cards[0].card_id, 3)
+        self.assertEqual(debrief.cards_to_fix.cards[0].card_id, 3)
+        self.assertEqual(debrief.next_check_kind, "repair")
+
     def test_repair_leads_when_no_supported_study_pattern_exists(self) -> None:
         debrief = build_debrief(
             [

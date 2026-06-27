@@ -151,11 +151,11 @@ def build_debrief(
         study_targets = tuple(_study_targets(entries, list(early_learning.cards), limit=study_limit))
     return Debrief(
         study_next=study_targets,
-        cards_to_fix=_cards_to_fix(missed_cards),
+        cards_to_fix=_cards_to_fix(all_missed_cards),
         early_learning=early_learning,
         session_habits=_session_habits(entries),
         missed_cards=tuple(missed_cards),
-        same_note_cluster=_same_note_cluster(missed_cards),
+        same_note_cluster=_same_note_cluster(all_missed_cards),
     )
 
 
