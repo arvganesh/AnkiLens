@@ -5,13 +5,28 @@ from datetime import datetime
 
 from analytics import MissedCardSummary
 from debrief import SessionHabits
-from debrief_dialog_copy import repair_action_summary, short_label, study_target_title
+from debrief_dialog_copy import (
+    card_search_button_text,
+    early_learning_title,
+    related_search_button_text,
+    repair_action_summary,
+    short_label,
+    study_target_title,
+)
 from session_context import session_context_text
 
 
 class DebriefDialogTest(unittest.TestCase):
     def test_study_target_title_uses_review_language(self) -> None:
-        self.assertEqual(study_target_title("AnKing Cardiology Valves"), "Best next step: review AnKing Cardiology Valves")
+        self.assertEqual(
+            study_target_title("AnKing Cardiology Valves"),
+            "Suggested next check: review AnKing Cardiology Valves",
+        )
+
+    def test_debrief_action_copy_is_clear_and_cautious(self) -> None:
+        self.assertEqual(early_learning_title(), "Suggested next check: retry early material")
+        self.assertEqual(card_search_button_text(), "Copy search for this card")
+        self.assertEqual(related_search_button_text(), "Copy search for related cards")
 
     def test_repair_action_summary_names_evidence_and_uncertainty(self) -> None:
         summary = MissedCardSummary(

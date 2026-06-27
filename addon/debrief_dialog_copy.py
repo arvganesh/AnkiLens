@@ -2,7 +2,19 @@ from __future__ import annotations
 
 
 def study_target_title(label: str) -> str:
-    return f"Best next step: review {label}"
+    return f"Suggested next check: review {label}"
+
+
+def early_learning_title() -> str:
+    return "Suggested next check: retry early material"
+
+
+def card_search_button_text() -> str:
+    return "Copy search for this card"
+
+
+def related_search_button_text() -> str:
+    return "Copy search for related cards"
 
 
 def repair_action_summary(card) -> str:

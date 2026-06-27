@@ -6,13 +6,27 @@ from aqt.qt import QDialog, QHBoxLayout, QVBoxLayout, Qt
 
 try:
     from .debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
-    from .debrief_dialog_copy import repair_action_summary, short_label, study_target_title
+    from .debrief_dialog_copy import (
+        card_search_button_text,
+        early_learning_title,
+        related_search_button_text,
+        repair_action_summary,
+        short_label,
+        study_target_title,
+    )
     from .dialog_actions import accept_then
     from .session_context import session_context_text
     from .ui_helpers import body_label, panel_card, primary_button, secondary_button, title_label
 except ImportError:
     from debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
-    from debrief_dialog_copy import repair_action_summary, short_label, study_target_title
+    from debrief_dialog_copy import (
+        card_search_button_text,
+        early_learning_title,
+        related_search_button_text,
+        repair_action_summary,
+        short_label,
+        study_target_title,
+    )
     from dialog_actions import accept_then
     from session_context import session_context_text
     from ui_helpers import body_label, panel_card, primary_button, secondary_button, title_label
@@ -84,7 +98,7 @@ def _next_step_card(
         card = debrief.cards_to_fix.cards[0]
         actions = ()
         if open_card:
-            button = primary_button("Copy card search")
+            button = primary_button(card_search_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(card.card_id)))
             actions = (button,)
         return panel_card(
@@ -97,11 +111,11 @@ def _next_step_card(
         actions = ()
         if open_material and debrief.study_next:
             target = debrief.study_next[0]
-            button = primary_button("Copy related search")
+            button = primary_button(related_search_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
         return panel_card(
-            "Best next step: give early material another pass",
+            early_learning_title(),
             _early_learning_body(debrief),
             actions=actions,
             featured=True,
@@ -110,7 +124,7 @@ def _next_step_card(
         target = debrief.study_next[0]
         actions = ()
         if open_material:
-            button = primary_button("Copy related search")
+            button = primary_button(related_search_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
         return panel_card(
@@ -136,7 +150,7 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
     card = cards_to_fix.cards[0]
     actions = ()
     if open_card:
-        button = primary_button("Copy card search")
+        button = primary_button(card_search_button_text())
         button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(card.card_id)))
         actions = (button,)
     rows = tuple(
@@ -170,7 +184,7 @@ def _study_material_card(
     rows = tuple(("Also watch", _target_summary(target)) for target in targets[1:3])
     actions = ()
     if open_material:
-        button = secondary_button("Copy related search")
+        button = secondary_button(related_search_button_text())
         button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(top_target)))
         actions = (button,)
     return panel_card(

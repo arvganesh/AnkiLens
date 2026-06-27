@@ -105,7 +105,7 @@ def _open_search_from_debrief(query: str) -> None:
     from aqt.utils import showInfo
 
     QApplication.clipboard().setText(query)
-    showInfo(f"Copied Browser search:\n\n{query}\n\nOpen Browse and paste it into search.")
+    showInfo(f"Copied search for Anki Browse:\n\n{query}\n\nOpen Browse and paste it into the search field.")
 
 
 def _copy_search_from_debrief(query: str) -> None:
