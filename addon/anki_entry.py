@@ -206,16 +206,30 @@ def _try_open_browser_search(query: str) -> bool:
 
 
 def _browse_search_message(query: str, *, opened: bool) -> str:
-    if opened and _is_exact_card_search(query):
-        label = "missed examples" if " or " in query else "card"
-        return f"Opened {label} in Browse. Search copied."
+    exact_card_count = _exact_card_search_count(query)
+    if opened and exact_card_count:
+        if exact_card_count == 1:
+            return "Opened card in Browse. Search copied."
+        return f"Opened {exact_card_count} missed examples in Browse. Search copied."
     if opened:
         return "Opened in Browse. Search copied."
+    if exact_card_count and exact_card_count > 1:
+        return (
+            f"Copied search for {exact_card_count} missed examples:\n\n"
+            f"{query}\n\nOpen Browse and paste it into the search field."
+        )
     return f"Copied search for Anki Browse:\n\n{query}\n\nOpen Browse and paste it into the search field."
 
 
 def _is_exact_card_search(query: str) -> bool:
-    return all(part.strip().startswith("cid:") for part in query.split(" or "))
+    return bool(_exact_card_search_count(query))
+
+
+def _exact_card_search_count(query: str) -> int:
+    parts = [part.strip() for part in query.split(" or ")]
+    if not parts or not all(part.startswith("cid:") for part in parts):
+        return 0
+    return len(parts)
 
 
 def _copy_search_from_debrief(query: str) -> None:

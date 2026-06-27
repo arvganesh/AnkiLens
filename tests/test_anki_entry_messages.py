@@ -45,7 +45,7 @@ class AnkiEntryMessagesTest(unittest.TestCase):
     def test_browse_message_names_exact_missed_examples(self) -> None:
         message = anki_entry._browse_search_message("cid:10 or cid:11", opened=True)
 
-        self.assertEqual(message, "Opened missed examples in Browse. Search copied.")
+        self.assertEqual(message, "Opened 2 missed examples in Browse. Search copied.")
 
     def test_browse_message_names_single_exact_card(self) -> None:
         message = anki_entry._browse_search_message("cid:10", opened=True)
@@ -57,6 +57,16 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         self.assertIn("Copied search", message)
         self.assertIn("Open Browse and paste", message)
+
+    def test_browse_message_fallback_names_exact_missed_examples(self) -> None:
+        message = anki_entry._browse_search_message("cid:10 or cid:11 or cid:12", opened=False)
+
+        self.assertIn("Copied search for 3 missed examples", message)
+        self.assertIn("cid:10 or cid:11 or cid:12", message)
+        self.assertIn("Open Browse and paste", message)
+
+    def test_exact_card_search_count_rejects_mixed_queries(self) -> None:
+        self.assertEqual(anki_entry._exact_card_search_count("cid:10 or tag:cardiology"), 0)
 
     def test_browser_search_loader_returns_current_search_helper(self) -> None:
         search_helper = anki_entry._load_browser_search_for_study_target()
