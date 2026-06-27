@@ -43,7 +43,17 @@ try:
     from .dialog_actions import accept_then
     from .copy_text import same_note_context
     from .session_context import session_context_text
-    from .ui_helpers import body_label, panel_card, primary_button, recommendation_card, secondary_button, title_label
+    from .ui_helpers import (
+        SPACE_1,
+        SPACE_3,
+        SPACE_4,
+        body_label,
+        panel_card,
+        primary_button,
+        recommendation_card,
+        secondary_button,
+        title_label,
+    )
 except ImportError:
     from debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
     from debrief_dialog_copy import (
@@ -83,7 +93,17 @@ except ImportError:
     from dialog_actions import accept_then
     from copy_text import same_note_context
     from session_context import session_context_text
-    from ui_helpers import body_label, panel_card, primary_button, recommendation_card, secondary_button, title_label
+    from ui_helpers import (
+        SPACE_1,
+        SPACE_3,
+        SPACE_4,
+        body_label,
+        panel_card,
+        primary_button,
+        recommendation_card,
+        secondary_button,
+        title_label,
+    )
 
 
 class DebriefDialog(QDialog):
@@ -104,7 +124,7 @@ class DebriefDialog(QDialog):
 
         layout = QVBoxLayout()
         layout.setContentsMargins(26, 22, 26, 20)
-        layout.setSpacing(12)
+        layout.setSpacing(SPACE_3)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addWidget(title_label(debrief_title()))
         layout.addWidget(body_label(debrief_intro_text(lookback_days)))
@@ -112,8 +132,8 @@ class DebriefDialog(QDialog):
         content = QWidget()
         content.setStyleSheet("background: transparent;")
         content_layout = QVBoxLayout()
-        content_layout.setContentsMargins(0, 4, 0, 0)
-        content_layout.setSpacing(12)
+        content_layout.setContentsMargins(0, SPACE_1, 0, 0)
+        content_layout.setSpacing(SPACE_4)
         content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         content_layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
         if debrief.cards_to_fix.cards:
@@ -137,7 +157,7 @@ class DebriefDialog(QDialog):
             button = secondary_button(supporting_cards_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(self, open_full_analytics))
             actions = QHBoxLayout()
-            actions.setContentsMargins(0, 4, 0, 0)
+            actions.setContentsMargins(0, SPACE_1, 0, 0)
             actions.addStretch(1)
             actions.addWidget(button)
             layout.addLayout(actions)

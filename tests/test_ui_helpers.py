@@ -130,9 +130,9 @@ class UiHelpersTest(unittest.TestCase):
             check="No obvious card-format issue stood out.",
         )
 
-        self.assertIn((0, 3, 0, 3), _FakeLayout.margins)
+        self.assertIn((0, 4, 0, 4), _FakeLayout.margins)
         self.assertIn(4, _FakeLayout.spacings)
-        self.assertIn(5, _FakeLayout.spacings)
+        self.assertNotIn(5, _FakeLayout.spacings)
         self.assertNotIn(14, _FakeLayout.spacings)
 
 
