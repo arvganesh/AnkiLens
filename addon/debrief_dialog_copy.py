@@ -50,7 +50,7 @@ def related_search_button_text() -> str:
 
 
 def supporting_cards_button_text() -> str:
-    return "See supporting cards"
+    return "Review evidence cards"
 
 
 def repair_action_summary(card) -> str:

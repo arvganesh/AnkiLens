@@ -64,7 +64,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(early_learning_title(), "Likely normal first-pass learning")
         self.assertEqual(card_search_button_text(), "Open this card in Browse")
         self.assertEqual(related_search_button_text(), "Open examples in Browse")
-        self.assertEqual(supporting_cards_button_text(), "See supporting cards")
+        self.assertEqual(supporting_cards_button_text(), "Review evidence cards")
         self.assertEqual(no_repair_signal_text(), "No strong card-construction clue stood out.")
         self.assertIn("One card also has construction clues", mixed_repair_signal_text())
 
