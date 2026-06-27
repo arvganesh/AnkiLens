@@ -2,8 +2,13 @@ from __future__ import annotations
 
 import unittest
 
-from analytics import DeckMissSummary, TagMissSummary
-from copy_text import analytics_caption, deck_concentration_caption, tag_concentration_caption
+from analytics import DeckMissSummary, NoteTypeMissSummary, TagMissSummary
+from copy_text import (
+    analytics_caption,
+    deck_concentration_caption,
+    note_type_concentration_caption,
+    tag_concentration_caption,
+)
 
 
 class AnalyticsCopyTest(unittest.TestCase):
@@ -45,6 +50,13 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("Tags with repeated misses", caption)
         self.assertIn("murmurs", caption)
         self.assertIn("2 cards, 4 misses", caption)
+
+    def test_note_type_concentration_caption_lists_note_types(self) -> None:
+        caption = note_type_concentration_caption([NoteTypeMissSummary("Cloze", 3, 8)])
+
+        self.assertIn("Note types with repeated misses", caption)
+        self.assertIn("Cloze", caption)
+        self.assertIn("3 cards, 8 misses", caption)
 
 
 if __name__ == "__main__":

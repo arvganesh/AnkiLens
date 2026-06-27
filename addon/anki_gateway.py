@@ -17,7 +17,8 @@ def load_review_entries(mw) -> list[ReviewLogEntry]:
           revlog.id,
           cards.did,
           coalesce(notes.sfld, cast(revlog.cid as text)),
-          notes.tags
+          notes.tags,
+          notes.mid
         from revlog
         join cards on cards.id = revlog.cid
         join notes on notes.id = cards.nid
@@ -33,6 +34,12 @@ def load_review_entries(mw) -> list[ReviewLogEntry]:
             deck_name=mw.col.decks.name(deck_id) or "Unknown deck",
             card_label=card_label,
             tags=tuple(tag for tag in tags.split() if tag),
+            note_type=_note_type_name(mw, note_type_id),
         )
-        for card_id, ease, reviewed_at_ms, deck_id, card_label, tags in rows
+        for card_id, ease, reviewed_at_ms, deck_id, card_label, tags, note_type_id in rows
     ]
+
+
+def _note_type_name(mw, note_type_id: int) -> str:
+    model = mw.col.models.get(note_type_id)
+    return model.get("name", "Unknown note type") if model else "Unknown note type"
