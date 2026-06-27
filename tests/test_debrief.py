@@ -98,6 +98,24 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.study_next[0].reviewed_count, 5)
         self.assertAlmostEqual(debrief.study_next[0].miss_rate, 2 / 5)
 
+    def test_study_targets_ignore_broad_anking_tags_when_topic_tag_exists(self) -> None:
+        broad = ("AnKing", "AnKing::Decks", "AK_Step1_v12")
+        topic = "AnKing::Cardiology::Valves"
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="aortic stenosis", tags=broad + (topic,)),
+                _entry(1, 1, 1, text="aortic stenosis", tags=broad + (topic,)),
+                _entry(2, 1, 2, text="aortic murmur", tags=broad + (topic,)),
+                _entry(2, 1, 3, text="aortic murmur", tags=broad + (topic,)),
+                _entry(3, 3, 4, text="mitral regurgitation", tags=broad + (topic,)),
+                _entry(4, 3, 5, text="mitral stenosis", tags=broad + (topic,)),
+                _entry(5, 3, 6, text="tricuspid regurgitation", tags=broad + (topic,)),
+            ]
+        )
+
+        self.assertEqual(debrief.study_next[0].label, topic)
+        self.assertEqual(debrief.study_next[0].related_cards, ("Card 2", "Card 1"))
+
     def test_study_targets_require_enough_denominator_support(self) -> None:
         debrief = build_debrief(
             [

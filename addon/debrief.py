@@ -133,7 +133,7 @@ def _study_targets(entries: list[ReviewLogEntry], summaries: list[MissedCardSumm
             _related_cards(summaries, lambda summary, tag=tag.tag: tag in summary.tags),
         )
         for tag in summarize_tag_misses(summaries)
-        if tag.missed_cards >= 2
+        if tag.missed_cards >= 2 and _useful_study_tag(tag.tag)
     ]
     tag_targets = _supported_targets(tag_targets, minimum_reviewed=5, minimum_rate=0.25)
     if tag_targets:
@@ -186,8 +186,28 @@ def _kind_priority(kind: str) -> int:
     return {"tag": 0, "term": 1, "deck": 2}.get(kind, 3)
 
 
-def _target_priority(target: StudyTarget) -> tuple[float, int, int, str]:
-    return (-target.miss_rate, -target.count, _kind_priority(target.kind), target.label)
+def _target_priority(target: StudyTarget) -> tuple[float, int, int, int, str]:
+    return (-target.miss_rate, -target.count, _kind_priority(target.kind), -_tag_specificity(target), target.label)
+
+
+_BROAD_TAG_PARTS = frozenset({"ak", "anking", "deck", "decks", "step", "step1", "step2", "v11", "v12"})
+
+
+def _useful_study_tag(tag: str) -> bool:
+    parts = _tag_parts(tag)
+    if not parts:
+        return False
+    return any(part not in _BROAD_TAG_PARTS and not part.startswith("v") for part in parts)
+
+
+def _tag_specificity(target: StudyTarget) -> int:
+    if target.kind != "tag":
+        return 0
+    return len([part for part in _tag_parts(target.label) if part not in _BROAD_TAG_PARTS])
+
+
+def _tag_parts(tag: str) -> list[str]:
+    return [part.lower() for part in tag.replace("::", "_").split("_") if part]
 
 
 def _supported_targets(targets: list[StudyTarget], *, minimum_reviewed: int, minimum_rate: float) -> list[StudyTarget]:
