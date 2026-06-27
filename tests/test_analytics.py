@@ -17,6 +17,14 @@ def _entry(card_id: int, ease: int, day: int) -> ReviewLogEntry:
 
 
 class MissedCardAnalyticsTest(unittest.TestCase):
+    def test_returns_empty_summary_when_there_are_no_reviews(self) -> None:
+        self.assertEqual(summarize_missed_cards([]), [])
+
+    def test_ignores_isolated_misses_by_default(self) -> None:
+        summaries = summarize_missed_cards([_entry(1, 1, 1), _entry(2, 3, 2)])
+
+        self.assertEqual(summaries, [])
+
     def test_summarizes_cards_with_repeated_misses(self) -> None:
         summaries = summarize_missed_cards(
             [
