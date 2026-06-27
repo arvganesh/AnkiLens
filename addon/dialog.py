@@ -10,6 +10,7 @@ from aqt.qt import (
     QHeaderView,
     QLabel,
     QPushButton,
+    QSizePolicy,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -35,7 +36,7 @@ from .copy_text import (
     workflow_caption,
 )
 from .formatting import format_review_date, priority_label
-from .ui_helpers import body_label, metric_card, section_label, title_label
+from .ui_helpers import body_label, metric_card, section_header, section_label, title_label
 
 
 class MissedCardsDialog(QDialog):
@@ -50,11 +51,11 @@ class MissedCardsDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Bonsai")
-        self.resize(1040, 640)
+        self.resize(1040, 660)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(18, 18, 18, 18)
-        layout.setSpacing(12)
+        layout.setContentsMargins(20, 18, 20, 18)
+        layout.setSpacing(9)
         layout.addWidget(title_label("Bonsai"))
         layout.addWidget(
             body_label(
@@ -71,13 +72,14 @@ class MissedCardsDialog(QDialog):
             return
 
         metrics = QHBoxLayout()
+        metrics.setSpacing(10)
         metrics.addWidget(metric_card("cards needing attention", str(len(summaries))))
         metrics.addWidget(metric_card("Again ratings", str(sum(summary.misses for summary in summaries))))
         metrics.addWidget(metric_card("review window", "all time" if lookback_days <= 0 else f"{lookback_days} days"))
         layout.addLayout(metrics)
 
         layout.addWidget(body_label(workflow_caption()))
-        layout.addWidget(section_label(check_cards_caption()))
+        layout.addWidget(section_header(check_cards_caption()))
         pattern_caption = content_pattern_caption(summarize_content_patterns(summaries))
         if pattern_caption:
             layout.addWidget(section_label(pattern_caption))
@@ -106,19 +108,21 @@ class MissedCardsDialog(QDialog):
         table.resizeColumnsToContents()
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         table.horizontalHeader().setStretchLastSection(True)
-        table.setMinimumHeight(260)
+        table.setMinimumHeight(210)
+        table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         layout.addWidget(table)
         button = QPushButton("Copy Browser search for selected card")
         status = QLabel("")
+        status.setStyleSheet("color: #5f675e; font-size: 12px;")
         button.clicked.connect(lambda _checked=False: _copy_selected_card_search(table, status))
         actions = QHBoxLayout()
+        actions.addWidget(status)
         actions.addStretch(1)
         actions.addWidget(button)
         layout.addLayout(actions)
-        layout.addWidget(status)
 
-        layout.addWidget(section_label(study_content_caption()))
+        layout.addWidget(section_header(study_content_caption()))
         layout.addWidget(section_label(deck_concentration_caption(summarize_deck_misses(summaries))))
         tag_caption = tag_concentration_caption(summarize_tag_misses(summaries))
         if tag_caption:

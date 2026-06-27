@@ -30,11 +30,11 @@ def workflow_caption() -> str:
 
 
 def check_cards_caption() -> str:
-    return "Check the cards first:"
+    return "Check the cards first"
 
 
 def study_content_caption() -> str:
-    return "Then study the content:"
+    return "Then study the content"
 
 
 def _plural(count: int) -> str:
