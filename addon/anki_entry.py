@@ -104,10 +104,15 @@ def _open_material_from_debrief(target: StudyTarget) -> None:
 
 def _open_search_from_debrief(query: str) -> None:
     from aqt.qt import QApplication
-    from aqt.utils import showInfo
+    from aqt.utils import showInfo, tooltip
 
     QApplication.clipboard().setText(query)
-    showInfo(_browse_search_message(query, opened=_try_open_browser_search(query)))
+    opened = _try_open_browser_search(query)
+    message = _browse_search_message(query, opened=opened)
+    if opened:
+        tooltip(message)
+    else:
+        showInfo(message)
 
 
 def _try_open_browser_search(query: str) -> bool:
@@ -122,7 +127,7 @@ def _try_open_browser_search(query: str) -> bool:
 
 def _browse_search_message(query: str, *, opened: bool) -> str:
     if opened:
-        return f"Opened Anki Browse for:\n\n{query}\n\nThe search was also copied."
+        return "Opened in Browse. Search copied."
     return f"Copied search for Anki Browse:\n\n{query}\n\nOpen Browse and paste it into the search field."
 
 
