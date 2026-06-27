@@ -160,7 +160,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "Early signal")
+        self.assertEqual(calls[0][0][0], "Early learning")
         self.assertIn("revisit the material briefly", calls[0][0][1])
         self.assertNotIn("source", calls[0][0][1].lower())
 

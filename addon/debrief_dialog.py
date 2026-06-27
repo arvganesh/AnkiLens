@@ -270,7 +270,7 @@ def _early_learning_card(debrief: Debrief):
         )
         for index, summary in enumerate(_early_learning_cards(debrief)[:3])
     )
-    return panel_card("Early signal", _early_learning_body(debrief), rows=rows)
+    return panel_card("Early learning", _early_learning_body(debrief), rows=rows)
 
 
 def _target_summary(target: StudyTarget) -> str:
