@@ -89,7 +89,7 @@ def repair_action_summary(card) -> str:
     clues = ", ".join(card.content_labels) if card.content_labels else "repeated misses"
     return (
         f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; clues: {clues}. "
-        "Inspect it first: simplify overloaded wording, or leave it and review the source if the card is clear."
+        "Inspect it first: simplify overloaded wording, or leave it and study the surrounding material if the card is clear."
     )
 
 
@@ -99,21 +99,21 @@ def repair_evidence(card) -> str:
 
 
 def repair_next_step() -> str:
-    return "Inspect the prompt first. If it is clear, study the source instead of editing."
+    return "Inspect the prompt first. If it is clear, leave the card alone and study the surrounding material."
 
 
 def study_next_step(kind: str) -> str:
     if kind == "tag":
-        return "Sample the related cards. If they feel unfamiliar, do a short source refresh before retrying."
+        return "Open the related cards. If they feel unfamiliar, revisit the class material behind this tag."
     if kind == "term":
-        return "Skim the examples with this repeated wording, then review the source if they still feel unfamiliar."
+        return "Skim the examples with this repeated wording. If they still feel unfamiliar, review the material around that concept."
     if kind == "deck":
         return "Treat this as a broad deck signal: sample the related cards before deciding what to study."
-    return "Review the related cards, then decide whether the source material needs another pass."
+    return "Review the related cards, then decide whether the surrounding material needs another pass."
 
 
 def no_repair_signal_text() -> str:
-    return "No obvious card-format issue stood out, so check the source before editing cards."
+    return "No obvious card-format issue stood out, so check related cards before editing."
 
 
 def mixed_repair_signal_text() -> str:
@@ -144,7 +144,7 @@ def early_learning_evidence(count: int) -> str:
 
 
 def early_learning_next_step() -> str:
-    return "If these felt unfamiliar, review the source briefly. Do not edit these cards yet."
+    return "If these felt unfamiliar, revisit the material briefly. Do not edit these cards yet."
 
 
 def early_learning_check_text() -> str:

@@ -73,7 +73,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(supporting_cards_button_text(), "Open evidence table")
         self.assertEqual(
             no_repair_signal_text(),
-            "No obvious card-format issue stood out, so check the source before editing cards.",
+            "No obvious card-format issue stood out, so check related cards before editing.",
         )
         self.assertEqual(
             mixed_repair_signal_text(),
@@ -96,10 +96,10 @@ class DebriefDialogTest(unittest.TestCase):
             repair_evidence(summary),
             "Needed another pass on 3/5 recent reviews; clues: Long card, Dense card.",
         )
-        self.assertIn("Inspect the prompt first", repair_next_step())
+        self.assertIn("leave the card alone", repair_next_step())
         self.assertEqual(
             study_next_step("tag"),
-            "Sample the related cards. If they feel unfamiliar, do a short source refresh before retrying.",
+            "Open the related cards. If they feel unfamiliar, revisit the class material behind this tag.",
         )
 
     def test_evidence_confidence_copy_does_not_overclaim_thin_signals(self) -> None:
@@ -114,6 +114,8 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("still feel unfamiliar", study_next_step("term"))
         self.assertIn("broad deck signal", study_next_step("deck"))
         self.assertIn("related cards", study_next_step("unknown"))
+        self.assertNotIn("source", study_next_step("tag").lower())
+        self.assertNotIn("source", no_repair_signal_text().lower())
 
     def test_no_pattern_copy_stays_actionable_without_overclaiming(self) -> None:
         self.assertEqual(no_pattern_title(), "No clear next check yet")
@@ -141,7 +143,7 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertIn("Needed another pass on 3/5 recent reviews", body)
         self.assertIn("clues: Long card, Dense card", body)
-        self.assertIn("leave it and review the source if the card is clear", body)
+        self.assertIn("study the surrounding material if the card is clear", body)
 
     def test_short_label_truncates_long_card_names(self) -> None:
         self.assertEqual(short_label("A" * 70), "A" * 61 + "...")
@@ -153,7 +155,7 @@ class DebriefDialogTest(unittest.TestCase):
         )
         self.assertEqual(
             early_learning_next_step(),
-            "If these felt unfamiliar, review the source briefly. Do not edit these cards yet.",
+            "If these felt unfamiliar, revisit the material briefly. Do not edit these cards yet.",
         )
         self.assertIn("weak evidence", early_learning_check_text())
         self.assertIn("after a few more reps", early_learning_check_text())
@@ -173,7 +175,7 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertNotIn("Session note:", context)
         self.assertIn("40% of reviews needed another pass", context)
-        self.assertIn("review the source before treating one card as the problem", context)
+        self.assertIn("revisit the material before treating one card as the problem", context)
 
     def test_session_context_warns_when_reviewing_unusually_fast(self) -> None:
         context = session_context_text(SessionHabits(10, 2, 0.2, "Evening", 8, 60.0, 7.5))

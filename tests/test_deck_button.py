@@ -15,7 +15,7 @@ class DeckButtonTest(unittest.TestCase):
         self.assertIn("What should I check?", html)
         self.assertLess(html.index(DEBRIEF_MESSAGE), html.index(BUTTON_MESSAGE))
         self.assertIn("background: #2f6f3e", html)
-        self.assertIn("Read-only: decide whether to inspect a card or review the source", html)
+        self.assertIn("Read-only: decide whether to inspect a card or revisit the material", html)
         self.assertNotIn("Review Check", html)
         self.assertNotIn("Recent Debrief", html)
 
