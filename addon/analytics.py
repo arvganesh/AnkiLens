@@ -23,6 +23,7 @@ class ReviewLogEntry:
     card_label: str
     tags: tuple[str, ...] = ()
     source_text: str = ""
+    duration_ms: int | None = None
 
 
 @dataclass(frozen=True)

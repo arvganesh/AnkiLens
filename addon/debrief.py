@@ -47,6 +47,9 @@ class SessionHabits:
     again_count: int
     again_rate: float
     time_of_day: str
+    timed_review_count: int = 0
+    recorded_answer_seconds: float | None = None
+    seconds_per_timed_card: float | None = None
 
 
 @dataclass(frozen=True)
@@ -95,12 +98,21 @@ def _session_habits(entries: list[ReviewLogEntry]) -> SessionHabits:
     ordered = sorted(entries, key=lambda entry: entry.reviewed_at)
     review_count = len(ordered)
     again_count = sum(1 for entry in ordered if entry.ease == AGAIN_EASE)
+    durations = _valid_durations_ms(ordered)
+    total_seconds = sum(durations) / 1000 if durations else None
     return SessionHabits(
         review_count=review_count,
         again_count=again_count,
         again_rate=again_count / review_count if review_count else 0,
         time_of_day=_time_of_day(ordered[-1].reviewed_at) if ordered else "No reviews",
+        timed_review_count=len(durations),
+        recorded_answer_seconds=total_seconds,
+        seconds_per_timed_card=(total_seconds / len(durations)) if total_seconds is not None else None,
     )
+
+
+def _valid_durations_ms(entries: list[ReviewLogEntry]) -> list[int]:
+    return [entry.duration_ms for entry in entries if entry.duration_ms is not None and entry.duration_ms >= 0]
 
 
 def _time_of_day(reviewed_at: datetime) -> str:

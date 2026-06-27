@@ -17,6 +17,7 @@ def load_review_entries(mw) -> list[ReviewLogEntry]:
           revlog.cid,
           revlog.ease,
           revlog.id,
+          revlog.time,
           cards.did,
           coalesce(notes.sfld, cast(revlog.cid as text)),
           notes.tags,
@@ -37,6 +38,7 @@ def load_review_entries(mw) -> list[ReviewLogEntry]:
             card_label=card_label,
             tags=tuple(tag for tag in tags.split() if tag),
             source_text=clean_card_text(fields),
+            duration_ms=duration_ms,
         )
-        for card_id, ease, reviewed_at_ms, deck_id, card_label, tags, fields in rows
+        for card_id, ease, reviewed_at_ms, duration_ms, deck_id, card_label, tags, fields in rows
     ]

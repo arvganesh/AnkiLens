@@ -15,6 +15,7 @@ def _entry(
     deck: str = "Cardiology",
     text: str = "mitral murmur",
     tags: tuple[str, ...] = (),
+    duration_ms: int | None = None,
 ) -> ReviewLogEntry:
     return ReviewLogEntry(
         card_id=card_id,
@@ -24,6 +25,7 @@ def _entry(
         card_label=f"Card {card_id}",
         tags=tags,
         source_text=text,
+        duration_ms=duration_ms,
     )
 
 
@@ -77,6 +79,33 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.session_habits.again_count, 2)
         self.assertAlmostEqual(debrief.session_habits.again_rate, 2 / 3)
         self.assertEqual(debrief.session_habits.time_of_day, "Morning")
+
+    def test_session_habits_use_recorded_answer_time_when_available(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, duration_ms=1000),
+                _entry(2, 3, 1, duration_ms=2500),
+            ],
+            minimum_misses=1,
+        )
+
+        self.assertEqual(debrief.session_habits.timed_review_count, 2)
+        self.assertEqual(debrief.session_habits.recorded_answer_seconds, 3.5)
+        self.assertEqual(debrief.session_habits.seconds_per_timed_card, 1.75)
+
+    def test_session_habits_skip_missing_and_negative_durations(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, duration_ms=None),
+                _entry(2, 3, 1, duration_ms=-50),
+                _entry(3, 3, 2, duration_ms=500),
+            ],
+            minimum_misses=1,
+        )
+
+        self.assertEqual(debrief.session_habits.review_count, 3)
+        self.assertEqual(debrief.session_habits.timed_review_count, 1)
+        self.assertEqual(debrief.session_habits.recorded_answer_seconds, 0.5)
 
 
 if __name__ == "__main__":
