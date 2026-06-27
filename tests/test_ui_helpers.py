@@ -88,7 +88,7 @@ def _install_fake_aqt() -> None:
     qt.QPushButton = _FakeWidget
     qt.QSizePolicy = _FakeSizePolicy
     qt.QVBoxLayout = _FakeLayout
-    qt.Qt = types.SimpleNamespace(AlignmentFlag=types.SimpleNamespace(AlignTop=object()))
+    qt.Qt = types.SimpleNamespace(AlignmentFlag=types.SimpleNamespace(AlignTop=object(), AlignLeft=object()))
     aqt = types.ModuleType("aqt")
     aqt.qt = qt
     sys.modules["aqt"] = aqt
@@ -122,7 +122,7 @@ class UiHelpersTest(unittest.TestCase):
         self.assertLess(_FakeWidget.labels.index("Next"), _FakeWidget.labels.index("Why"))
         self.assertLess(_FakeWidget.labels.index("Show related cards"), _FakeWidget.labels.index("Why"))
         self.assertEqual(len(_FakeLayout.action_rows), 1)
-        self.assertEqual(_FakeLayout.stretch_count, 0)
+        self.assertEqual(_FakeLayout.stretch_count, 1)
 
     def test_detail_blocks_have_breathing_room(self) -> None:
         _install_fake_aqt()

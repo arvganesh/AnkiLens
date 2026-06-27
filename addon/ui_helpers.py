@@ -173,7 +173,9 @@ def _next_step_callout(text: str, *, actions: tuple[QPushButton, ...] = ()) -> Q
         action_row = QHBoxLayout()
         action_row.setContentsMargins(0, SPACE_2, 0, 0)
         for action in actions:
-            action_row.addWidget(action)
+            action.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+            action_row.addWidget(action, 0, Qt.AlignmentFlag.AlignLeft)
+        action_row.addStretch(1)
         layout.addLayout(action_row)
     frame.setLayout(layout)
     return frame
