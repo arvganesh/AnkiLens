@@ -10,9 +10,9 @@ def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
     if not targets:
         return "No study pattern yet:\n- No repeated material pattern in this window."
     top_target = targets[0]
-    lines = [f"Review: {_target_label(top_target)}", f"- {_target_summary(top_target)}"]
+    lines = [f"Material to sample: {_target_label(top_target)}", f"- Why: {_target_summary(top_target)}"]
     if len(targets) > 1:
-        lines.append("- Also watch: " + "; ".join(_target_summary(target) for target in targets[1:3]))
+        lines.append("- Also sample: " + "; ".join(_target_summary(target) for target in targets[1:3]))
     return "\n".join(lines)
 
 

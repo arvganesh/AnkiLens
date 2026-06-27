@@ -11,12 +11,25 @@ class DebriefCopyTest(unittest.TestCase):
     def test_study_next_caption_lists_targets_without_scheduler_language(self) -> None:
         caption = study_next_caption((StudyTarget("mitral", "term", 2, 6, ("Card 1", "Card 2")),))
 
-        self.assertIn("Review: mitral", caption)
+        self.assertIn("Material to sample: mitral", caption)
+        self.assertIn("Why:", caption)
         self.assertIn("2 of 6 reviewed cards missed in word", caption)
         self.assertIn("Examples: Card 1, Card 2", caption)
         self.assertNotIn("if the card", caption.lower())
         self.assertNotIn("due", caption.lower())
         self.assertNotIn("must", caption.lower())
+        self.assertNotIn("Review:", caption)
+
+    def test_study_next_caption_uses_sample_language_for_secondary_targets(self) -> None:
+        caption = study_next_caption(
+            (
+                StudyTarget("mitral", "term", 2, 6, ("Card 1",)),
+                StudyTarget("aortic", "term", 2, 5, ("Card 2",)),
+            )
+        )
+
+        self.assertIn("Also sample:", caption)
+        self.assertNotIn("Also watch", caption)
 
     def test_tag_study_next_caption_names_active_cards(self) -> None:
         caption = study_next_caption((StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",)),))
