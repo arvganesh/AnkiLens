@@ -47,7 +47,7 @@ def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | No
     </button>
   </div>
   <div style="color: #7a7267; font-size: 11px; line-height: 1.35; margin-top: 9px;">
-    Read-only: decide whether to inspect a card or check related material.
+    Read-only: decide whether a missed card needs editing or more review.
   </div>
 </div>
 """
@@ -59,4 +59,4 @@ def _summary_text(missed_cards: int | None, lookback_days: int | None) -> str:
     if missed_cards == 0:
         return f"No repeated misses found in the last {lookback_days} days."
     card_label = "card" if missed_cards == 1 else "cards"
-    return f"{missed_cards} {card_label} needing another pass in the last {lookback_days} days."
+    return f"{missed_cards} {card_label} needed another pass in the last {lookback_days} days."
