@@ -40,7 +40,26 @@ def _register_deck_browser_button() -> None:
 
 
 def _add_deck_browser_button(_deck_browser, content) -> None:
-    content.stats += deck_button_html(**_deck_browser_summary())
+    content.stats += _load_deck_button_html()(**_deck_browser_summary())
+
+
+def _load_deck_button_html():
+    if __package__:
+        for module_name in _deck_button_module_names(__package__):
+            module = sys.modules.get(module_name)
+            if module:
+                importlib.reload(module)
+        module = importlib.import_module(f"{__package__}.deck_button")
+    else:
+        module = importlib.import_module("deck_button")
+    return module.deck_button_html
+
+
+def _deck_button_module_names(package: str) -> tuple[str, ...]:
+    return (
+        f"{package}.debrief_dialog_copy",
+        f"{package}.deck_button",
+    )
 
 
 def _deck_browser_summary() -> dict[str, int | None]:

@@ -87,6 +87,15 @@ class AnkiEntryMessagesTest(unittest.TestCase):
             ),
         )
 
+    def test_deck_button_loader_refreshes_copy_before_button_html(self) -> None:
+        self.assertEqual(
+            anki_entry._deck_button_module_names("bonsai"),
+            (
+                "bonsai.debrief_dialog_copy",
+                "bonsai.deck_button",
+            ),
+        )
+
     def test_broad_analytics_can_still_use_configured_long_window(self) -> None:
         entries = [
             ReviewLogEntry(1, 1, datetime(2026, 4, 26, 8), "Deck", "Stale"),
