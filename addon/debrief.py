@@ -98,8 +98,9 @@ def build_debrief(
     study_limit: int = 3,
 ) -> Debrief:
     missed_cards = summarize_missed_cards(entries, minimum_misses=minimum_misses, limit=result_limit)
+    all_missed_cards = summarize_missed_cards(entries, minimum_misses=minimum_misses, limit=len(entries))
     return Debrief(
-        study_next=tuple(_study_targets(entries, missed_cards, limit=study_limit)),
+        study_next=tuple(_study_targets(entries, all_missed_cards, limit=study_limit)),
         cards_to_fix=_cards_to_fix(missed_cards),
         early_learning=_early_learning(missed_cards),
         session_habits=_session_habits(entries),

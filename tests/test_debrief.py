@@ -128,6 +128,28 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.study_next[0].label, "focused")
         self.assertEqual(debrief.study_next[0].reviewed_count, 5)
 
+    def test_study_targets_use_all_repeated_misses_not_display_cap(self) -> None:
+        entries = [
+            _entry(1, 1, 0, text="renal sodium transport", tags=("renal_sodium",), label="Renal 1"),
+            _entry(1, 1, 1, text="renal sodium transport", tags=("renal_sodium",), label="Renal 1"),
+            _entry(2, 1, 2, text="renal potassium handling", tags=("renal_sodium",), label="Renal 2"),
+            _entry(2, 1, 3, text="renal potassium handling", tags=("renal_sodium",), label="Renal 2"),
+            _entry(3, 1, 4, text="renal chloride handling", tags=("renal_sodium",), label="Renal 3"),
+            _entry(3, 1, 5, text="renal chloride handling", tags=("renal_sodium",), label="Renal 3"),
+            _entry(4, 3, 6, text="renal physiology", tags=("renal_sodium",)),
+            _entry(5, 3, 7, text="renal physiology", tags=("renal_sodium",)),
+            _entry(20, 1, 20, text="isolated miss", tags=("random_a",), label="Random A"),
+            _entry(20, 1, 21, text="isolated miss", tags=("random_a",), label="Random A"),
+            _entry(21, 1, 22, text="isolated miss", tags=("random_b",), label="Random B"),
+            _entry(21, 1, 23, text="isolated miss", tags=("random_b",), label="Random B"),
+        ]
+
+        debrief = build_debrief(entries, result_limit=2)
+
+        self.assertEqual([summary.card_label for summary in debrief.missed_cards], ["Random B", "Random A"])
+        self.assertEqual(debrief.study_next[0].label, "renal_sodium")
+        self.assertEqual(debrief.study_next[0].related_cards, ("Renal 3", "Renal 2", "Renal 1"))
+
     def test_study_targets_prefer_repeated_tags_over_deck_fallback(self) -> None:
         debrief = build_debrief(
             [
