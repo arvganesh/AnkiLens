@@ -48,7 +48,7 @@ def study_content_caption() -> str:
 
 
 def supporting_metric_labels() -> tuple[str, str, str]:
-    return ("cards to inspect", "repeated misses", "review window")
+    return ("cards to inspect", "times another pass was needed", "review window")
 
 
 def review_window_value(lookback_days: int) -> str:
