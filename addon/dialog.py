@@ -59,7 +59,7 @@ class MissedCardsDialog(QDialog):
             table.setItem(row, 0, card_item)
             table.setItem(row, 1, QTableWidgetItem(summary.deck_name))
             table.setItem(row, 2, QTableWidgetItem(priority_label(summary)))
-            table.setItem(row, 3, QTableWidgetItem(", ".join(summary.content_labels)))
+            table.setItem(row, 3, QTableWidgetItem(_signals_label(summary)))
             table.setItem(row, 4, SortItem(str(summary.misses), summary.misses))
             table.setItem(row, 5, SortItem(str(summary.total_reviews), summary.total_reviews))
             table.setItem(row, 6, SortItem(f"{summary.miss_rate:.0%}", summary.miss_rate))
@@ -98,3 +98,7 @@ def _copy_selected_card_search(table: QTableWidget, status: QLabel) -> None:
     query = browser_search_for_card(card_id)
     QApplication.clipboard().setText(query)
     status.setText(f"Copied: {query}")
+
+
+def _signals_label(summary: MissedCardSummary) -> str:
+    return ", ".join(summary.content_labels) if summary.content_labels else "No obvious pattern"
