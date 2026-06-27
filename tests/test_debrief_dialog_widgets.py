@@ -130,6 +130,79 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertNotIn("actions", panel_calls[0][1])
         self.assertTrue(panel_calls[0][1]["quiet"])
 
+    def test_primary_repair_card_is_not_repeated_as_support_panel(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+
+        widget = debrief_dialog._cards_to_fix_card(
+            CardsToFix(
+                count=1,
+                clues=(("Long card", 1),),
+                cards=(
+                    MissedCardSummary(
+                        1,
+                        "Cardiology",
+                        "Aortic stenosis",
+                        3,
+                        4,
+                        datetime(2026, 6, 26),
+                        content_labels=("Long card",),
+                    ),
+                ),
+            ),
+            dialog=None,
+            open_card=None,
+            exclude_card_id=1,
+        )
+
+        self.assertIsNone(widget)
+
+    def test_support_panel_shows_other_repair_cards_only(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        calls = []
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        try:
+            widget = debrief_dialog._cards_to_fix_card(
+                CardsToFix(
+                    count=2,
+                    clues=(("Long card", 1), ("Dense card", 1)),
+                    cards=(
+                        MissedCardSummary(
+                            1,
+                            "Cardiology",
+                            "Aortic stenosis",
+                            3,
+                            4,
+                            datetime(2026, 6, 26),
+                            content_labels=("Long card",),
+                        ),
+                        MissedCardSummary(
+                            2,
+                            "Cardiology",
+                            "Mitral regurgitation",
+                            2,
+                            3,
+                            datetime(2026, 6, 26),
+                            content_labels=("Dense card",),
+                        ),
+                    ),
+                ),
+                dialog=None,
+                open_card=None,
+                exclude_card_id=1,
+            )
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+
+        self.assertEqual(widget, "panel")
+        self.assertEqual(calls[0][0][0], "More card-format details")
+        self.assertIn("1 other card may need a card-format check", calls[0][0][1])
+        self.assertEqual(calls[0][1]["rows"][0][0], "Also check")
+        self.assertIn("Mitral regurgitation: Dense card", calls[0][1]["rows"][0][1])
+        self.assertNotIn("Aortic stenosis", calls[0][1]["rows"][0][1])
+
     def test_no_cards_to_fix_panel_uses_check_language(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")

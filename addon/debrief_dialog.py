@@ -139,7 +139,15 @@ class DebriefDialog(QDialog):
         content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         content_layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
         if debrief.cards_to_fix.cards:
-            content_layout.addWidget(_cards_to_fix_card(debrief.cards_to_fix, dialog=self, open_card=open_card))
+            primary_repair_id = debrief.cards_to_fix.cards[0].card_id if debrief.next_check_kind == "repair" else None
+            card_details = _cards_to_fix_card(
+                debrief.cards_to_fix,
+                dialog=self,
+                open_card=open_card,
+                exclude_card_id=primary_repair_id,
+            )
+            if card_details:
+                content_layout.addWidget(card_details)
         if (debrief.cards_to_fix.cards or debrief.study_next) and _early_learning_cards(debrief):
             content_layout.addWidget(_early_learning_card(debrief))
         if debrief.cards_to_fix.cards and debrief.study_next:
@@ -257,7 +265,13 @@ def _next_step_card(
     )
 
 
-def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: Callable[[int], None] | None):
+def _cards_to_fix_card(
+    cards_to_fix: CardsToFix,
+    *,
+    dialog: QDialog,
+    open_card: Callable[[int], None] | None,
+    exclude_card_id: int | None = None,
+):
     if not cards_to_fix.cards:
         body = "No repeated card-format pattern stood out in this window. Related material may be more useful to check."
         return panel_card(
@@ -265,16 +279,19 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
             body,
             quiet=True,
         )
+    cards = tuple(summary for summary in cards_to_fix.cards if summary.card_id != exclude_card_id)
+    if not cards:
+        return None
     rows = tuple(
         (
-            "Start here" if index == 0 else "Also check",
+            "Also check" if exclude_card_id is not None or index > 0 else "Start here",
             f"{summary.card_label}: {_repair_clues(summary)}; needed another pass on {summary.misses}/{summary.total_reviews} reviews",
         )
-        for index, summary in enumerate(cards_to_fix.cards[:3])
+        for index, summary in enumerate(cards[:3])
     )
     return panel_card(
-        "Card-format details",
-        _cards_to_fix_body(cards_to_fix),
+        "More card-format details" if exclude_card_id is not None else "Card-format details",
+        _cards_to_fix_body(len(cards), more=exclude_card_id is not None),
         rows=rows,
         quiet=True,
     )
@@ -395,9 +412,10 @@ def _plural(count: int) -> str:
     return "" if count == 1 else "s"
 
 
-def _cards_to_fix_body(cards_to_fix: CardsToFix) -> str:
+def _cards_to_fix_body(count: int, *, more: bool = False) -> str:
+    prefix = "other " if more else ""
     return (
-        f"{cards_to_fix.count} card{_plural(cards_to_fix.count)} "
+        f"{count} {prefix}card{_plural(count)} "
         "may need a card-format check."
     )
 
