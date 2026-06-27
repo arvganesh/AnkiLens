@@ -43,6 +43,16 @@ def supporting_metric_labels() -> tuple[str, str, str]:
     return ("cards to inspect", "repeated misses", "evidence window")
 
 
+def selected_card_button_text() -> str:
+    return "Open selected card in Browse"
+
+
+def selected_card_status_text(query: str, *, opened: bool) -> str:
+    if opened:
+        return "Opened in Browse. Search copied."
+    return f"Copied: {query}"
+
+
 def card_detail_caption(summary: MissedCardSummary) -> str:
     clues = ", ".join(summary.content_labels) if summary.content_labels else "No obvious clue"
     text = _preview_text(summary.source_text)

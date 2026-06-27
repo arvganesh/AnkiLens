@@ -10,6 +10,8 @@ from copy_text import (
     check_cards_caption,
     content_pattern_caption,
     deck_concentration_caption,
+    selected_card_button_text,
+    selected_card_status_text,
     study_content_caption,
     supporting_metric_labels,
     tag_concentration_caption,
@@ -81,6 +83,14 @@ class AnalyticsCopyTest(unittest.TestCase):
             supporting_metric_labels(),
             ("cards to inspect", "repeated misses", "evidence window"),
         )
+
+    def test_selected_card_action_opens_browse_with_copy_fallback(self) -> None:
+        self.assertEqual(selected_card_button_text(), "Open selected card in Browse")
+        self.assertEqual(
+            selected_card_status_text("cid:123", opened=True),
+            "Opened in Browse. Search copied.",
+        )
+        self.assertEqual(selected_card_status_text("cid:123", opened=False), "Copied: cid:123")
 
     def test_card_detail_caption_explains_selected_card(self) -> None:
         summary = MissedCardSummary(

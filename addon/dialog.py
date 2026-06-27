@@ -31,12 +31,15 @@ from .copy_text import (
     check_cards_caption,
     content_pattern_caption,
     deck_concentration_caption,
+    selected_card_button_text,
+    selected_card_status_text,
     study_content_caption,
     supporting_metric_labels,
     tag_concentration_caption,
     term_caption,
     workflow_caption,
 )
+from .anki_browser import open_browser_search
 from .formatting import format_review_date, priority_label
 from .ui_helpers import body_label, metric_card, section_header, section_label, title_label
 
@@ -124,10 +127,10 @@ class MissedCardsDialog(QDialog):
         table.itemSelectionChanged.connect(lambda: _update_detail(table, detail, summaries_by_card_id))
         _update_detail(table, detail, summaries_by_card_id)
         layout.addWidget(detail)
-        button = QPushButton("Copy Browser search for selected card")
+        button = QPushButton(selected_card_button_text())
         status = QLabel("")
         status.setStyleSheet("color: #5f675e; font-size: 12px;")
-        button.clicked.connect(lambda _checked=False: _copy_selected_card_search(table, status))
+        button.clicked.connect(lambda _checked=False: _open_selected_card_search(table, status))
         actions = QHBoxLayout()
         actions.setContentsMargins(0, 4, 0, 8)
         actions.setSpacing(10)
@@ -159,7 +162,7 @@ class SortItem(QTableWidgetItem):
         return super().__lt__(other)
 
 
-def _copy_selected_card_search(table: QTableWidget, status: QLabel) -> None:
+def _open_selected_card_search(table: QTableWidget, status: QLabel) -> None:
     selected_rows = table.selectionModel().selectedRows()
     row = selected_rows[0].row() if selected_rows else 0
     item = table.item(row, 0)
@@ -168,7 +171,17 @@ def _copy_selected_card_search(table: QTableWidget, status: QLabel) -> None:
     card_id = int(item.data(Qt.ItemDataRole.UserRole))
     query = browser_search_for_card(card_id)
     QApplication.clipboard().setText(query)
-    status.setText(f"Copied: {query}")
+    status.setText(selected_card_status_text(query, opened=_try_open_browser_search(query)))
+
+
+def _try_open_browser_search(query: str) -> bool:
+    try:
+        from aqt import mw
+
+        open_browser_search(mw, query)
+    except Exception:
+        return False
+    return True
 
 
 def _update_detail(table: QTableWidget, detail: QLabel, summaries_by_card_id: dict[int, MissedCardSummary]) -> None:
