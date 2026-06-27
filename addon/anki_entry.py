@@ -81,6 +81,7 @@ def show_session_debrief() -> None:
     dialog = DebriefDialog(
         build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
         lookback_days=config.lookback_days,
+        open_full_analytics=show_missed_card_analytics,
         parent=mw,
     )
     dialog.exec()
