@@ -56,6 +56,12 @@ def _install_fake_aqt() -> None:
 
 
 class DebriefDialogWidgetTest(unittest.TestCase):
+    def test_debrief_does_not_surface_dense_details_path(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+
+        self.assertFalse(hasattr(debrief_dialog, "supporting_cards_button_text"))
+
     def test_cards_to_fix_card_returns_support_panel(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")

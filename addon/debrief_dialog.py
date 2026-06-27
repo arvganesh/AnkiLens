@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from aqt.qt import QDialog, QFrame, QHBoxLayout, QScrollArea, QVBoxLayout, Qt, QWidget
+from aqt.qt import QDialog, QFrame, QScrollArea, QVBoxLayout, Qt, QWidget
 
 try:
     from .debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
@@ -38,7 +38,6 @@ try:
         target_evidence_text,
         study_target_title,
         study_next_step,
-        supporting_cards_button_text,
     )
     from .dialog_actions import accept_then
     from .copy_text import same_note_context
@@ -52,7 +51,6 @@ try:
         primary_button,
         recommendation_card,
         secondary_button,
-        tertiary_button,
         title_label,
     )
 except ImportError:
@@ -89,7 +87,6 @@ except ImportError:
         target_evidence_text,
         study_target_title,
         study_next_step,
-        supporting_cards_button_text,
     )
     from dialog_actions import accept_then
     from copy_text import same_note_context
@@ -103,7 +100,6 @@ except ImportError:
         primary_button,
         recommendation_card,
         secondary_button,
-        tertiary_button,
         title_label,
     )
 
@@ -171,14 +167,6 @@ class DebriefDialog(QDialog):
         scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
         scroll.setWidget(content)
         layout.addWidget(scroll, 1)
-        if open_full_analytics:
-            button = tertiary_button(supporting_cards_button_text())
-            button.clicked.connect(lambda _checked=False: accept_then(self, open_full_analytics))
-            actions = QHBoxLayout()
-            actions.setContentsMargins(0, SPACE_1, 0, 0)
-            actions.addStretch(1)
-            actions.addWidget(button)
-            layout.addLayout(actions)
         self.setLayout(layout)
 
 
