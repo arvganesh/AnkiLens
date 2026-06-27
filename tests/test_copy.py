@@ -64,7 +64,7 @@ class AnalyticsCopyTest(unittest.TestCase):
 
     def test_evidence_dialog_title_matches_debrief_button_language(self) -> None:
         self.assertEqual(evidence_window_title(), "Bonsai Details")
-        self.assertEqual(evidence_title(), "Supporting Details")
+        self.assertEqual(evidence_title(), "Supporting cards behind this check")
 
     def test_evidence_window_metric_handles_one_day_window_cleanly(self) -> None:
         self.assertEqual(review_window_value(1), "24 hours")
@@ -103,7 +103,10 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("mitral", caption)
 
     def test_workflow_copy_separates_card_fixing_from_study(self) -> None:
-        self.assertIn("inspect the cards behind the recommendation", workflow_caption())
+        self.assertIn("Select a card", workflow_caption())
+        self.assertIn("open it in Browse", workflow_caption())
+        self.assertIn("prompt needs editing", workflow_caption())
+        self.assertIn("material needs review", workflow_caption())
         self.assertEqual(check_cards_caption(), "Inspect card format")
         self.assertEqual(study_content_caption(), "Material to check")
 

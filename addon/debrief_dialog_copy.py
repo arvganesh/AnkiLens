@@ -126,7 +126,7 @@ def evidence_confidence_text(
 
 
 def supporting_cards_button_text() -> str:
-    return "View details"
+    return "See supporting cards"
 
 
 def repair_action_summary(card) -> str:

@@ -32,11 +32,11 @@ def evidence_window_title() -> str:
 
 
 def evidence_title() -> str:
-    return "Supporting Details"
+    return "Supporting cards behind this check"
 
 
 def workflow_caption() -> str:
-    return "Use this to inspect the cards behind the recommendation before deciding to edit or study more."
+    return "Select a card, open it in Browse, then decide whether the prompt needs editing or the material needs review."
 
 
 def check_cards_caption() -> str:
