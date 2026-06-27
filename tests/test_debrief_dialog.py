@@ -127,15 +127,26 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertEqual(context, "")
 
-    def test_session_context_omits_unreliable_timing(self) -> None:
+    def test_session_context_hides_normal_observed_stats(self) -> None:
         context = session_context_text(SessionHabits(10, 2, 0.2, "Evening", 1, 7.0, 7.0))
 
-        self.assertEqual(context, "Observed only: 10 reviews · 20% Again · evening")
+        self.assertEqual(context, "")
 
-    def test_session_context_includes_timing_when_most_reviews_are_timed(self) -> None:
+    def test_session_context_warns_when_again_rate_is_high(self) -> None:
+        context = session_context_text(SessionHabits(10, 4, 0.4, "Evening", 1, 7.0, 7.0))
+
+        self.assertIn("40% Again across 10 reviews", context)
+        self.assertIn("refresh the source before editing cards", context)
+
+    def test_session_context_warns_when_reviewing_unusually_fast(self) -> None:
         context = session_context_text(SessionHabits(10, 2, 0.2, "Evening", 8, 60.0, 7.5))
 
-        self.assertEqual(context, "Observed only: 10 reviews · 20% Again · evening · 7.5s/card")
+        self.assertEqual(context, "")
+
+        fast_context = session_context_text(SessionHabits(10, 2, 0.2, "Evening", 8, 20.0, 2.5))
+
+        self.assertIn("2.5s/card", fast_context)
+        self.assertIn("treat misses as weaker evidence", fast_context)
 
 
 if __name__ == "__main__":

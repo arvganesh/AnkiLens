@@ -9,14 +9,17 @@ except ImportError:
 def session_context_text(habits: SessionHabits) -> str:
     if habits.review_count < 5:
         return ""
-    parts = [
-        f"Observed only: {habits.review_count} reviews",
-        f"{habits.again_rate:.0%} Again",
-        habits.time_of_day.lower(),
-    ]
-    if has_reliable_timing(habits):
-        parts.append(f"{habits.seconds_per_timed_card:.1f}s/card")
-    return " · ".join(parts)
+    if habits.again_rate >= 0.35:
+        return (
+            f"Session note: {habits.again_rate:.0%} Again across {habits.review_count} reviews. "
+            "If many cards felt new, refresh the source before editing cards."
+        )
+    if has_reliable_timing(habits) and habits.seconds_per_timed_card < 3:
+        return (
+            f"Session note: {habits.seconds_per_timed_card:.1f}s/card. "
+            "If you were rushing, treat misses as weaker evidence."
+        )
+    return ""
 
 
 def has_reliable_timing(habits: SessionHabits) -> bool:
