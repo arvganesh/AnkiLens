@@ -63,3 +63,11 @@ def content_pattern_caption(pattern_counts: dict[str, int]) -> str:
     lines = ["Content patterns in repeated misses:"]
     lines.extend(f"- {label}: {count} card{_plural(count)}" for label, count in pattern_counts.items())
     return "\n".join(lines)
+
+
+def term_caption(terms: list[tuple[str, int]]) -> str:
+    if not terms:
+        return ""
+    lines = ["Terms appearing in repeated misses:"]
+    lines.extend(f"- {term}: {count}" for term, count in terms)
+    return "\n".join(lines)

@@ -5,8 +5,10 @@ from datetime import datetime, timedelta
 
 try:
     from .content_signals import content_labels
+    from .terms import frequent_terms
 except ImportError:
     from content_signals import content_labels
+    from terms import frequent_terms
 
 
 AGAIN_EASE = 1
@@ -114,6 +116,10 @@ def summarize_content_patterns(summaries: list[MissedCardSummary]) -> dict[str, 
         for label in summary.content_labels:
             counts[label] = counts.get(label, 0) + 1
     return dict(sorted(counts.items(), key=lambda item: item[1], reverse=True))
+
+
+def summarize_terms(summaries: list[MissedCardSummary]) -> list[tuple[str, int]]:
+    return frequent_terms([summary.source_text for summary in summaries])
 
 
 def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:

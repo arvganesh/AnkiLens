@@ -4,9 +4,15 @@ from typing import Any
 
 from aqt.qt import QApplication, QAbstractItemView, QDialog, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, Qt
 
-from .analytics import MissedCardSummary, summarize_content_patterns, summarize_deck_misses, summarize_tag_misses
+from .analytics import (
+    MissedCardSummary,
+    summarize_content_patterns,
+    summarize_deck_misses,
+    summarize_tag_misses,
+    summarize_terms,
+)
 from .browser_search import browser_search_for_card
-from .copy_text import analytics_caption, content_pattern_caption, deck_concentration_caption, tag_concentration_caption
+from .copy_text import analytics_caption, content_pattern_caption, deck_concentration_caption, tag_concentration_caption, term_caption
 from .formatting import format_review_date, priority_label
 
 
@@ -46,6 +52,9 @@ class MissedCardsDialog(QDialog):
         pattern_caption = content_pattern_caption(summarize_content_patterns(summaries))
         if pattern_caption:
             layout.addWidget(QLabel(pattern_caption))
+        term_text = term_caption(summarize_terms(summaries))
+        if term_text:
+            layout.addWidget(QLabel(term_text))
 
         table = QTableWidget(len(summaries), 8, self)
         table.setHorizontalHeaderLabels(
