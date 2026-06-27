@@ -14,6 +14,7 @@ from copy_text import (
     evidence_window_title,
     selected_card_button_text,
     selected_card_status_text,
+    review_window_value,
     same_note_context,
     study_content_caption,
     supporting_metric_labels,
@@ -50,9 +51,25 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("Limit: 10", caption)
         self.assertIn("all time", caption)
 
+    def test_evidence_caption_handles_one_day_window_cleanly(self) -> None:
+        caption = analytics_caption(
+            shown_count=1,
+            minimum_misses=2,
+            result_limit=20,
+            lookback_days=1,
+        )
+
+        self.assertIn("last 24 hours", caption)
+        self.assertNotIn("last 1 days", caption)
+
     def test_evidence_dialog_title_matches_debrief_button_language(self) -> None:
         self.assertEqual(evidence_window_title(), "Bonsai Evidence Table")
         self.assertEqual(evidence_title(), "Evidence Table")
+
+    def test_evidence_window_metric_handles_one_day_window_cleanly(self) -> None:
+        self.assertEqual(review_window_value(1), "24 hours")
+        self.assertEqual(review_window_value(0), "all time")
+        self.assertEqual(review_window_value(2), "2 days")
 
     def test_deck_concentration_caption_lists_decks(self) -> None:
         caption = deck_concentration_caption([DeckMissSummary("Cardiology", 2, 5)])

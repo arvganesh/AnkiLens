@@ -51,6 +51,14 @@ def supporting_metric_labels() -> tuple[str, str, str]:
     return ("cards to inspect", "repeated misses", "review window")
 
 
+def review_window_value(lookback_days: int) -> str:
+    if lookback_days <= 0:
+        return "all time"
+    if lookback_days == 1:
+        return "24 hours"
+    return f"{lookback_days} days"
+
+
 def supporting_table_headers() -> tuple[str, ...]:
     return ("Card", "Deck", "Next check", "Format clues", "Misses", "Reviews", "Miss rate", "Last missed")
 
@@ -109,6 +117,8 @@ def _preview_text(text: str, *, limit: int = 120) -> str:
 def _lookback_label(lookback_days: int) -> str:
     if lookback_days <= 0:
         return "across all time"
+    if lookback_days == 1:
+        return "in the last 24 hours"
     return f"in the last {lookback_days} days"
 
 

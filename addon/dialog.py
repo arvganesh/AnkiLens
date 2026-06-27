@@ -35,6 +35,7 @@ from .copy_text import (
     evidence_window_title,
     selected_card_button_text,
     selected_card_status_text,
+    review_window_value,
     study_content_caption,
     supporting_metric_labels,
     supporting_table_headers,
@@ -84,7 +85,7 @@ class MissedCardsDialog(QDialog):
         card_label, miss_label, window_label = supporting_metric_labels()
         metrics.addWidget(metric_card(card_label, str(len(summaries))))
         metrics.addWidget(metric_card(miss_label, str(sum(summary.misses for summary in summaries))))
-        metrics.addWidget(metric_card(window_label, "all time" if lookback_days <= 0 else f"{lookback_days} days"))
+        metrics.addWidget(metric_card(window_label, review_window_value(lookback_days)))
         layout.addLayout(metrics)
 
         layout.addSpacing(2)
