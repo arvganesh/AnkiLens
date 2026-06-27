@@ -85,6 +85,7 @@ Recent UI simplifications:
 - Changed material actions to open exact missed examples when possible.
 - Let secondary related-material panels open exact missed examples when Bonsai has those card IDs.
 - Softened remaining `related cards` copy in the primary study path to `cards`, `examples`, or `missed examples`.
+- Softened the secondary study support heading to `Also check cards`.
 
 ## Latest Completed Slice
 
@@ -96,12 +97,14 @@ Behavior:
 - Study-target evidence says `2 of 5 cards from Cardiology Valves...` instead of `related cards`.
 - Exact-card next steps say `Look at the missed examples first...`.
 - Broad fallback buttons say `Show cards to check`.
+- Secondary study support panels say `Also check cards` instead of `Also check related material`.
 - The exact missed-card Browse behavior is unchanged.
 
 Why:
 
 - The screen should answer what the student should do next within one glance.
 - `related cards` and `open...` made the UI feel more mechanical and diagnostic than necessary.
+- Secondary check headings should stay concrete and scan-friendly.
 
 Commit:
 
@@ -137,7 +140,8 @@ Visual verification:
 - Some changes, especially `anki_entry.py`, dataclass shape changes, and loader-list changes, may require restarting Anki.
 - The deck page can remain stale after code changes until Anki/deck browser rerenders.
 - In the current Codex/Computer Use setup, clicking the debrief Browse action has intermittently returned `noWindowsAvailable`
-  even though Browse is visible to the user. Treat exact Browse visual proof as incomplete if this recurs.
+  even though Browse is visible to the user. This reproduced after clicking `Show 2 missed examples`; the clipboard was empty.
+  Treat exact Browse visual proof as incomplete if this recurs.
 - The dense `Bonsai Details` / missed-card table still exists via the Tools menu, but it is not part of the primary debrief flow.
 
 ## Recent Commits

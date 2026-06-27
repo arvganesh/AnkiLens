@@ -272,7 +272,7 @@ def _cards_to_fix_card(
     exclude_card_id: int | None = None,
 ):
     if not cards_to_fix.cards:
-        body = "No repeated card-format pattern stood out in this window. Related material may be more useful to check."
+        body = "No repeated card-format pattern stood out in this window. Other cards may be more useful to check."
         return panel_card(
             "No card repair stands out",
             body,
@@ -340,7 +340,7 @@ def _study_material_card(
         button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(top_target)))
         actions = (button,)
     return panel_card(
-        "Also check related material",
+        "Also check cards",
         rows=rows,
         actions=actions,
         quiet=True,

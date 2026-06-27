@@ -227,7 +227,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertIn("Related material may be more useful to check", calls[0][0][1])
+        self.assertIn("Other cards may be more useful to check", calls[0][0][1])
         self.assertNotIn("evidence", calls[0][0][1].lower())
         self.assertTrue(calls[0][1]["quiet"])
 
@@ -470,7 +470,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "Also check related material")
+        self.assertEqual(calls[0][0][0], "Also check cards")
         self.assertEqual(calls[0][1]["rows"][0][0], "Also check")
         self.assertEqual(calls[0][1]["rows"][1][0], "Why")
         self.assertEqual(calls[0][1]["rows"][2][0], "Also check")
@@ -479,6 +479,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertNotIn(" in word", calls[0][1]["rows"][2][1])
         self.assertTrue(calls[0][1]["quiet"])
         self.assertNotIn("signal", calls[0][0][0].lower())
+        self.assertNotIn("related material", calls[0][0][0].lower())
 
     def test_study_support_panel_does_not_compete_with_primary_check(self) -> None:
         _install_fake_aqt()
@@ -571,7 +572,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "Also check related material")
+        self.assertEqual(calls[0][0][0], "Also check cards")
         self.assertEqual(calls[0][1]["rows"][0][0], "Also check")
         self.assertIn("Mitral regurgitation", calls[0][1]["rows"][0][1])
         self.assertNotIn("Murmur?", calls[0][1]["rows"][0][1])

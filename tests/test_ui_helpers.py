@@ -209,7 +209,7 @@ class UiHelpersTest(unittest.TestCase):
         ui_helpers = importlib.import_module("ui_helpers")
 
         ui_helpers.panel_card(
-            "Also check related material",
+            "Also check cards",
             rows=(("Also check", "Cardiology Valves"),),
             actions=(_FakeWidget("Show missed examples"),),
             quiet=True,
