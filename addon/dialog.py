@@ -2,7 +2,19 @@ from __future__ import annotations
 
 from typing import Any
 
-from aqt.qt import QApplication, QAbstractItemView, QDialog, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, Qt
+from aqt.qt import (
+    QApplication,
+    QAbstractItemView,
+    QDialog,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    Qt,
+)
 
 from .analytics import (
     MissedCardSummary,
@@ -14,6 +26,7 @@ from .analytics import (
 from .browser_search import browser_search_for_card
 from .copy_text import analytics_caption, content_pattern_caption, deck_concentration_caption, tag_concentration_caption, term_caption
 from .formatting import format_review_date, priority_label
+from .ui_helpers import body_label, metric_card, section_label, title_label
 
 
 class MissedCardsDialog(QDialog):
@@ -28,11 +41,14 @@ class MissedCardsDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Bonsai")
-        self.resize(760, 420)
+        self.resize(1040, 640)
 
         layout = QVBoxLayout()
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(12)
+        layout.addWidget(title_label("Bonsai"))
         layout.addWidget(
-            QLabel(
+            body_label(
                 analytics_caption(
                     shown_count=len(summaries),
                     minimum_misses=minimum_misses,
@@ -45,16 +61,22 @@ class MissedCardsDialog(QDialog):
             self.setLayout(layout)
             return
 
-        layout.addWidget(QLabel(deck_concentration_caption(summarize_deck_misses(summaries))))
+        metrics = QHBoxLayout()
+        metrics.addWidget(metric_card("cards needing attention", str(len(summaries))))
+        metrics.addWidget(metric_card("Again ratings", str(sum(summary.misses for summary in summaries))))
+        metrics.addWidget(metric_card("review window", "all time" if lookback_days <= 0 else f"{lookback_days} days"))
+        layout.addLayout(metrics)
+
+        layout.addWidget(section_label(deck_concentration_caption(summarize_deck_misses(summaries))))
         tag_caption = tag_concentration_caption(summarize_tag_misses(summaries))
         if tag_caption:
-            layout.addWidget(QLabel(tag_caption))
+            layout.addWidget(section_label(tag_caption))
         pattern_caption = content_pattern_caption(summarize_content_patterns(summaries))
         if pattern_caption:
-            layout.addWidget(QLabel(pattern_caption))
+            layout.addWidget(section_label(pattern_caption))
         term_text = term_caption(summarize_terms(summaries))
         if term_text:
-            layout.addWidget(QLabel(term_text))
+            layout.addWidget(section_label(term_text))
 
         table = QTableWidget(len(summaries), 8, self)
         table.setHorizontalHeaderLabels(
@@ -62,6 +84,8 @@ class MissedCardsDialog(QDialog):
         )
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.setAlternatingRowColors(True)
+        table.verticalHeader().setVisible(False)
         for row, summary in enumerate(summaries):
             card_item = QTableWidgetItem(summary.card_label)
             card_item.setData(Qt.ItemDataRole.UserRole, summary.card_id)
@@ -76,12 +100,18 @@ class MissedCardsDialog(QDialog):
         table.setSortingEnabled(True)
         table.selectRow(0)
         table.resizeColumnsToContents()
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        table.horizontalHeader().setStretchLastSection(True)
+        table.setMinimumHeight(260)
 
         layout.addWidget(table)
         button = QPushButton("Copy Browser search for selected card")
         status = QLabel("")
         button.clicked.connect(lambda _checked=False: _copy_selected_card_search(table, status))
-        layout.addWidget(button)
+        actions = QHBoxLayout()
+        actions.addStretch(1)
+        actions.addWidget(button)
+        layout.addLayout(actions)
         layout.addWidget(status)
         self.setLayout(layout)
 
