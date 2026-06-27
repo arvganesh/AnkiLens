@@ -98,6 +98,8 @@ Behavior:
 - Exact-card next steps say `Look at the missed examples first...`.
 - Broad fallback buttons say `Show cards to check`.
 - Secondary study support panels say `Also check cards` instead of `Also check related material`.
+- If Browse cannot open a single exact `cid:` search, the fallback now says `Copied search for this card`
+  instead of the generic `Anki Browse` wording.
 - The exact missed-card Browse behavior is unchanged.
 
 Why:
@@ -105,6 +107,7 @@ Why:
 - The screen should answer what the student should do next within one glance.
 - `related cards` and `open...` made the UI feel more mechanical and diagnostic than necessary.
 - Secondary check headings should stay concrete and scan-friendly.
+- Fallback Browse messages should name exact-card actions clearly when opening Browse fails.
 
 Commit:
 

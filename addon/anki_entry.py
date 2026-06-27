@@ -213,6 +213,11 @@ def _browse_search_message(query: str, *, opened: bool) -> str:
         return f"Opened {exact_card_count} missed examples in Browse. Search copied."
     if opened:
         return "Opened in Browse. Search copied."
+    if exact_card_count == 1:
+        return (
+            f"Copied search for this card:\n\n"
+            f"{query}\n\nOpen Browse and paste it into the search field."
+        )
     if exact_card_count and exact_card_count > 1:
         return (
             f"Copied search for {exact_card_count} missed examples:\n\n"

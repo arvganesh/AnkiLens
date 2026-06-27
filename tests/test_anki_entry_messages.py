@@ -65,6 +65,14 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertIn("cid:10 or cid:11 or cid:12", message)
         self.assertIn("Open Browse and paste", message)
 
+    def test_browse_message_fallback_names_single_exact_card(self) -> None:
+        message = anki_entry._browse_search_message("cid:10", opened=False)
+
+        self.assertIn("Copied search for this card", message)
+        self.assertIn("cid:10", message)
+        self.assertIn("Open Browse and paste", message)
+        self.assertNotIn("Anki Browse", message)
+
     def test_exact_card_search_count_rejects_mixed_queries(self) -> None:
         self.assertEqual(anki_entry._exact_card_search_count("cid:10 or tag:cardiology"), 0)
 
