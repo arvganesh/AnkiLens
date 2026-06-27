@@ -122,20 +122,20 @@ def mixed_repair_signal_text() -> str:
 
 def no_pattern_title(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
-        return "Nothing to check yet"
-    return "No clear next check yet"
+        return "No action needed yet"
+    return "No clear action yet"
 
 
 def no_pattern_evidence(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
         return "No card crossed the repeated-miss threshold in this window."
-    return "There are repeated misses, but not enough shared signal to point at a card edit or study target."
+    return "There are repeated misses, but they do not cluster enough to point at a card edit or study target."
 
 
 def no_pattern_next_step(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
-        return "Keep reviewing. Bonsai will speak up when a stronger pattern appears."
-    return "If one card feels suspicious, review evidence cards. Otherwise keep reviewing and wait for a clearer pattern."
+        return "Keep reviewing normally. Bonsai will speak up when a stronger pattern appears."
+    return "Do not edit or cram from this alone. If one card felt wrong, open the evidence table; otherwise keep reviewing."
 
 
 def early_learning_evidence(count: int) -> str:

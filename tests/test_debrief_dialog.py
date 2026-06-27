@@ -119,15 +119,16 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertNotIn("source", no_repair_signal_text().lower())
 
     def test_no_pattern_copy_stays_actionable_without_overclaiming(self) -> None:
-        self.assertEqual(no_pattern_title(), "No clear next check yet")
-        self.assertIn("not enough shared signal", no_pattern_evidence())
-        self.assertIn("review evidence cards", no_pattern_next_step())
-        self.assertIn("wait for a clearer pattern", no_pattern_next_step())
+        self.assertEqual(no_pattern_title(), "No clear action yet")
+        self.assertIn("do not cluster enough", no_pattern_evidence())
+        self.assertIn("Do not edit or cram from this alone", no_pattern_next_step())
+        self.assertIn("open the evidence table", no_pattern_next_step())
+        self.assertNotIn("review evidence cards", no_pattern_next_step())
 
     def test_no_pattern_copy_handles_no_repeated_misses(self) -> None:
-        self.assertEqual(no_pattern_title(has_repeated_misses=False), "Nothing to check yet")
+        self.assertEqual(no_pattern_title(has_repeated_misses=False), "No action needed yet")
         self.assertIn("No card crossed the repeated-miss threshold", no_pattern_evidence(has_repeated_misses=False))
-        self.assertIn("Keep reviewing", no_pattern_next_step(has_repeated_misses=False))
+        self.assertIn("Keep reviewing normally", no_pattern_next_step(has_repeated_misses=False))
 
     def test_repair_action_summary_names_evidence_and_uncertainty(self) -> None:
         summary = MissedCardSummary(
