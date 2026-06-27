@@ -164,6 +164,42 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertIn("revisit the material briefly", calls[0][0][1])
         self.assertNotIn("source", calls[0][0][1].lower())
 
+    def test_no_pattern_recommendation_uses_quiet_confidence(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_recommendation_card = debrief_dialog.recommendation_card
+        calls = []
+        debrief_dialog.recommendation_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "recommendation"
+        try:
+            widget = debrief_dialog._next_step_card(
+                Debrief(
+                    study_next=(),
+                    cards_to_fix=CardsToFix(0, (), ()),
+                    early_learning=EarlyLearning(0, ()),
+                    session_habits=SessionHabits(1, 0, 0.0, "Morning"),
+                    missed_cards=(
+                        MissedCardSummary(
+                            1,
+                            "Cardiology",
+                            "Aortic stenosis",
+                            2,
+                            5,
+                            datetime(2026, 6, 26),
+                        ),
+                    ),
+                ),
+                dialog=None,
+                open_card=None,
+                open_material=None,
+            )
+        finally:
+            debrief_dialog.recommendation_card = original_recommendation_card
+
+        self.assertEqual(widget, "recommendation")
+        self.assertEqual(calls[0][1]["confidence"], "Not enough signal")
+        self.assertIn("intentionally staying quiet", calls[0][1]["check"])
+        self.assertNotIn("Weak evidence", calls[0][1]["confidence"])
+
 
 if __name__ == "__main__":
     unittest.main()

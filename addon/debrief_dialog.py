@@ -17,6 +17,8 @@ try:
         early_learning_title,
         evidence_confidence_text,
         no_pattern_evidence,
+        no_pattern_confidence_text,
+        no_pattern_check_text,
         no_pattern_next_step,
         no_pattern_title,
         mixed_repair_signal_text,
@@ -49,6 +51,8 @@ except ImportError:
         early_learning_title,
         evidence_confidence_text,
         no_pattern_evidence,
+        no_pattern_confidence_text,
+        no_pattern_check_text,
         no_pattern_next_step,
         no_pattern_title,
         mixed_repair_signal_text,
@@ -187,10 +191,10 @@ def _next_step_card(
     has_repeated_misses = bool(debrief.missed_cards)
     return recommendation_card(
         no_pattern_title(has_repeated_misses=has_repeated_misses),
-        confidence="Weak evidence",
+        confidence=no_pattern_confidence_text(has_repeated_misses=has_repeated_misses),
         evidence=no_pattern_evidence(has_repeated_misses=has_repeated_misses),
         next_step=no_pattern_next_step(has_repeated_misses=has_repeated_misses),
-        check="Bonsai is staying quiet rather than turning thin data into advice.",
+        check=no_pattern_check_text(has_repeated_misses=has_repeated_misses),
     )
 
 

@@ -138,6 +138,18 @@ def no_pattern_next_step(*, has_repeated_misses: bool = True) -> str:
     return "Do not edit or cram from this alone. If one card felt wrong, open the evidence table; otherwise keep reviewing."
 
 
+def no_pattern_confidence_text(*, has_repeated_misses: bool = True) -> str:
+    if not has_repeated_misses:
+        return "No signal"
+    return "Not enough signal"
+
+
+def no_pattern_check_text(*, has_repeated_misses: bool = True) -> str:
+    if not has_repeated_misses:
+        return "No card needs attention from this window."
+    return "Bonsai is intentionally staying quiet until the evidence points to a useful action."
+
+
 def early_learning_evidence(count: int) -> str:
     label = "card is" if count == 1 else "cards are"
     return f"{count} early {label} new enough that misses may be first-pass learning, not mature lapses."
