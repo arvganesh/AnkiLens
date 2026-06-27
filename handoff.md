@@ -86,6 +86,8 @@ Recent UI simplifications:
 - Let secondary related-material panels open exact missed examples when Bonsai has those card IDs.
 - Softened remaining `related cards` copy in the primary study path to `cards`, `examples`, or `missed examples`.
 - Softened the secondary study support heading to `Also check cards`.
+- Debrief action callbacks now close the dialog, then schedule Browse/open callbacks on the next Qt tick.
+- Evidence examples are capped to two shortened labels plus `+N more` so large sessions stay readable.
 
 ## Latest Completed Slice
 
@@ -100,6 +102,9 @@ Behavior:
 - Secondary study support panels say `Also check cards` instead of `Also check related material`.
 - If Browse cannot open a single exact `cid:` search, the fallback now says `Copied search for this card`
   instead of the generic `Anki Browse` wording.
+- Debrief action callbacks are scheduled after dialog close so Browser opening does not race modal teardown.
+- A 380-review workflow test covers many misses in one tag and verifies the exact-card target remains capped
+  while the visible examples line stays short.
 - The exact missed-card Browse behavior is unchanged.
 
 Why:
@@ -108,6 +113,8 @@ Why:
 - `related cards` and `open...` made the UI feel more mechanical and diagnostic than necessary.
 - Secondary check headings should stay concrete and scan-friendly.
 - Fallback Browse messages should name exact-card actions clearly when opening Browse fails.
+- Browse actions should run after the debrief modal has started closing, not inside the same click stack.
+- Long AnKing-style labels should not make `Why this came up` unreadable as study volume grows.
 
 Commit:
 
@@ -123,7 +130,7 @@ make test
 
 Result:
 
-- 185 tests passed.
+- 188 tests passed.
 
 Also run before commits:
 
@@ -144,11 +151,15 @@ Visual verification:
 - The deck page can remain stale after code changes until Anki/deck browser rerenders.
 - In the current Codex/Computer Use setup, clicking the debrief Browse action has intermittently returned `noWindowsAvailable`
   even though Browse is visible to the user. This reproduced after clicking `Show 2 missed examples`; the clipboard was empty.
+  Scheduling the callback after dialog close did not make Computer Use able to verify the transition in this session.
   Treat exact Browse visual proof as incomplete if this recurs.
 - The dense `Bonsai Details` / missed-card table still exists via the Tools menu, but it is not part of the primary debrief flow.
 
 ## Recent Commits
 
+- `373f6f6` Name single-card Browse fallback
+- `3eab6a0` Clarify secondary debrief checks
+- `a213072` Soften missed-example debrief copy
 - `f46f000` Name exact missed example count in Browse feedback
 - `869d58c` Name exact missed example count in debrief actions
 - `24e8851` Title exact example debriefs as checks
@@ -156,9 +167,6 @@ Visual verification:
 - `2f22502` Promote debrief signal in recommendation card
 - `55822b2` Focus debrief action on missed examples
 - `22fad1f` Hide non-actionable session miss rate note
-- `259d3cb` Remove dense details link from debrief
-- `7ed70a3` Keep debrief action buttons compact
-- `512d6ac` Remove details button from deck panel
 
 ## Suggested Next Steps
 

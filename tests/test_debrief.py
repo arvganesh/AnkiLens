@@ -5,6 +5,7 @@ from datetime import datetime
 
 from analytics import ReviewLogEntry
 from debrief import build_debrief
+from debrief_dialog_copy import target_detail_text
 
 
 def _entry(
@@ -235,6 +236,68 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual([summary.card_label for summary in debrief.missed_cards], ["Random B", "Random A"])
         self.assertEqual(debrief.study_next[0].label, "renal_sodium")
         self.assertEqual(debrief.study_next[0].related_cards, ("Renal 3", "Renal 2", "Renal 1"))
+
+    def test_large_review_window_keeps_debrief_examples_scannable(self) -> None:
+        tag = "AnKing::Cardiology::Valves"
+        entries = [
+            _entry(
+                card_id,
+                3,
+                card_id % 60,
+                text=f"stable valve review {card_id}",
+                tags=(tag,),
+                label=f"Stable valve review card {card_id}",
+                card_reps=20,
+                note_id=card_id + 1000,
+                note_card_count=1,
+            )
+            for card_id in range(1, 221)
+        ]
+        long_labels = tuple(
+            f"Valve physiology missed example {index} with long AnKing-style clinical wording"
+            for index in range(221, 301)
+        )
+        for index, label in enumerate(long_labels, start=221):
+            entries.extend(
+                (
+                    _entry(
+                        index,
+                        1,
+                        index % 60,
+                        text=f"unique{index}",
+                        tags=(tag,),
+                        label=label,
+                        card_reps=20,
+                        note_id=index + 1000,
+                        note_card_count=1,
+                    ),
+                    _entry(
+                        index,
+                        1,
+                        (index + 1) % 60,
+                        text=f"unique{index}",
+                        tags=(tag,),
+                        label=label,
+                        card_reps=20,
+                        note_id=index + 1000,
+                        note_card_count=1,
+                    ),
+                )
+            )
+
+        debrief = build_debrief(entries)
+        target = debrief.study_next[0]
+        detail = target_detail_text(target.related_cards, lapsed_count=target.lapsed_count)
+
+        self.assertEqual(debrief.session_habits.review_count, 380)
+        self.assertEqual(target.label, tag)
+        self.assertEqual(target.reviewed_count, 300)
+        self.assertEqual(target.count, 80)
+        self.assertEqual(len(target.related_card_ids), 3)
+        self.assertTrue(all(221 <= card_id <= 300 for card_id in target.related_card_ids))
+        self.assertEqual(len(target.related_cards), 3)
+        self.assertIn("+1 more", detail)
+        self.assertLessEqual(len(detail.split("Breakdown:")[0]), 150)
 
     def test_study_targets_prefer_repeated_tags_over_deck_fallback(self) -> None:
         debrief = build_debrief(

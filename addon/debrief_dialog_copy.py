@@ -63,7 +63,7 @@ def target_evidence_text(
     sample = "In this window, " if _is_small_sample(reviewed_count) else ""
     evidence = f"{sample}{count} of {reviewed_count} {card_label}{scope} needed another pass."
     if related_cards:
-        evidence += f" Examples: {', '.join(related_cards)}."
+        evidence += f" Examples: {_example_summary(related_cards)}."
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
     if maturity:
         evidence += f" {maturity}."
@@ -95,7 +95,7 @@ def target_detail_text(
 ) -> str:
     details = []
     if related_cards:
-        details.append(f"Examples: {', '.join(related_cards)}.")
+        details.append(f"Examples: {_example_summary(related_cards)}.")
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
     if maturity:
         details.append(f"{maturity}.")
@@ -274,6 +274,18 @@ def early_learning_check_text() -> str:
 
 def short_label(label: str) -> str:
     return label if len(label) <= 64 else label[:61].rstrip() + "..."
+
+
+def _example_summary(related_cards: tuple[str, ...]) -> str:
+    visible = tuple(_short_example(card) for card in related_cards[:2])
+    hidden_count = max(0, len(related_cards) - len(visible))
+    if hidden_count:
+        return f"{'; '.join(visible)}; +{hidden_count} more"
+    return ", ".join(visible)
+
+
+def _short_example(label: str) -> str:
+    return label if len(label) <= 44 else label[:41].rstrip() + "..."
 
 
 def _maturity_text(early_count: int, mature_count: int, lapsed_count: int) -> str:

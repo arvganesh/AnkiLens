@@ -117,6 +117,7 @@ class AnkiEntryMessagesTest(unittest.TestCase):
                 "bonsai.copy_text",
                 "bonsai.session_context",
                 "bonsai.ui_helpers",
+                "bonsai.dialog_actions",
                 "bonsai.debrief_dialog",
             ),
         )

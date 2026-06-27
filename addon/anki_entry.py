@@ -149,6 +149,7 @@ def _debrief_dialog_module_names(package: str) -> tuple[str, ...]:
         f"{package}.copy_text",
         f"{package}.session_context",
         f"{package}.ui_helpers",
+        f"{package}.dialog_actions",
         f"{package}.debrief_dialog",
     )
 
