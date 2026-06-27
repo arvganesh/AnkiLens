@@ -145,7 +145,7 @@ def _open_card_from_debrief(card_id: int) -> None:
 
 
 def _open_material_from_debrief(target: StudyTarget) -> None:
-    query = browser_search_for_study_target(target.kind, target.label)
+    query = browser_search_for_study_target(target.kind, target.label, target.related_card_ids)
     _open_search_from_debrief(query)
 
 

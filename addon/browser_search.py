@@ -5,7 +5,9 @@ def browser_search_for_card(card_id: int) -> str:
     return f"cid:{card_id}"
 
 
-def browser_search_for_study_target(kind: str, label: str) -> str:
+def browser_search_for_study_target(kind: str, label: str, card_ids: tuple[int, ...] = ()) -> str:
+    if card_ids:
+        return " or ".join(f"cid:{card_id}" for card_id in card_ids)
     if kind == "tag":
         return f"tag:{_search_value(label)} -is:suspended"
     if kind == "deck":

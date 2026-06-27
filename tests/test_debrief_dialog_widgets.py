@@ -513,8 +513,11 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")
         original_recommendation_card = debrief_dialog.recommendation_card
+        original_secondary_button = debrief_dialog.secondary_button
         calls = []
+        button_calls = []
         debrief_dialog.recommendation_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "recommendation"
+        debrief_dialog.secondary_button = lambda text: button_calls.append(text) or _FakeButton(text)
         try:
             widget = debrief_dialog._next_step_card(
                 Debrief(
@@ -527,6 +530,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                             ("Aortic stenosis", "Mitral regurgitation"),
                             early_count=1,
                             mature_count=3,
+                            related_card_ids=(10, 11),
                         ),
                     ),
                     cards_to_fix=CardsToFix(0, (), ()),
@@ -536,14 +540,16 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                 ),
                 dialog=None,
                 open_card=None,
-                open_material=None,
+                open_material=lambda _target: None,
             )
         finally:
             debrief_dialog.recommendation_card = original_recommendation_card
+            debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "recommendation")
         self.assertIn("revisit the surrounding concept", calls[0][1]["next_step"])
         self.assertIn("3 mature", calls[0][1]["evidence"])
+        self.assertEqual(button_calls, ["Show missed examples"])
 
 
 if __name__ == "__main__":

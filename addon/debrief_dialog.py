@@ -22,6 +22,7 @@ try:
         no_pattern_next_step,
         no_pattern_title,
         mixed_repair_signal_text,
+        missed_examples_button_text,
         no_repair_signal_text,
         related_search_button_text,
         repair_evidence,
@@ -71,6 +72,7 @@ except ImportError:
         no_pattern_next_step,
         no_pattern_title,
         mixed_repair_signal_text,
+        missed_examples_button_text,
         no_repair_signal_text,
         related_search_button_text,
         repair_evidence,
@@ -197,7 +199,7 @@ def _next_step_card(
         target = debrief.study_next[0] if debrief.study_next else None
         actions = ()
         if open_material and target:
-            button = secondary_button(related_search_button_text())
+            button = secondary_button(_material_button_text(target))
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
         return recommendation_card(
@@ -216,7 +218,7 @@ def _next_step_card(
         target = debrief.study_next[0]
         actions = ()
         if open_material:
-            button = secondary_button(related_search_button_text())
+            button = secondary_button(_material_button_text(target))
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
         return recommendation_card(
@@ -408,6 +410,12 @@ def _study_check_text(debrief: Debrief) -> str:
 
 def _target_kind_label(kind: str) -> str:
     return {"tag": "tag", "term": "word", "deck": "deck"}.get(kind, "pattern")
+
+
+def _material_button_text(target: StudyTarget) -> str:
+    if target.related_card_ids:
+        return missed_examples_button_text()
+    return related_search_button_text()
 
 
 def _target_label(target: StudyTarget) -> str:

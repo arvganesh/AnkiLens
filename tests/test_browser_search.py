@@ -15,6 +15,12 @@ class BrowserSearchTest(unittest.TestCase):
             "tag:AnKing_Cardiology_Valves -is:suspended",
         )
 
+    def test_prefers_missed_example_card_ids_when_available(self) -> None:
+        self.assertEqual(
+            browser_search_for_study_target("tag", "AnKing_Cardiology_Valves", (123, 456)),
+            "cid:123 or cid:456",
+        )
+
     def test_builds_quoted_deck_search_query(self) -> None:
         self.assertEqual(browser_search_for_study_target("deck", "Test Deck"), 'deck:"Test Deck"')
 

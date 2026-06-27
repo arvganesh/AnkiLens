@@ -16,6 +16,7 @@ from debrief_dialog_copy import (
     early_learning_next_step,
     early_learning_title,
     evidence_confidence_text,
+    missed_examples_button_text,
     mixed_repair_signal_text,
     no_pattern_evidence,
     no_pattern_confidence_text,
@@ -124,6 +125,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(early_learning_title(), "Early cards need a light check")
         self.assertEqual(card_search_button_text(), "Show card in Browse")
         self.assertEqual(related_search_button_text(), "Show related cards")
+        self.assertEqual(missed_examples_button_text(), "Show missed examples")
         self.assertEqual(supporting_cards_button_text(), "See supporting cards")
         self.assertEqual(
             no_repair_signal_text(),

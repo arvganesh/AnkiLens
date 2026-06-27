@@ -109,6 +109,10 @@ def related_search_button_text() -> str:
     return "Show related cards"
 
 
+def missed_examples_button_text() -> str:
+    return "Show missed examples"
+
+
 def evidence_confidence_text(
     missed_count: int,
     reviewed_count: int,

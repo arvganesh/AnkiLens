@@ -144,6 +144,7 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.study_next[0].count, 2)
         self.assertEqual(debrief.study_next[0].reviewed_count, 5)
         self.assertEqual(debrief.study_next[0].related_cards, ("Active MR", "Active AS"))
+        self.assertEqual(debrief.study_next[0].related_card_ids, (3, 2))
 
     def test_suspended_only_tag_misses_do_not_create_study_target(self) -> None:
         tag = "AnKing::Cardiology::Valves"
