@@ -59,9 +59,9 @@ def target_evidence_text(
     lapsed_count: int = 0,
 ) -> str:
     card_label = "card" if reviewed_count == 1 else "cards"
-    scope = "related " if active_cards else ""
+    scope = f" from {label}" if active_cards else f" in {label}"
     sample = "In this window, " if _is_small_sample(reviewed_count) else ""
-    evidence = f"{sample}{count} of {reviewed_count} {scope}{card_label} in {label} needed another pass."
+    evidence = f"{sample}{count} of {reviewed_count} {card_label}{scope} needed another pass."
     if related_cards:
         evidence += f" Examples: {', '.join(related_cards)}."
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
@@ -138,7 +138,7 @@ def same_note_cluster_check_text() -> str:
 
 
 def related_search_button_text() -> str:
-    return "Show related cards"
+    return "Show cards to check"
 
 
 def missed_examples_button_text() -> str:
@@ -197,27 +197,27 @@ def study_next_step(
         )
     if lapsed_count > early_count + mature_count:
         return (
-            "Open related cards first. If the prompts look clear, this may just be old material that needs another pass."
+            "Look at the cards first. If the prompts look clear, this may just be old material that needs another pass."
         )
     if mature_count >= 2 and mature_count >= early_count:
         return (
-            "Open related cards and read the prompts. If they are clear and still feel unfamiliar, "
+            "Look at the cards and read the prompts. If they are clear and still feel unfamiliar, "
             "revisit the surrounding concept."
         )
     if kind == "tag":
         return (
-            "Open a few related cards first. If the prompts are clear and the examples still feel unfamiliar, "
+            "Look at a few cards first. If the prompts are clear and the examples still feel unfamiliar, "
             "revisit nearby material for this tag."
         )
     if kind == "term":
         return "Skim the examples with this repeated wording. If they still feel unfamiliar, review the material around that concept."
     if kind == "deck":
-        return "Treat this as broad deck context: check related cards before deciding what, if anything, to study."
-    return "Review the related cards, then decide whether the surrounding material needs another pass."
+        return "Treat this as broad deck context: check a few cards before deciding what, if anything, to study."
+    return "Review the cards, then decide whether the surrounding material needs another pass."
 
 
 def no_repair_signal_text() -> str:
-    return "No obvious card-format issue stood out, so check related cards before deciding to study more."
+    return "No obvious card-format issue stood out, so inspect the cards before deciding to study more."
 
 
 def mixed_repair_signal_text() -> str:

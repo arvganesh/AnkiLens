@@ -766,6 +766,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(calls[0][0][0], "Check examples from Cardiology Valves")
         self.assertEqual(calls[0][1]["confidence"], "4 of 8 cards in this group needed another pass.")
         self.assertIn("revisit the surrounding concept", calls[0][1]["next_step"])
+        self.assertIn("Look at the missed examples", calls[0][1]["next_step"])
         self.assertIn("3 mature", calls[0][1]["evidence"])
         self.assertNotIn("4 of 8", calls[0][1]["evidence"])
         self.assertEqual(button_calls, ["Show 2 missed examples"])
@@ -804,8 +805,9 @@ class DebriefDialogWidgetTest(unittest.TestCase):
 
         self.assertEqual(widget, "recommendation")
         self.assertEqual(calls[0][0][0], "Check examples from Cardiology Valves")
-        self.assertIn("Open the missed examples", calls[0][1]["next_step"])
+        self.assertIn("Look at the missed examples", calls[0][1]["next_step"])
         self.assertNotIn("Open related cards", calls[0][1]["next_step"])
+        self.assertNotIn("related cards", calls[0][1]["next_step"])
         self.assertIn("old material that needs another pass", calls[0][1]["next_step"])
         self.assertIn("inspect these examples", calls[0][1]["check"])
 

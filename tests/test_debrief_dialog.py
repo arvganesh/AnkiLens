@@ -92,7 +92,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(
             target_evidence_text(2, 5, "Cardiology Valves", ("Murmur?", "Aortic stenosis murmur"), active_cards=True),
             (
-                "In this window, 2 of 5 related cards in Cardiology Valves needed another pass. "
+                "In this window, 2 of 5 cards from Cardiology Valves needed another pass. "
                 "Examples: Murmur?, Aortic stenosis murmur."
             ),
         )
@@ -108,7 +108,7 @@ class DebriefDialogTest(unittest.TestCase):
                 lapsed_count=1,
             ),
             (
-                "In this window, 4 of 8 related cards in Cardiology Valves needed another pass. "
+                "In this window, 4 of 8 cards from Cardiology Valves needed another pass. "
                 "Examples: Murmur?. Breakdown: 2 early/new, 1 mature, 1 previously learned."
             ),
         )
@@ -146,12 +146,12 @@ class DebriefDialogTest(unittest.TestCase):
     def test_debrief_action_copy_is_clear_and_cautious(self) -> None:
         self.assertEqual(early_learning_title(), "Early cards need a light check")
         self.assertEqual(card_search_button_text(), "Show card in Browse")
-        self.assertEqual(related_search_button_text(), "Show related cards")
+        self.assertEqual(related_search_button_text(), "Show cards to check")
         self.assertEqual(missed_examples_button_text(), "Show missed examples")
         self.assertEqual(supporting_cards_button_text(), "See supporting cards")
         self.assertEqual(
             no_repair_signal_text(),
-            "No obvious card-format issue stood out, so check related cards before deciding to study more.",
+            "No obvious card-format issue stood out, so inspect the cards before deciding to study more.",
         )
         self.assertEqual(
             mixed_repair_signal_text(),
@@ -181,11 +181,11 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(
             study_next_step("tag"),
             (
-                "Open a few related cards first. If the prompts are clear and the examples still feel unfamiliar, "
+                "Look at a few cards first. If the prompts are clear and the examples still feel unfamiliar, "
                 "revisit nearby material for this tag."
             ),
         )
-        self.assertIn("related cards", study_next_step("tag"))
+        self.assertIn("Look at a few cards", study_next_step("tag"))
         self.assertIn("prompts are clear", study_next_step("tag"))
         self.assertNotIn("class material", study_next_step("tag"))
         self.assertNotIn("evidence", study_target_title("Cardiology Valves").lower())
@@ -200,7 +200,7 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertIn("revisit the surrounding concept", mature_step)
         self.assertIn("clear and still feel unfamiliar", mature_step)
-        self.assertIn("Open related cards first", lapsed_step)
+        self.assertIn("Look at the cards first", lapsed_step)
         self.assertIn("old material that needs another pass", lapsed_step)
 
     def test_same_note_cluster_copy_names_limited_scope(self) -> None:
@@ -235,7 +235,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("still feel unfamiliar", study_next_step("term"))
         self.assertIn("broad deck context", study_next_step("deck"))
         self.assertNotIn("signal", study_next_step("deck"))
-        self.assertIn("related cards", study_next_step("unknown"))
+        self.assertIn("Review the cards", study_next_step("unknown"))
         self.assertNotIn("source", study_next_step("tag").lower())
         self.assertNotIn("source", no_repair_signal_text().lower())
 

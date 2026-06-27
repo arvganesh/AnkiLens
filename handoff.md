@@ -66,11 +66,13 @@ The main flow is:
 
 ## Current Live UX
 
-The Recent Debrief currently leads with a single card:
+The Missed Cards debrief currently leads with a single card:
 
-- Title example: `Worth checking: Cardiology Valves`.
-- Primary action example: `Show missed examples`.
-- Evidence appears below the action under `What Bonsai saw`, with the `2 of 5` signal first.
+- Title example: `Check examples from Cardiology Valves`.
+- Signal badge example: `2 of 5 cards in this group needed another pass.`
+- Primary action example: `Show 2 missed examples`.
+- The next step says `Look at the missed examples first...`.
+- Evidence appears below the action under `Why this came up`, with examples before the maturity breakdown.
 - Safety copy appears under `Before studying more`.
 - Secondary cards use ranked language such as `Also check...` or `Ignore for now...`.
 
@@ -82,30 +84,28 @@ Recent UI simplifications:
 - Removed the high-Again-rate session note because it duplicated the main signal.
 - Changed material actions to open exact missed examples when possible.
 - Let secondary related-material panels open exact missed examples when Bonsai has those card IDs.
+- Softened remaining `related cards` copy in the primary study path to `cards`, `examples`, or `missed examples`.
 
 ## Latest Completed Slice
 
-The latest committed slice makes `Show related cards` more precise.
+The latest committed slice makes the debrief read less like a diagnostic report
+and more like a next checkpoint.
 
 Behavior:
 
-- `StudyTarget` now carries `related_card_ids` for the missed example cards already shown in the debrief.
-- Browser search prefers exact missed examples when those IDs exist:
-  - `cid:123 or cid:456`
-- Broad target search remains the fallback:
-  - `tag:... -is:suspended`
-  - `deck:"..."`
-  - `w:...`
-- The debrief button says `Show missed examples` when the action opens exact cards.
+- Study-target evidence says `2 of 5 cards from Cardiology Valves...` instead of `related cards`.
+- Exact-card next steps say `Look at the missed examples first...`.
+- Broad fallback buttons say `Show cards to check`.
+- The exact missed-card Browse behavior is unchanged.
 
 Why:
 
-- For large AnKing tags, opening the whole tag is too broad.
-- The useful action is to inspect the specific missed examples behind Bonsai's recommendation.
+- The screen should answer what the student should do next within one glance.
+- `related cards` and `open...` made the UI feel more mechanical and diagnostic than necessary.
 
 Commit:
 
-- `55822b2` Focus debrief action on missed examples
+- See the latest git log entry.
 
 ## Verification
 
@@ -117,7 +117,7 @@ make test
 
 Result:
 
-- 166 tests passed.
+- 185 tests passed.
 
 Also run before commits:
 
@@ -136,27 +136,29 @@ Visual verification:
 - The running Anki process can keep old Python modules in memory.
 - Some changes, especially `anki_entry.py`, dataclass shape changes, and loader-list changes, may require restarting Anki.
 - The deck page can remain stale after code changes until Anki/deck browser rerenders.
+- In the current Codex/Computer Use setup, clicking the debrief Browse action has intermittently returned `noWindowsAvailable`
+  even though Browse is visible to the user. Treat exact Browse visual proof as incomplete if this recurs.
 - The dense `Bonsai Details` / missed-card table still exists via the Tools menu, but it is not part of the primary debrief flow.
 
 ## Recent Commits
 
+- `f46f000` Name exact missed example count in Browse feedback
+- `869d58c` Name exact missed example count in debrief actions
+- `24e8851` Title exact example debriefs as checks
+- `daa3886` Soften grouped-card debrief signal
+- `2f22502` Promote debrief signal in recommendation card
 - `55822b2` Focus debrief action on missed examples
 - `22fad1f` Hide non-actionable session miss rate note
 - `259d3cb` Remove dense details link from debrief
 - `7ed70a3` Keep debrief action buttons compact
 - `512d6ac` Remove details button from deck panel
-- `b8f8372` Reload deck button modules during render
-- `73f8d53` Document Anki visual QA path
-- `9ff2570` Clarify supporting cards path
-- `9c7e750` Reload debrief dialog modules in Anki
-- `c5f71a5` Clarify tag study recommendation titles
 
 ## Suggested Next Steps
 
-1. Restart Anki to pick up the latest loader/model changes.
-2. Open `Analyze missed cards` on the Test Deck.
-3. Confirm the primary action says `Show missed examples`.
-4. Click it and confirm Browse opens the exact missed cards, not the whole tag.
+1. Open `Analyze missed cards` on the Test Deck.
+2. Confirm the primary action says `Show 2 missed examples` when exact card IDs exist.
+3. Click it and confirm Browse opens the exact missed cards, not the whole tag.
+4. If Browse cannot be verified through Computer Use, note the `noWindowsAvailable` limitation instead of claiming proof.
 5. Next product slice: decide whether `Bonsai Details` should be redesigned as a focused card-inspection sheet or left as a low-priority Tools-menu fallback.
 
 ## Files To Read First

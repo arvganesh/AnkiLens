@@ -51,7 +51,7 @@ class _FakeLayout:
 
     def addLayout(self, item, *args) -> None:
         self.items.append(("layout", item, args))
-        if any(getattr(child[1], "text", "") == "Show related cards" for child in getattr(item, "items", ())):
+        if any(getattr(child[1], "text", "") == "Show cards to check" for child in getattr(item, "items", ())):
             self.action_rows.append(tuple(self.items))
         action_order = tuple(
             child[0] if child[0] == "stretch" else getattr(child[1], "text", "")
@@ -115,10 +115,10 @@ class UiHelpersTest(unittest.TestCase):
         ui_helpers.recommendation_card(
             "Check related material: Cardiology Valves",
             confidence="Worth a quick check",
-            evidence="2 of 5 related cards in Cardiology Valves needed another pass.",
-            next_step="Open the related cards.",
+            evidence="2 of 5 cards from Cardiology Valves needed another pass.",
+            next_step="Look at the cards first.",
             check="No obvious card-format issue stood out.",
-            actions=(_FakeWidget("Show related cards"),),
+            actions=(_FakeWidget("Show cards to check"),),
         )
 
         self.assertIn("Check first", _FakeWidget.labels)
@@ -126,11 +126,11 @@ class UiHelpersTest(unittest.TestCase):
         self.assertIn("Why this came up", _FakeWidget.labels)
         self.assertIn("Before studying more", _FakeWidget.labels)
         self.assertIn("Worth a quick check", _FakeWidget.labels)
-        self.assertIn("2 of 5 related cards in Cardiology Valves needed another pass.", _FakeWidget.labels)
-        self.assertIn("Open the related cards.", _FakeWidget.labels)
-        self.assertLess(_FakeWidget.labels.index("Worth a quick check"), _FakeWidget.labels.index("Open the related cards."))
-        self.assertLess(_FakeWidget.labels.index("Open the related cards."), _FakeWidget.labels.index("Why this came up"))
-        self.assertLess(_FakeWidget.labels.index("Show related cards"), _FakeWidget.labels.index("Why this came up"))
+        self.assertIn("2 of 5 cards from Cardiology Valves needed another pass.", _FakeWidget.labels)
+        self.assertIn("Look at the cards first.", _FakeWidget.labels)
+        self.assertLess(_FakeWidget.labels.index("Worth a quick check"), _FakeWidget.labels.index("Look at the cards first."))
+        self.assertLess(_FakeWidget.labels.index("Look at the cards first."), _FakeWidget.labels.index("Why this came up"))
+        self.assertLess(_FakeWidget.labels.index("Show cards to check"), _FakeWidget.labels.index("Why this came up"))
         self.assertEqual(len(_FakeLayout.action_rows), 1)
         self.assertEqual(_FakeLayout.stretch_count, 1)
 
@@ -141,8 +141,8 @@ class UiHelpersTest(unittest.TestCase):
         ui_helpers.recommendation_card(
             "Check related material: Cardiology Valves",
             confidence="Worth a quick check",
-            evidence="2 of 5 related cards in Cardiology Valves needed another pass.",
-            next_step="Open the related cards.",
+            evidence="2 of 5 cards from Cardiology Valves needed another pass.",
+            next_step="Look at the cards first.",
             check="No obvious card-format issue stood out.",
         )
 
@@ -159,8 +159,8 @@ class UiHelpersTest(unittest.TestCase):
         card = ui_helpers.recommendation_card(
             "Check related material: Cardiology Valves",
             confidence="Worth a quick check",
-            evidence="2 of 5 related cards in Cardiology Valves needed another pass.",
-            next_step="Open the related cards.",
+            evidence="2 of 5 cards from Cardiology Valves needed another pass.",
+            next_step="Look at the cards first.",
             check="No obvious card-format issue stood out.",
         )
 

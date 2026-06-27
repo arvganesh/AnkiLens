@@ -484,10 +484,11 @@ def _study_next_step_for_target(target: StudyTarget) -> str:
 
 def _missed_examples_next_step(text: str) -> str:
     return (
-        text.replace("Open related cards", "Open the missed examples")
-        .replace("Open a few related cards", "Open the missed examples")
-        .replace("Review the related cards", "Review the missed examples")
-        .replace("check related cards", "check the missed examples")
+        text.replace("Look at a few cards", "Look at the missed examples")
+        .replace("Look at the cards", "Look at the missed examples")
+        .replace("Review the cards", "Review the missed examples")
+        .replace("check a few cards", "check the missed examples")
+        .replace("inspect the cards", "inspect the missed examples")
     )
 
 
