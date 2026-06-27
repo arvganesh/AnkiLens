@@ -83,7 +83,7 @@ def show_session_debrief() -> None:
         lookback_days=config.debrief_lookback_days,
         open_card=_open_card_from_debrief,
         open_material=_open_material_from_debrief,
-        open_full_analytics=show_missed_card_analytics,
+        open_full_analytics=lambda: show_missed_card_analytics(lookback_days=config.debrief_lookback_days),
         parent=mw,
     )
     dialog.exec()
@@ -139,17 +139,14 @@ def _copy_search_from_debrief(query: str) -> None:
     _open_search_from_debrief(query)
 
 
-def show_missed_card_analytics() -> None:
+def show_missed_card_analytics(*, lookback_days: int | None = None) -> None:
     from aqt import mw
 
     from .dialog import MissedCardsDialog
 
     config = load_config(mw.addonManager.getConfig(__package__))
-    entries = filter_review_entries_by_lookback(
-        load_review_entries(mw),
-        lookback_days=config.lookback_days,
-        now=datetime.now(),
-    )
+    window_days = config.lookback_days if lookback_days is None else lookback_days
+    entries = _analytics_entries(load_review_entries(mw), lookback_days=window_days, now=datetime.now())
     summaries = summarize_missed_cards(
         entries,
         minimum_misses=config.minimum_misses,
@@ -159,7 +156,15 @@ def show_missed_card_analytics() -> None:
         summaries,
         minimum_misses=config.minimum_misses,
         result_limit=config.result_limit,
-        lookback_days=config.lookback_days,
+        lookback_days=window_days,
         parent=mw,
     )
     dialog.exec()
+
+
+def _analytics_entries(entries, *, lookback_days: int, now: datetime):
+    return filter_review_entries_by_lookback(
+        entries,
+        lookback_days=lookback_days,
+        now=now,
+    )

@@ -62,6 +62,34 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         self.assertEqual([entry.card_label for entry in filtered], ["Recent"])
 
+    def test_debrief_details_can_use_same_short_window_as_debrief(self) -> None:
+        entries = [
+            ReviewLogEntry(1, 1, datetime(2026, 3, 26, 8), "Deck", "Stale"),
+            ReviewLogEntry(2, 1, datetime(2026, 6, 26, 8), "Deck", "Recent"),
+        ]
+
+        filtered = anki_entry._analytics_entries(
+            entries,
+            lookback_days=1,
+            now=datetime(2026, 6, 26, 12),
+        )
+
+        self.assertEqual([entry.card_label for entry in filtered], ["Recent"])
+
+    def test_broad_analytics_can_still_use_configured_long_window(self) -> None:
+        entries = [
+            ReviewLogEntry(1, 1, datetime(2026, 4, 26, 8), "Deck", "Stale"),
+            ReviewLogEntry(2, 1, datetime(2026, 6, 26, 8), "Deck", "Recent"),
+        ]
+
+        filtered = anki_entry._analytics_entries(
+            entries,
+            lookback_days=90,
+            now=datetime(2026, 6, 26, 12),
+        )
+
+        self.assertEqual([entry.card_label for entry in filtered], ["Stale", "Recent"])
+
 
 if __name__ == "__main__":
     unittest.main()
