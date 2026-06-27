@@ -63,18 +63,22 @@ class DebriefDialog(QDialog):
         content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         content_layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
         if debrief.cards_to_fix.cards:
-            content_layout.addSpacing(2)
             content_layout.addWidget(_cards_to_fix_card(debrief.cards_to_fix, dialog=self, open_card=None))
         if (debrief.cards_to_fix.cards or debrief.study_next) and _early_learning_cards(debrief):
-            content_layout.addSpacing(2)
             content_layout.addWidget(_early_learning_card(debrief))
         if debrief.cards_to_fix.cards and debrief.study_next:
-            content_layout.addSpacing(2)
             content_layout.addWidget(_study_material_card(debrief.study_next, dialog=self, open_material=open_material))
         context = session_context_text(debrief.session_habits)
         if context:
-            content_layout.addSpacing(2)
             content_layout.addWidget(body_label(context))
+        if open_full_analytics:
+            button = secondary_button("Open full analytics")
+            button.clicked.connect(lambda _checked=False: accept_then(self, open_full_analytics))
+            actions = QHBoxLayout()
+            actions.setContentsMargins(0, 2, 0, 0)
+            actions.addStretch(1)
+            actions.addWidget(button)
+            content_layout.addLayout(actions)
         content.setLayout(content_layout)
 
         scroll = QScrollArea()
@@ -83,15 +87,6 @@ class DebriefDialog(QDialog):
         scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
         scroll.setWidget(content)
         layout.addWidget(scroll, 1)
-
-        if open_full_analytics:
-            button = secondary_button("Open full analytics")
-            button.clicked.connect(lambda _checked=False: accept_then(self, open_full_analytics))
-            actions = QHBoxLayout()
-            actions.setContentsMargins(0, 6, 0, 0)
-            actions.addStretch(1)
-            actions.addWidget(button)
-            layout.addLayout(actions)
         self.setLayout(layout)
 
 
