@@ -111,6 +111,8 @@ Behavior:
   with `80 of 300 cards...` instead of the older `2 of 5 cards...` fixture.
 - The deck-browser panel now counts all repeated missed cards in the lookback window instead of the display cap.
   In the real E2E profile, it changed from `20 cards needed another pass...` to `82 cards...`.
+- Secondary study checks hide targets that render to the same student-facing label as the primary target.
+  In the real E2E profile, this removed a redundant secondary `Cardiology Valves` check.
 - The exact missed-card Browse behavior is unchanged.
 
 Why:
@@ -125,6 +127,8 @@ Why:
   the full cluster size instead of implying only one hidden example exists.
 - Real review windows should not let a tiny, high-rate cluster outrank a much better-supported pattern.
 - The deck-browser panel should summarize the actual repeated-miss count, not the capped number of detail rows.
+- If two internal tags render to the same readable concept, show only the stronger one; duplicate same-label
+  secondary checks add clutter without changing the user's next action.
 
 Commit:
 
@@ -165,6 +169,8 @@ Visual verification:
   Computer Use verified the deck browser showed `Studied 380 cards...`, the Bonsai panel showed
   `82 cards needed another pass...`, and the debrief led with `80 of 300 cards...` plus
   `Show 3 missed examples`.
+- After the same-label duplicate suppression, Computer Use verified the real E2E debrief no longer showed the
+  redundant `Also check cards` section for the smaller `Cardiology Valves` fixture.
 
 ## Known Caveats
 

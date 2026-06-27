@@ -362,6 +362,8 @@ def _visible_study_targets(
 def _duplicates_target_examples(target: StudyTarget, primary: StudyTarget | None) -> bool:
     if primary is None:
         return False
+    if _target_label(target) == _target_label(primary):
+        return True
     if target.related_card_ids and primary.related_card_ids:
         return set(target.related_card_ids).issubset(set(primary.related_card_ids))
     if target.related_cards and primary.related_cards:

@@ -606,6 +606,35 @@ class DebriefDialogWidgetTest(unittest.TestCase):
 
         self.assertIsNone(widget)
 
+    def test_study_support_panel_hides_same_displayed_target(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        primary = StudyTarget(
+            "AnKing::Cardiology::Valves",
+            "tag",
+            80,
+            300,
+            ("Valve physiology missed example 300",),
+            related_card_ids=(300,),
+        )
+        same_display_label = StudyTarget(
+            "AnKing_Cardiology_Valves",
+            "tag",
+            2,
+            5,
+            ("Murmur?", "Aortic stenosis murmur"),
+            related_card_ids=(10, 11),
+        )
+
+        widget = debrief_dialog._study_material_card(
+            (primary, same_display_label),
+            dialog=None,
+            open_material=None,
+            exclude_target=primary,
+        )
+
+        self.assertIsNone(widget)
+
     def test_study_support_panel_keeps_distinct_missed_examples(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")
