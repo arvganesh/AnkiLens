@@ -547,8 +547,10 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "recommendation")
+        self.assertEqual(calls[0][1]["confidence"], "4 of 8 related cards needed another pass; worth a quick check.")
         self.assertIn("revisit the surrounding concept", calls[0][1]["next_step"])
         self.assertIn("3 mature", calls[0][1]["evidence"])
+        self.assertNotIn("4 of 8", calls[0][1]["evidence"])
         self.assertEqual(button_calls, ["Show missed examples"])
 
     def test_study_recommendation_names_missed_examples_when_action_is_exact_cards(self) -> None:

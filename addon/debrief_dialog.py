@@ -36,7 +36,9 @@ try:
         scoped_early_learning_evidence,
         scoped_early_learning_title,
         target_display_label,
+        target_detail_text,
         target_evidence_text,
+        target_signal_text,
         study_target_title,
         study_next_step,
     )
@@ -86,7 +88,9 @@ except ImportError:
         scoped_early_learning_evidence,
         scoped_early_learning_title,
         target_display_label,
+        target_detail_text,
         target_evidence_text,
+        target_signal_text,
         study_target_title,
         study_next_step,
     )
@@ -230,12 +234,13 @@ def _next_step_card(
                 mature_count=target.mature_count,
                 lapsed_count=target.lapsed_count,
             ),
-            confidence=evidence_confidence_text(
+            confidence=target_signal_text(
                 target.count,
                 target.reviewed_count,
+                active_cards=target.kind == "tag",
                 mixed_signals=bool(debrief.cards_to_fix.cards),
             ),
-            evidence=_target_evidence(target, _target_label(target)),
+            evidence=_target_detail(target),
             next_step=_study_next_step_for_target(target),
             check=_study_check_text(debrief, target),
             actions=actions,
@@ -390,6 +395,15 @@ def _target_evidence(target: StudyTarget, label: str) -> str:
         label,
         target.related_cards,
         active_cards=target.kind == "tag",
+        early_count=target.early_count,
+        mature_count=target.mature_count,
+        lapsed_count=target.lapsed_count,
+    )
+
+
+def _target_detail(target: StudyTarget) -> str:
+    return target_detail_text(
+        target.related_cards,
         early_count=target.early_count,
         mature_count=target.mature_count,
         lapsed_count=target.lapsed_count,

@@ -70,6 +70,35 @@ def target_evidence_text(
     return evidence
 
 
+def target_signal_text(
+    count: int,
+    reviewed_count: int,
+    *,
+    active_cards: bool = False,
+    mixed_signals: bool = False,
+) -> str:
+    card_label = "card" if reviewed_count == 1 else "cards"
+    scope = "related " if active_cards else ""
+    confidence = evidence_confidence_text(count, reviewed_count, mixed_signals=mixed_signals)
+    return f"{count} of {reviewed_count} {scope}{card_label} needed another pass; {confidence.lower()}."
+
+
+def target_detail_text(
+    related_cards: tuple[str, ...] = (),
+    *,
+    early_count: int = 0,
+    mature_count: int = 0,
+    lapsed_count: int = 0,
+) -> str:
+    details = []
+    maturity = _maturity_text(early_count, mature_count, lapsed_count)
+    if maturity:
+        details.append(f"{maturity}.")
+    if related_cards:
+        details.append(f"Examples: {', '.join(related_cards)}.")
+    return " ".join(details) if details else "Bonsai saw this pattern in the current review window."
+
+
 def early_learning_title() -> str:
     return "Early cards need a light check"
 

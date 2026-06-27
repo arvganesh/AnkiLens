@@ -39,8 +39,10 @@ from debrief_dialog_copy import (
     study_target_title,
     study_next_step,
     supporting_cards_button_text,
+    target_detail_text,
     target_display_label,
     target_evidence_text,
+    target_signal_text,
 )
 from session_context import session_context_text
 
@@ -111,6 +113,22 @@ class DebriefDialogTest(unittest.TestCase):
             ),
         )
         self.assertNotIn("In this window", target_evidence_text(4, 12, "Cardiology Valves", active_cards=True))
+        self.assertEqual(
+            target_signal_text(2, 5, active_cards=True),
+            "2 of 5 related cards needed another pass; worth a quick check.",
+        )
+        self.assertEqual(
+            target_signal_text(4, 10),
+            "4 of 10 cards needed another pass; consistent enough to check.",
+        )
+        self.assertEqual(
+            target_detail_text(("Murmur?",), early_count=2, mature_count=1, lapsed_count=1),
+            "Breakdown: 2 early/new, 1 mature, 1 previously learned. Examples: Murmur?.",
+        )
+        self.assertEqual(
+            target_detail_text(),
+            "Bonsai saw this pattern in the current review window.",
+        )
 
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
         self.assertEqual(debrief_window_title(), "Bonsai Missed Cards")
