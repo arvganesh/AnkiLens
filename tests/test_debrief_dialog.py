@@ -157,8 +157,8 @@ class DebriefDialogTest(unittest.TestCase):
     def test_session_context_warns_when_again_rate_is_high(self) -> None:
         context = session_context_text(SessionHabits(10, 4, 0.4, "Evening", 1, 7.0, 7.0))
 
-        self.assertIn("40% Again across 10 reviews", context)
-        self.assertIn("refresh the source before editing cards", context)
+        self.assertIn("40% of reviews needed another pass", context)
+        self.assertIn("review the source before treating one card as the problem", context)
 
     def test_session_context_warns_when_reviewing_unusually_fast(self) -> None:
         context = session_context_text(SessionHabits(10, 2, 0.2, "Evening", 8, 60.0, 7.5))

@@ -19,7 +19,7 @@ def analytics_caption(
     if shown_count == 0:
         return (
             f"No repeated misses found {window}.\n\n"
-            f"Cards appear here after {minimum_misses} Again rating{_plural(minimum_misses)} {window}."
+            f"Cards appear here after needing another pass {minimum_misses} time{_plural(minimum_misses)} {window}."
         )
     return (
         f"Supporting evidence for the debrief: {shown_count} card{_plural(shown_count)} "

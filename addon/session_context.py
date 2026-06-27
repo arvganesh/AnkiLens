@@ -11,8 +11,8 @@ def session_context_text(habits: SessionHabits) -> str:
         return ""
     if habits.again_rate >= 0.35:
         return (
-            f"Session note: {habits.again_rate:.0%} Again across {habits.review_count} reviews. "
-            "If many cards felt new, refresh the source before editing cards."
+            f"Session note: {habits.again_rate:.0%} of reviews needed another pass. "
+            "If many cards felt new, review the source before treating one card as the problem."
         )
     if has_reliable_timing(habits) and habits.seconds_per_timed_card < 3:
         return (

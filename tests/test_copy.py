@@ -32,7 +32,7 @@ class AnalyticsCopyTest(unittest.TestCase):
         )
 
         self.assertIn("No repeated misses found", caption)
-        self.assertIn("after 3 Again ratings", caption)
+        self.assertIn("after needing another pass 3 times", caption)
         self.assertIn("last 30 days", caption)
 
     def test_result_caption_mentions_count_threshold_and_limit(self) -> None:
