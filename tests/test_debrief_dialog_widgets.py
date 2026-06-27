@@ -793,10 +793,10 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "recommendation")
-        self.assertEqual(calls[0][0][0], "Check examples from Cardiology Valves")
+        self.assertEqual(calls[0][0][0], "Check missed examples from Cardiology Valves")
         self.assertEqual(calls[0][1]["confidence"], "4 of 8 cards in this group needed another pass.")
-        self.assertIn("revisit the surrounding concept", calls[0][1]["next_step"])
         self.assertIn("Look at the missed examples", calls[0][1]["next_step"])
+        self.assertIn("revisit the surrounding concept", calls[0][1]["next_step"])
         self.assertIn("3 mature", calls[0][1]["evidence"])
         self.assertNotIn("4 of 8", calls[0][1]["evidence"])
         self.assertEqual(button_calls, ["Show 2 missed examples"])
@@ -874,11 +874,11 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.recommendation_card = original_recommendation_card
 
         self.assertEqual(widget, "recommendation")
-        self.assertEqual(calls[0][0][0], "Check examples from Cardiology Valves")
-        self.assertIn("Look at the missed examples", calls[0][1]["next_step"])
+        self.assertEqual(calls[0][0][0], "Check missed examples from Cardiology Valves")
+        self.assertIn("Check the missed examples", calls[0][1]["next_step"])
         self.assertNotIn("Open related cards", calls[0][1]["next_step"])
         self.assertNotIn("related cards", calls[0][1]["next_step"])
-        self.assertIn("old material that needs another pass", calls[0][1]["next_step"])
+        self.assertIn("may just need another pass", calls[0][1]["next_step"])
         self.assertIn("inspect these examples", calls[0][1]["check"])
 
     def test_broad_study_recommendation_keeps_cautious_title(self) -> None:

@@ -119,7 +119,7 @@ class DebriefDialogTest(unittest.TestCase):
         )
         self.assertEqual(
             target_signal_text(4, 10),
-            "4 of 10 cards needed another pass; consistent enough to check.",
+            "4 of 10 cards needed another pass.",
         )
         self.assertEqual(
             target_signal_text(2, 5, mixed_signals=True),
@@ -136,7 +136,7 @@ class DebriefDialogTest(unittest.TestCase):
 
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
         self.assertEqual(debrief_window_title(), "Bonsai Missed Cards")
-        self.assertEqual(debrief_title(), "Missed cards")
+        self.assertEqual(debrief_title(), "Cards to check")
         self.assertEqual(deck_debrief_button_text(), "Analyze missed cards")
 
     def test_debrief_intro_names_short_recent_window(self) -> None:
@@ -200,8 +200,9 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertIn("revisit the surrounding concept", mature_step)
         self.assertIn("clear and still feel unfamiliar", mature_step)
-        self.assertIn("Look at the cards first", lapsed_step)
-        self.assertIn("old material that needs another pass", lapsed_step)
+        self.assertIn("Check the cards first", lapsed_step)
+        self.assertIn("may just need another pass", lapsed_step)
+        self.assertIn("inspect the card before studying more", lapsed_step)
 
     def test_same_note_cluster_copy_names_limited_scope(self) -> None:
         summary = MissedCardSummary(
@@ -225,7 +226,7 @@ class DebriefDialogTest(unittest.TestCase):
     def test_evidence_confidence_copy_does_not_overclaim_thin_signals(self) -> None:
         self.assertEqual(evidence_confidence_text(2, 5), "Worth a quick check")
         self.assertEqual(evidence_confidence_text(3, 8), "Worth a quick check")
-        self.assertEqual(evidence_confidence_text(4, 10), "Consistent enough to check")
+        self.assertEqual(evidence_confidence_text(4, 10), "Worth checking first")
         self.assertEqual(evidence_confidence_text(4, 10, mixed_signals=True), "Check both causes")
         self.assertEqual(evidence_confidence_text(3, 0, early_learning=True), "Early learning")
         self.assertNotIn("weak", evidence_confidence_text(2, 5).lower())

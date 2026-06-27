@@ -462,7 +462,7 @@ def _material_button_text(target: StudyTarget) -> str:
 
 def _study_recommendation_title(target: StudyTarget) -> str:
     if target.related_card_ids:
-        return f"Check examples from {_target_label(target)}"
+        return f"Check missed examples from {_target_label(target)}"
     return study_target_title(
         _target_label(target),
         kind=target.kind,
@@ -488,7 +488,8 @@ def _study_next_step_for_target(target: StudyTarget) -> str:
 
 def _missed_examples_next_step(text: str) -> str:
     return (
-        text.replace("Look at a few cards", "Look at the missed examples")
+        text.replace("Check the cards", "Check the missed examples")
+        .replace("Look at a few cards", "Look at the missed examples")
         .replace("Look at the cards", "Look at the missed examples")
         .replace("Review the cards", "Review the missed examples")
         .replace("check a few cards", "check the missed examples")

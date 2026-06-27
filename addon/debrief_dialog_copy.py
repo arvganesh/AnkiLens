@@ -6,7 +6,7 @@ def debrief_window_title() -> str:
 
 
 def debrief_title() -> str:
-    return "Missed cards"
+    return "Cards to check"
 
 
 def debrief_intro_text(lookback_days: int) -> str:
@@ -82,7 +82,7 @@ def target_signal_text(
     scope = " in this group" if active_cards else ""
     confidence = evidence_confidence_text(count, reviewed_count, mixed_signals=mixed_signals)
     signal = f"{count} of {reviewed_count} {card_label}{scope} needed another pass"
-    if confidence == "Worth a quick check":
+    if confidence in {"Worth a quick check", "Worth checking first"}:
         return f"{signal}."
     return f"{signal}; {confidence.lower()}."
 
@@ -159,7 +159,7 @@ def evidence_confidence_text(
     if mixed_signals:
         return "Check both causes"
     if missed_count >= 4 and reviewed_count >= 10 and not mixed_signals:
-        return "Consistent enough to check"
+        return "Worth checking first"
     return "Worth a quick check"
 
 
@@ -199,7 +199,8 @@ def study_next_step(
         )
     if lapsed_count > early_count + mature_count:
         return (
-            "Look at the cards first. If the prompts look clear, this may just be old material that needs another pass."
+            "Check the cards first. If the prompts are clear, this may just need another pass. "
+            "If they are confusing, inspect the card before studying more."
         )
     if mature_count >= 2 and mature_count >= early_count:
         return (

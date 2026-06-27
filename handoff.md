@@ -68,11 +68,13 @@ The main flow is:
 
 The Missed Cards debrief currently leads with a single card:
 
-- Title example: `Check examples from Cardiology Valves`.
+- Window heading: `Cards to check`.
+- Title example: `Check missed examples from Cardiology Valves`.
 - Signal badge example: `2 of 5 cards in this group needed another pass.`
 - Primary action example: `Show 2 missed examples`.
-- The next step says `Look at the missed examples first...`.
-- Evidence appears below the action under `Why this came up`, with examples before the maturity breakdown.
+- Lapsed-material next steps say `Check the missed examples first...` and explain when to inspect cards
+  before studying more.
+- Evidence appears below the action under `What Bonsai noticed`, with examples before the maturity breakdown.
 - Safety copy appears under `Before studying more`.
 - Secondary cards use ranked language such as `Also check...` or `Ignore for now...`.
 
@@ -91,6 +93,14 @@ Recent UI simplifications:
   set is larger than the visible examples.
 - A repeatable E2E seeder now exists at `scripts/seed_e2e_deck.py`. It creates a named
   `Bonsai E2E Large Review Window` deck with 300 cards and 380 review-log rows.
+- The main heading changed from `Missed cards` to `Cards to check`.
+- Exact-card recommendation titles now say `Check missed examples from...`.
+- The signal badge no longer says `consistent enough to check`; larger supported patterns still show the
+  concrete count, but avoid sounding like a diagnosis.
+- The evidence label changed from `Why this came up` to `What Bonsai noticed`.
+- Live Anki visual QA against the 380-review fixture showed the debrief rendering the new copy cleanly.
+- Clicking `Show 3 missed examples` still cannot be visually verified through Computer Use because the tool
+  returns `noWindowsAvailable` after the dialog closes.
 
 ## Latest Completed Slice
 
@@ -99,7 +109,7 @@ The latest working slice adds a real large-deck E2E fixture and fixes two issues
 Behavior:
 
 - Study-target evidence says `2 of 5 cards from Cardiology Valves...` instead of `related cards`.
-- Exact-card next steps say `Look at the missed examples first...`.
+- Lapsed exact-card next steps say `Check the missed examples first...`.
 - Broad fallback buttons say `Show cards to check`.
 - Secondary study support panels say `Also check cards` instead of `Also check related material`.
 - If Browse cannot open a single exact `cid:` search, the fallback now says `Copied search for this card`
@@ -113,6 +123,8 @@ Behavior:
   In the real E2E profile, it changed from `20 cards needed another pass...` to `82 cards...`.
 - Secondary study checks hide targets that render to the same student-facing label as the primary target.
   In the real E2E profile, this removed a redundant secondary `Cardiology Valves` check.
+- Copy from the UI debate was applied: action-first heading, softer evidence language, and less diagnostic
+  confidence wording.
 - The exact missed-card Browse behavior is unchanged.
 
 Why:
@@ -122,13 +134,15 @@ Why:
 - Secondary check headings should stay concrete and scan-friendly.
 - Fallback Browse messages should name exact-card actions clearly when opening Browse fails.
 - Browse actions should run after the debrief modal has started closing, not inside the same click stack.
-- Long AnKing-style labels should not make `Why this came up` unreadable as study volume grows.
+- Long AnKing-style labels should not make `What Bonsai noticed` unreadable as study volume grows.
 - If Bonsai shows only a few exact examples from a large cluster, the evidence should still acknowledge
   the full cluster size instead of implying only one hidden example exists.
 - Real review windows should not let a tiny, high-rate cluster outrank a much better-supported pattern.
 - The deck-browser panel should summarize the actual repeated-miss count, not the capped number of detail rows.
 - If two internal tags render to the same readable concept, show only the stronger one; duplicate same-label
   secondary checks add clutter without changing the user's next action.
+- `consistent enough to check` read like a statistical claim and made the screen feel more diagnostic than
+  helpful; the badge should name the observed count and let the next step carry the advice.
 
 Commit:
 

@@ -140,7 +140,7 @@ def recommendation_card(
     layout.addSpacing(SPACE_3)
     layout.addLayout(_next_step_block(next_step, actions=actions))
     layout.addSpacing(SPACE_3)
-    layout.addLayout(_detail_block("Why this came up", _why_text(evidence)))
+    layout.addLayout(_detail_block("What Bonsai noticed", _why_text(evidence)))
     layout.addSpacing(SPACE_2)
     layout.addLayout(_detail_block("Before studying more", check, quiet=True))
     frame.setLayout(layout)
