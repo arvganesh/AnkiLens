@@ -2,11 +2,11 @@ from __future__ import annotations
 
 
 def debrief_window_title() -> str:
-    return "Bonsai Checks"
+    return "Bonsai Missed Cards"
 
 
 def debrief_title() -> str:
-    return "What to check"
+    return "Missed cards"
 
 
 def debrief_intro_text(lookback_days: int) -> str:

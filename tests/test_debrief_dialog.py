@@ -113,8 +113,8 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertNotIn("Small window", target_evidence_text(4, 12, "Cardiology Valves", active_cards=True))
 
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
-        self.assertEqual(debrief_window_title(), "Bonsai Checks")
-        self.assertEqual(debrief_title(), "What to check")
+        self.assertEqual(debrief_window_title(), "Bonsai Missed Cards")
+        self.assertEqual(debrief_title(), "Missed cards")
         self.assertEqual(deck_debrief_button_text(), "Check missed cards")
 
     def test_debrief_intro_names_short_recent_window(self) -> None:
