@@ -74,16 +74,18 @@ class AnalyticsCopyTest(unittest.TestCase):
     def test_deck_concentration_caption_lists_decks(self) -> None:
         caption = deck_concentration_caption([DeckMissSummary("Cardiology", 2, 5)])
 
-        self.assertIn("Decks with repeated misses", caption)
+        self.assertIn("Decks to check if prompts look clear", caption)
         self.assertIn("Cardiology", caption)
-        self.assertIn("2 cards, 5 misses", caption)
+        self.assertIn("2 cards needed another pass", caption)
+        self.assertNotIn("misses", caption)
 
     def test_tag_concentration_caption_lists_tags(self) -> None:
         caption = tag_concentration_caption([TagMissSummary("murmurs", 2, 4)])
 
-        self.assertIn("Tags with repeated misses", caption)
+        self.assertIn("Tags to check if prompts look clear", caption)
         self.assertIn("murmurs", caption)
-        self.assertIn("2 cards, 4 misses", caption)
+        self.assertIn("2 cards needed another pass", caption)
+        self.assertNotIn("misses", caption)
 
     def test_content_pattern_caption_lists_patterns(self) -> None:
         caption = content_pattern_caption({"Dense card": 2})

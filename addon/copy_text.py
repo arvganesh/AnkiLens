@@ -125,9 +125,9 @@ def _lookback_label(lookback_days: int) -> str:
 def deck_concentration_caption(decks: list[DeckMissSummary]) -> str:
     if not decks:
         return ""
-    lines = ["Decks with repeated misses:"]
+    lines = ["Decks to check if prompts look clear:"]
     lines.extend(
-        f"- {deck.deck_name}: {deck.missed_cards} card{_plural(deck.missed_cards)}, {deck.misses} misses"
+        f"- {deck.deck_name}: {deck.missed_cards} card{_plural(deck.missed_cards)} needed another pass"
         for deck in decks
     )
     return "\n".join(lines)
@@ -136,9 +136,9 @@ def deck_concentration_caption(decks: list[DeckMissSummary]) -> str:
 def tag_concentration_caption(tags: list[TagMissSummary]) -> str:
     if not tags:
         return ""
-    lines = ["Tags with repeated misses:"]
+    lines = ["Tags to check if prompts look clear:"]
     lines.extend(
-        f"- {tag.tag}: {tag.missed_cards} card{_plural(tag.missed_cards)}, {tag.misses} misses"
+        f"- {tag.tag}: {tag.missed_cards} card{_plural(tag.missed_cards)} needed another pass"
         for tag in tags
     )
     return "\n".join(lines)
