@@ -46,7 +46,7 @@ class AnalyticsCopyTest(unittest.TestCase):
             lookback_days=0,
         )
 
-        self.assertIn("Supporting evidence for the debrief: 2 cards", caption)
+        self.assertIn("Details for the current check: 2 cards", caption)
         self.assertIn("at least 2 times", caption)
         self.assertIn("Limit: 10", caption)
         self.assertIn("all time", caption)
@@ -63,8 +63,8 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertNotIn("last 1 days", caption)
 
     def test_evidence_dialog_title_matches_debrief_button_language(self) -> None:
-        self.assertEqual(evidence_window_title(), "Bonsai Evidence Table")
-        self.assertEqual(evidence_title(), "Evidence Table")
+        self.assertEqual(evidence_window_title(), "Bonsai Details")
+        self.assertEqual(evidence_title(), "Supporting Details")
 
     def test_evidence_window_metric_handles_one_day_window_cleanly(self) -> None:
         self.assertEqual(review_window_value(1), "24 hours")

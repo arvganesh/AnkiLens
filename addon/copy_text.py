@@ -22,17 +22,17 @@ def analytics_caption(
             f"Cards appear here after needing another pass {minimum_misses} time{_plural(minimum_misses)} {window}."
         )
     return (
-        f"Supporting evidence for the debrief: {shown_count} card{_plural(shown_count)} "
+        f"Details for the current check: {shown_count} card{_plural(shown_count)} "
         f"needed another pass at least {minimum_misses} times {window}. Limit: {result_limit}."
     )
 
 
 def evidence_window_title() -> str:
-    return "Bonsai Evidence Table"
+    return "Bonsai Details"
 
 
 def evidence_title() -> str:
-    return "Evidence Table"
+    return "Supporting Details"
 
 
 def workflow_caption() -> str:
