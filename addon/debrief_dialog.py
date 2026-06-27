@@ -83,7 +83,7 @@ class DebriefDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(debrief_window_title())
-        self.resize(640, 440)
+        self.resize(640, 500)
         self.setStyleSheet("QDialog { background: #f5f2ea; }")
 
         layout = QVBoxLayout()
@@ -109,14 +109,6 @@ class DebriefDialog(QDialog):
         context = session_context_text(debrief.session_habits)
         if context:
             content_layout.addWidget(panel_card("Session note", context, quiet=True))
-        if open_full_analytics:
-            button = secondary_button(supporting_cards_button_text())
-            button.clicked.connect(lambda _checked=False: accept_then(self, open_full_analytics))
-            actions = QHBoxLayout()
-            actions.setContentsMargins(0, 2, 0, 0)
-            actions.addStretch(1)
-            actions.addWidget(button)
-            content_layout.addLayout(actions)
         content.setLayout(content_layout)
 
         scroll = QScrollArea()
@@ -125,6 +117,14 @@ class DebriefDialog(QDialog):
         scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
         scroll.setWidget(content)
         layout.addWidget(scroll, 1)
+        if open_full_analytics:
+            button = secondary_button(supporting_cards_button_text())
+            button.clicked.connect(lambda _checked=False: accept_then(self, open_full_analytics))
+            actions = QHBoxLayout()
+            actions.setContentsMargins(0, 4, 0, 0)
+            actions.addStretch(1)
+            actions.addWidget(button)
+            layout.addLayout(actions)
         self.setLayout(layout)
 
 
