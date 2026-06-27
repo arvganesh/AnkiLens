@@ -15,7 +15,6 @@ class ReviewLogEntry:
     deck_name: str
     card_label: str
     tags: tuple[str, ...] = ()
-    note_type: str = "Unknown note type"
 
 
 @dataclass(frozen=True)
@@ -27,7 +26,6 @@ class MissedCardSummary:
     total_reviews: int
     last_missed_at: datetime | None
     tags: tuple[str, ...] = ()
-    note_type: str = "Unknown note type"
 
     @property
     def miss_rate(self) -> float:
@@ -46,13 +44,6 @@ class DeckMissSummary:
 @dataclass(frozen=True)
 class TagMissSummary:
     tag: str
-    missed_cards: int
-    misses: int
-
-
-@dataclass(frozen=True)
-class NoteTypeMissSummary:
-    note_type: str
     missed_cards: int
     misses: int
 
@@ -109,22 +100,6 @@ def summarize_tag_misses(summaries: list[MissedCardSummary], *, limit: int = 5) 
     return sorted(grouped.values(), key=lambda tag: (tag.misses, tag.missed_cards), reverse=True)[:limit]
 
 
-def summarize_note_type_misses(
-    summaries: list[MissedCardSummary],
-    *,
-    limit: int = 5,
-) -> list[NoteTypeMissSummary]:
-    grouped: dict[str, NoteTypeMissSummary] = {}
-    for summary in summaries:
-        current = grouped.get(summary.note_type)
-        grouped[summary.note_type] = NoteTypeMissSummary(
-            note_type=summary.note_type,
-            missed_cards=(current.missed_cards if current else 0) + 1,
-            misses=(current.misses if current else 0) + summary.misses,
-        )
-    return sorted(grouped.values(), key=lambda note_type: (note_type.misses, note_type.missed_cards), reverse=True)[:limit]
-
-
 def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
     ordered = sorted(entries, key=lambda entry: entry.reviewed_at)
     missed = [entry for entry in ordered if entry.ease == AGAIN_EASE]
@@ -138,7 +113,6 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
         total_reviews=len(ordered),
         last_missed_at=missed[-1].reviewed_at if missed else None,
         tags=latest.tags,
-        note_type=latest.note_type,
     )
 
 
