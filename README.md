@@ -1,4 +1,4 @@
-# Anki Missed Card Analytics
+# Bonsai for Anki
 
 A small Anki add-on for understanding missed cards without changing scheduling.
 
@@ -20,7 +20,7 @@ Install the add-on by symlinking or copying `addon/` into Anki's add-ons folder.
 During local development, symlinking is easiest:
 
 ```sh
-ln -s "$(pwd)/addon" "$ANKI_ADDONS_DIR/missed_card_analytics"
+ln -s "$(pwd)/addon" "$ANKI_ADDONS_DIR/bonsai"
 ```
 
 On macOS, Anki add-ons usually live under:

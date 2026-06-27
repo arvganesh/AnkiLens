@@ -5,4 +5,4 @@ try:
 
     register_menu()
 except Exception as error:
-    print(f"Missed Card Analytics did not start: {error}")
+    print(f"Bonsai did not start: {error}")

@@ -8,7 +8,7 @@ def register_menu() -> None:
     from aqt import mw
     from aqt.qt import QAction
 
-    action = QAction("Missed Card Analytics", mw)
+    action = QAction("Bonsai", mw)
     action.triggered.connect(show_missed_card_analytics)
     mw.form.menuTools.addAction(action)
 

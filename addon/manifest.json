@@ -1,6 +1,6 @@
 {
-  "package": "missed_card_analytics",
-  "name": "Missed Card Analytics",
+  "package": "bonsai",
+  "name": "Bonsai",
   "mod": 0,
   "author": "Bonsai",
   "description": "Read-only analytics for cards that often need attention.",

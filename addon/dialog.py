@@ -8,7 +8,7 @@ from .analytics import MissedCardSummary
 class MissedCardsDialog(QDialog):
     def __init__(self, summaries: list[MissedCardSummary], parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Cards Needing Attention")
+        self.setWindowTitle("Bonsai")
         self.resize(760, 420)
 
         table = QTableWidget(len(summaries), 5, self)
