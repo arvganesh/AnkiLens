@@ -251,16 +251,16 @@ def _study_material_card(
         )
     top_target = targets[0]
     rows = (
-        ("Concept", _target_label(top_target)),
-        ("Evidence", _target_summary(top_target)),
-    ) + tuple(("Also watch", _target_summary(target)) for target in targets[1:3])
+        ("Sample", _target_label(top_target)),
+        ("Why", _target_summary(top_target)),
+    ) + tuple(("Also sample", _target_summary(target)) for target in targets[1:3])
     actions = ()
     if open_material:
         button = secondary_button(related_search_button_text())
         button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(top_target)))
         actions = (button,)
     return panel_card(
-        "Related study signal",
+        "Material evidence to sample",
         rows=rows,
         actions=actions,
     )

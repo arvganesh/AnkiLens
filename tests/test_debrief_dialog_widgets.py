@@ -7,7 +7,7 @@ import unittest
 from datetime import datetime
 
 from analytics import MissedCardSummary
-from debrief import CardsToFix, Debrief, EarlyLearning, SessionHabits
+from debrief import CardsToFix, Debrief, EarlyLearning, SessionHabits, StudyTarget
 
 
 class _QtBase:
@@ -199,6 +199,31 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(calls[0][1]["confidence"], "Not enough signal")
         self.assertIn("intentionally staying quiet", calls[0][1]["check"])
         self.assertNotIn("Weak evidence", calls[0][1]["confidence"])
+
+    def test_study_material_support_panel_is_action_oriented(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        calls = []
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        try:
+            widget = debrief_dialog._study_material_card(
+                (
+                    StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",)),
+                    StudyTarget("mitral", "term", 2, 6, ("Mitral regurgitation",)),
+                ),
+                dialog=None,
+                open_material=None,
+            )
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+
+        self.assertEqual(widget, "panel")
+        self.assertEqual(calls[0][0][0], "Material evidence to sample")
+        self.assertEqual(calls[0][1]["rows"][0][0], "Sample")
+        self.assertEqual(calls[0][1]["rows"][1][0], "Why")
+        self.assertEqual(calls[0][1]["rows"][2][0], "Also sample")
+        self.assertNotIn("signal", calls[0][0][0].lower())
 
 
 if __name__ == "__main__":
