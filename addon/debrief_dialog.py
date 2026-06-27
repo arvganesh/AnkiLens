@@ -14,6 +14,7 @@ try:
         early_learning_check_text,
         early_learning_next_step,
         early_learning_title,
+        evidence_confidence_text,
         no_pattern_evidence,
         no_pattern_next_step,
         no_pattern_title,
@@ -32,7 +33,7 @@ try:
     )
     from .dialog_actions import accept_then
     from .session_context import session_context_text
-    from .ui_helpers import body_label, panel_card, primary_button, secondary_button, title_label
+    from .ui_helpers import body_label, panel_card, primary_button, recommendation_card, secondary_button, title_label
 except ImportError:
     from debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
     from debrief_dialog_copy import (
@@ -43,6 +44,7 @@ except ImportError:
         early_learning_check_text,
         early_learning_next_step,
         early_learning_title,
+        evidence_confidence_text,
         no_pattern_evidence,
         no_pattern_next_step,
         no_pattern_title,
@@ -61,7 +63,7 @@ except ImportError:
     )
     from dialog_actions import accept_then
     from session_context import session_context_text
-    from ui_helpers import body_label, panel_card, primary_button, secondary_button, title_label
+    from ui_helpers import body_label, panel_card, primary_button, recommendation_card, secondary_button, title_label
 
 
 class DebriefDialog(QDialog):
@@ -142,15 +144,13 @@ def _next_step_card(
             button = primary_button(card_search_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(card.card_id)))
             actions = (button,)
-        return panel_card(
+        return recommendation_card(
             repair_title(short_label(card.card_label)),
-            rows=(
-                ("Evidence", repair_evidence(card)),
-                ("Next", repair_next_step()),
-                ("Check", "Card-construction clues showed up, so inspect it before assuming the topic is unlearned."),
-            ),
+            confidence=evidence_confidence_text(card.misses, card.total_reviews),
+            evidence=repair_evidence(card),
+            next_step=repair_next_step(),
+            check="Inspect first; edit only if the prompt is unclear after opening it.",
             actions=actions,
-            featured=True,
         )
     if _early_learning_cards(debrief) and getattr(debrief, "early_learning_is_dominant", False):
         actions = ()
@@ -159,15 +159,13 @@ def _next_step_card(
             button = primary_button(related_search_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
-        return panel_card(
+        return recommendation_card(
             early_learning_title(),
-            rows=(
-                ("Evidence", early_learning_evidence(_early_learning_count(debrief))),
-                ("Next", early_learning_next_step()),
-                ("Check", early_learning_check_text()),
-            ),
+            confidence=evidence_confidence_text(_early_learning_count(debrief), 0, early_learning=True),
+            evidence=early_learning_evidence(_early_learning_count(debrief)),
+            next_step=early_learning_next_step(),
+            check=early_learning_check_text(),
             actions=actions,
-            featured=True,
         )
     if debrief.study_next:
         target = debrief.study_next[0]
@@ -176,25 +174,25 @@ def _next_step_card(
             button = primary_button(related_search_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
-        return panel_card(
+        return recommendation_card(
             study_target_title(_target_label(target)),
-            rows=(
-                ("Evidence", _target_evidence(target, _target_label(target))),
-                ("Next", study_next_step(target.kind)),
-                ("Check", _study_check_text(debrief)),
+            confidence=evidence_confidence_text(
+                target.count,
+                target.reviewed_count,
+                mixed_signals=bool(debrief.cards_to_fix.cards),
             ),
+            evidence=_target_evidence(target, _target_label(target)),
+            next_step=study_next_step(target.kind),
+            check=_study_check_text(debrief),
             actions=actions,
-            featured=True,
         )
     has_repeated_misses = bool(debrief.missed_cards)
-    return panel_card(
+    return recommendation_card(
         no_pattern_title(has_repeated_misses=has_repeated_misses),
-        rows=(
-            ("Evidence", no_pattern_evidence(has_repeated_misses=has_repeated_misses)),
-            ("Next", no_pattern_next_step(has_repeated_misses=has_repeated_misses)),
-            ("Check", "Bonsai is staying quiet rather than turning thin data into advice."),
-        ),
-        featured=True,
+        confidence="Weak evidence",
+        evidence=no_pattern_evidence(has_repeated_misses=has_repeated_misses),
+        next_step=no_pattern_next_step(has_repeated_misses=has_repeated_misses),
+        check="Bonsai is staying quiet rather than turning thin data into advice.",
     )
 
 

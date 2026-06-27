@@ -14,7 +14,7 @@ def deck_debrief_button_text() -> str:
 
 
 def study_target_title(label: str) -> str:
-    return f"Missed concept: {label}"
+    return f"Possible study target: {label}"
 
 
 def target_display_label(label: str, kind: str) -> str:
@@ -38,15 +38,29 @@ def early_learning_title() -> str:
 
 
 def card_search_button_text() -> str:
-    return "Open this card in Browse"
+    return "View this card in Browse"
 
 
 def repair_title(label: str) -> str:
-    return f"Possible card issue: {label}"
+    return f"Card worth inspecting: {label}"
 
 
 def related_search_button_text() -> str:
-    return "Open examples in Browse"
+    return "View related cards in Browse"
+
+
+def evidence_confidence_text(
+    missed_count: int,
+    reviewed_count: int,
+    *,
+    early_learning: bool = False,
+    mixed_signals: bool = False,
+) -> str:
+    if early_learning:
+        return "Weak evidence"
+    if missed_count >= 3 and reviewed_count >= 8 and not mixed_signals:
+        return "Stronger evidence"
+    return "Limited evidence"
 
 
 def supporting_cards_button_text() -> str:
@@ -81,11 +95,11 @@ def study_next_step(kind: str) -> str:
 
 
 def no_repair_signal_text() -> str:
-    return "No strong card-construction clue stood out."
+    return "No obvious card-format issue stood out."
 
 
 def mixed_repair_signal_text() -> str:
-    return "One card also has construction clues; sample examples before deciding whether to edit or study."
+    return "One card also has format clues; sample examples before deciding whether to edit or study."
 
 
 def no_pattern_title(*, has_repeated_misses: bool = True) -> str:

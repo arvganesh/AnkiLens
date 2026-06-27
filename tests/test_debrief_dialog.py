@@ -14,6 +14,7 @@ from debrief_dialog_copy import (
     early_learning_check_text,
     early_learning_next_step,
     early_learning_title,
+    evidence_confidence_text,
     mixed_repair_signal_text,
     no_pattern_evidence,
     no_pattern_next_step,
@@ -38,7 +39,7 @@ class DebriefDialogTest(unittest.TestCase):
     def test_study_target_title_uses_review_language(self) -> None:
         self.assertEqual(
             study_target_title("Cardiology Valves"),
-            "Missed concept: Cardiology Valves",
+            "Possible study target: Cardiology Valves",
         )
 
     def test_tag_targets_are_readable_concepts_with_examples(self) -> None:
@@ -62,11 +63,11 @@ class DebriefDialogTest(unittest.TestCase):
 
     def test_debrief_action_copy_is_clear_and_cautious(self) -> None:
         self.assertEqual(early_learning_title(), "Likely normal first-pass learning")
-        self.assertEqual(card_search_button_text(), "Open this card in Browse")
-        self.assertEqual(related_search_button_text(), "Open examples in Browse")
+        self.assertEqual(card_search_button_text(), "View this card in Browse")
+        self.assertEqual(related_search_button_text(), "View related cards in Browse")
         self.assertEqual(supporting_cards_button_text(), "Review evidence cards")
-        self.assertEqual(no_repair_signal_text(), "No strong card-construction clue stood out.")
-        self.assertIn("One card also has construction clues", mixed_repair_signal_text())
+        self.assertEqual(no_repair_signal_text(), "No obvious card-format issue stood out.")
+        self.assertIn("One card also has format clues", mixed_repair_signal_text())
 
     def test_featured_recommendation_copy_separates_evidence_from_action(self) -> None:
         summary = MissedCardSummary(
@@ -79,13 +80,19 @@ class DebriefDialogTest(unittest.TestCase):
             content_labels=("Long card", "Dense card"),
         )
 
-        self.assertEqual(repair_title("Aortic stenosis murmur"), "Possible card issue: Aortic stenosis murmur")
+        self.assertEqual(repair_title("Aortic stenosis murmur"), "Card worth inspecting: Aortic stenosis murmur")
         self.assertEqual(repair_evidence(summary), "Missed 3/5 recent reviews; clues: Long card, Dense card.")
         self.assertIn("Inspect the prompt first", repair_next_step())
         self.assertEqual(
             study_next_step("tag"),
             "Do a short source refresh for this topic, then retry the related cards.",
         )
+
+    def test_evidence_confidence_copy_does_not_overclaim_thin_signals(self) -> None:
+        self.assertEqual(evidence_confidence_text(2, 5), "Limited evidence")
+        self.assertEqual(evidence_confidence_text(3, 8), "Stronger evidence")
+        self.assertEqual(evidence_confidence_text(3, 8, mixed_signals=True), "Limited evidence")
+        self.assertEqual(evidence_confidence_text(3, 0, early_learning=True), "Weak evidence")
 
     def test_study_next_step_matches_target_kind(self) -> None:
         self.assertIn("shared concept", study_next_step("term"))

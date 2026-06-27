@@ -95,6 +95,61 @@ def panel_card(
     return frame
 
 
+def recommendation_card(
+    title: str,
+    *,
+    confidence: str,
+    evidence: str,
+    next_step: str,
+    check: str,
+    actions: tuple[QPushButton, ...] = (),
+) -> QFrame:
+    frame = QFrame()
+    frame.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+    frame.setFrameShape(QFrame.Shape.StyledPanel)
+    frame.setStyleSheet(
+        "QFrame {"
+        "background: #f7fbef;"
+        "border: 1px solid #cfddbd;"
+        "border-radius: 15px;"
+        "}"
+    )
+    layout = QVBoxLayout()
+    layout.setContentsMargins(22, 18, 22, 18)
+    layout.setSpacing(8)
+
+    eyebrow = QLabel(f"Recommended next check · {confidence}")
+    eyebrow.setStyleSheet("border: none; color: #64705f; font-size: 12px; font-weight: 700;")
+    layout.addWidget(eyebrow)
+
+    heading = QLabel(title)
+    heading.setWordWrap(True)
+    heading.setStyleSheet("border: none; color: #1f2a20; font-size: 18px; font-weight: 700;")
+    layout.addWidget(heading)
+
+    layout.addWidget(_plain_text(evidence, "#3f473e", "13px"))
+    layout.addSpacing(4)
+    layout.addWidget(_plain_text(next_step, "#263726", "14px", weight=700))
+    layout.addWidget(_plain_text(check, "#5a6358", "12px"))
+
+    if actions:
+        action_row = QHBoxLayout()
+        action_row.setContentsMargins(0, 8, 0, 0)
+        action_row.addStretch(1)
+        for action in actions:
+            action_row.addWidget(action)
+        layout.addLayout(action_row)
+    frame.setLayout(layout)
+    return frame
+
+
+def _plain_text(text: str, color: str, size: str, *, weight: int = 400) -> QLabel:
+    label = QLabel(text)
+    label.setWordWrap(True)
+    label.setStyleSheet(f"border: none; color: {color}; font-size: {size}; font-weight: {weight}; line-height: 125%;")
+    return label
+
+
 def _detail_row(label: str, value: str) -> QHBoxLayout:
     row = QHBoxLayout()
     row.setSpacing(10)
