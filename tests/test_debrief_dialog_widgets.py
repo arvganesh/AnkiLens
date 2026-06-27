@@ -668,8 +668,39 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.secondary_button = original_secondary_button
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(button_calls, ["Show missed examples"])
-        self.assertEqual(calls[0][1]["actions"][0].text, "Show missed examples")
+        self.assertEqual(button_calls, ["Show 2 missed examples"])
+        self.assertEqual(calls[0][1]["actions"][0].text, "Show 2 missed examples")
+
+    def test_study_support_panel_names_single_exact_missed_example(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        original_secondary_button = debrief_dialog.secondary_button
+        calls = []
+        button_calls = []
+        target = StudyTarget(
+            "mitral",
+            "term",
+            1,
+            4,
+            ("Mitral regurgitation",),
+            related_card_ids=(12,),
+        )
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        debrief_dialog.secondary_button = lambda text: button_calls.append(text) or _FakeButton(text)
+        try:
+            widget = debrief_dialog._study_material_card(
+                (target,),
+                dialog=None,
+                open_material=lambda _target: None,
+            )
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+            debrief_dialog.secondary_button = original_secondary_button
+
+        self.assertEqual(widget, "panel")
+        self.assertEqual(button_calls, ["Show 1 missed example"])
+        self.assertEqual(calls[0][1]["actions"][0].text, "Show 1 missed example")
 
     def test_study_support_panel_does_not_add_broad_search_action(self) -> None:
         _install_fake_aqt()
@@ -737,7 +768,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertIn("revisit the surrounding concept", calls[0][1]["next_step"])
         self.assertIn("3 mature", calls[0][1]["evidence"])
         self.assertNotIn("4 of 8", calls[0][1]["evidence"])
-        self.assertEqual(button_calls, ["Show missed examples"])
+        self.assertEqual(button_calls, ["Show 2 missed examples"])
 
     def test_study_recommendation_names_missed_examples_when_action_is_exact_cards(self) -> None:
         _install_fake_aqt()

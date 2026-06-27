@@ -22,7 +22,6 @@ try:
         no_pattern_next_step,
         no_pattern_title,
         mixed_repair_signal_text,
-        missed_examples_button_text,
         no_repair_signal_text,
         related_search_button_text,
         repair_evidence,
@@ -74,7 +73,6 @@ except ImportError:
         no_pattern_next_step,
         no_pattern_title,
         mixed_repair_signal_text,
-        missed_examples_button_text,
         no_repair_signal_text,
         related_search_button_text,
         repair_evidence,
@@ -452,7 +450,9 @@ def _study_check_text(debrief: Debrief, target: StudyTarget) -> str:
 
 def _material_button_text(target: StudyTarget) -> str:
     if target.related_card_ids:
-        return missed_examples_button_text()
+        count = len(target.related_card_ids)
+        example_label = "example" if count == 1 else "examples"
+        return f"Show {count} missed {example_label}"
     return related_search_button_text()
 
 
