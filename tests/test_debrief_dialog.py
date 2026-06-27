@@ -13,6 +13,7 @@ from debrief_dialog_copy import (
     early_learning_evidence,
     early_learning_next_step,
     early_learning_title,
+    mixed_repair_signal_text,
     no_pattern_evidence,
     no_pattern_next_step,
     no_pattern_title,
@@ -25,6 +26,8 @@ from debrief_dialog_copy import (
     study_target_title,
     study_next_step,
     supporting_cards_button_text,
+    target_display_label,
+    target_evidence_text,
 )
 from session_context import session_context_text
 
@@ -32,14 +35,28 @@ from session_context import session_context_text
 class DebriefDialogTest(unittest.TestCase):
     def test_study_target_title_uses_review_language(self) -> None:
         self.assertEqual(
-            study_target_title("AnKing Cardiology Valves"),
-            "Suggested next check: review AnKing Cardiology Valves",
+            study_target_title("Cardiology Valves"),
+            "Missed concept: Cardiology Valves",
+        )
+
+    def test_tag_targets_are_readable_concepts_with_examples(self) -> None:
+        self.assertEqual(
+            target_display_label("AnKing::Cardiology::Valves", "tag"),
+            "Cardiology Valves",
+        )
+        self.assertEqual(
+            target_display_label("AnKing_Cardiology_Valves", "tag"),
+            "Cardiology Valves",
+        )
+        self.assertEqual(
+            target_evidence_text(2, 5, "Cardiology Valves", ("Murmur?", "Aortic stenosis murmur")),
+            "2 of 5 reviewed cards missed in Cardiology Valves. Examples: Murmur?, Aortic stenosis murmur.",
         )
 
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
-        self.assertEqual(debrief_window_title(), "Bonsai Review Check")
-        self.assertEqual(debrief_title(), "Review Check")
-        self.assertEqual(deck_debrief_button_text(), "Review Check")
+        self.assertEqual(debrief_window_title(), "Bonsai Next Check")
+        self.assertEqual(debrief_title(), "Next Check")
+        self.assertEqual(deck_debrief_button_text(), "Next Check")
 
     def test_debrief_action_copy_is_clear_and_cautious(self) -> None:
         self.assertEqual(early_learning_title(), "Suggested next check: retry early material")
@@ -47,6 +64,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertEqual(related_search_button_text(), "Open related cards in Browse")
         self.assertEqual(supporting_cards_button_text(), "See supporting cards")
         self.assertEqual(no_repair_signal_text(), "No strong card-construction clue stood out.")
+        self.assertIn("One card also has construction clues", mixed_repair_signal_text())
 
     def test_featured_recommendation_copy_separates_evidence_from_action(self) -> None:
         summary = MissedCardSummary(
@@ -61,7 +79,10 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertEqual(repair_evidence(summary), "Missed 3/5 recent reviews; clues: Long card, Dense card.")
         self.assertIn("Inspect the prompt first", repair_next_step())
-        self.assertEqual(study_next_step("tag"), "Review this tagged topic, then retry the related cards.")
+        self.assertEqual(
+            study_next_step("tag"),
+            "Do a short source refresh for this topic, then retry the related cards.",
+        )
 
     def test_study_next_step_matches_target_kind(self) -> None:
         self.assertIn("shared concept", study_next_step("term"))

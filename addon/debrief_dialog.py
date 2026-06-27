@@ -16,11 +16,14 @@ try:
         no_pattern_evidence,
         no_pattern_next_step,
         no_pattern_title,
+        mixed_repair_signal_text,
         no_repair_signal_text,
         related_search_button_text,
         repair_evidence,
         repair_next_step,
         short_label,
+        target_display_label,
+        target_evidence_text,
         study_target_title,
         study_next_step,
         supporting_cards_button_text,
@@ -40,11 +43,14 @@ except ImportError:
         no_pattern_evidence,
         no_pattern_next_step,
         no_pattern_title,
+        mixed_repair_signal_text,
         no_repair_signal_text,
         related_search_button_text,
         repair_evidence,
         repair_next_step,
         short_label,
+        target_display_label,
+        target_evidence_text,
         study_target_title,
         study_next_step,
         supporting_cards_button_text,
@@ -170,7 +176,7 @@ def _next_step_card(
             rows=(
                 ("Evidence", _target_evidence(target, _target_label(target))),
                 ("Next", study_next_step(target.kind)),
-                ("Check", no_repair_signal_text()),
+                ("Check", _study_check_text(debrief)),
             ),
             actions=actions,
             featured=True,
@@ -253,10 +259,7 @@ def _early_learning_card(debrief: Debrief):
 
 
 def _target_summary(target: StudyTarget) -> str:
-    detail = _target_evidence(target, _target_kind_label(target.kind))
-    if target.related_cards:
-        detail += f" Examples: {', '.join(target.related_cards)}."
-    return detail
+    return _target_evidence(target, _target_kind_label(target.kind))
 
 
 def _early_learning_body(debrief: Debrief) -> str:
@@ -279,10 +282,13 @@ def _early_learning_count(debrief: Debrief) -> int:
 
 
 def _target_evidence(target: StudyTarget, label: str) -> str:
-    return (
-        f"{target.count} of {target.reviewed_count} reviewed card{_plural(target.reviewed_count)} "
-        f"missed in {label}."
-    )
+    return target_evidence_text(target.count, target.reviewed_count, label, target.related_cards)
+
+
+def _study_check_text(debrief: Debrief) -> str:
+    if debrief.cards_to_fix.cards:
+        return mixed_repair_signal_text()
+    return no_repair_signal_text()
 
 
 def _target_kind_label(kind: str) -> str:
@@ -290,9 +296,7 @@ def _target_kind_label(kind: str) -> str:
 
 
 def _target_label(target: StudyTarget) -> str:
-    if target.kind != "tag":
-        return target.label
-    return target.label.replace("::", " / ").replace("_", " ")
+    return target_display_label(target.label, target.kind)
 
 
 def _plural(count: int) -> str:

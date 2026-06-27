@@ -2,19 +2,35 @@ from __future__ import annotations
 
 
 def debrief_window_title() -> str:
-    return "Bonsai Review Check"
+    return "Bonsai Next Check"
 
 
 def debrief_title() -> str:
-    return "Review Check"
+    return "Next Check"
 
 
 def deck_debrief_button_text() -> str:
-    return "Review Check"
+    return "Next Check"
 
 
 def study_target_title(label: str) -> str:
-    return f"Suggested next check: review {label}"
+    return f"Missed concept: {label}"
+
+
+def target_display_label(label: str, kind: str) -> str:
+    if kind != "tag":
+        return label
+    parts = label.replace("::", "_").split("_")
+    readable = [part for part in parts if part and part.lower() != "anking"]
+    return " ".join(readable) if readable else label.replace("_", " ")
+
+
+def target_evidence_text(count: int, reviewed_count: int, label: str, related_cards: tuple[str, ...] = ()) -> str:
+    card_label = "card" if reviewed_count == 1 else "cards"
+    evidence = f"{count} of {reviewed_count} reviewed {card_label} missed in {label}."
+    if related_cards:
+        evidence += f" Examples: {', '.join(related_cards)}."
+    return evidence
 
 
 def early_learning_title() -> str:
@@ -52,9 +68,9 @@ def repair_next_step() -> str:
 
 def study_next_step(kind: str) -> str:
     if kind == "tag":
-        return "Review this tagged topic, then retry the related cards."
+        return "Do a short source refresh for this topic, then retry the related cards."
     if kind == "term":
-        return "Skim the related cards for the shared concept, then review the source if they still feel unclear."
+        return "Skim the examples for the shared concept, then review the source if they still feel unclear."
     if kind == "deck":
         return "Treat this as a broad deck signal: sample the related cards before deciding what to study."
     return "Review the related cards, then decide whether the source material needs another pass."
@@ -62,6 +78,10 @@ def study_next_step(kind: str) -> str:
 
 def no_repair_signal_text() -> str:
     return "No strong card-construction clue stood out."
+
+
+def mixed_repair_signal_text() -> str:
+    return "One card also has construction clues; sample examples before deciding whether to edit or study."
 
 
 def no_pattern_title() -> str:
