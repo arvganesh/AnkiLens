@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from deck_button import BUTTON_MESSAGE, deck_button_html
+from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, deck_button_html
 
 
 class DeckButtonTest(unittest.TestCase):
@@ -11,6 +11,8 @@ class DeckButtonTest(unittest.TestCase):
 
         self.assertIn(BUTTON_MESSAGE, html)
         self.assertIn("Open Bonsai", html)
+        self.assertIn(DEBRIEF_MESSAGE, html)
+        self.assertIn("Recent Debrief", html)
 
     def test_summary_shows_repeated_miss_count(self) -> None:
         html = deck_button_html(missed_cards=2, lookback_days=90)

@@ -2,10 +2,18 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from .analytics import filter_review_entries_by_lookback, summarize_missed_cards
-from .anki_gateway import load_review_entries
-from .config import load_config
-from .deck_button import BUTTON_MESSAGE, deck_button_html
+try:
+    from .analytics import filter_review_entries_by_lookback, summarize_missed_cards
+    from .anki_gateway import load_review_entries
+    from .config import load_config
+    from .deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, deck_button_html
+    from .debrief import build_debrief
+except ImportError:
+    from analytics import filter_review_entries_by_lookback, summarize_missed_cards
+    from anki_gateway import load_review_entries
+    from config import load_config
+    from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, deck_button_html
+    from debrief import build_debrief
 
 
 def register_menu() -> None:
@@ -50,10 +58,32 @@ def _deck_browser_summary() -> dict[str, int | None]:
 
 
 def _handle_js_message(handled, message: str, _context):
-    if message != BUTTON_MESSAGE:
-        return handled
-    show_missed_card_analytics()
-    return (True, None)
+    if message == BUTTON_MESSAGE:
+        show_missed_card_analytics()
+        return (True, None)
+    if message == DEBRIEF_MESSAGE:
+        show_session_debrief()
+        return (True, None)
+    return handled
+
+
+def show_session_debrief() -> None:
+    from aqt import mw
+
+    from .debrief_dialog import DebriefDialog
+
+    config = load_config(mw.addonManager.getConfig(__package__))
+    entries = filter_review_entries_by_lookback(
+        load_review_entries(mw),
+        lookback_days=config.lookback_days,
+        now=datetime.now(),
+    )
+    dialog = DebriefDialog(
+        build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
+        lookback_days=config.lookback_days,
+        parent=mw,
+    )
+    dialog.exec()
 
 
 def show_missed_card_analytics() -> None:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 
 BUTTON_MESSAGE = "bonsai:open"
+DEBRIEF_MESSAGE = "bonsai:debrief"
 
 
 def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | None = None) -> str:
@@ -36,6 +37,21 @@ def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | No
     "
   >
     Open Bonsai
+  </button>
+  <button
+    onclick="pycmd('bonsai:debrief')"
+    style="
+      border: 1px solid #d9d0c1;
+      border-radius: 999px;
+      background: #fff;
+      color: #26231e;
+      cursor: pointer;
+      font-size: 13px;
+      margin-left: 6px;
+      padding: 7px 14px;
+    "
+  >
+    Recent Debrief
   </button>
 </div>
 """
