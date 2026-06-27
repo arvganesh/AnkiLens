@@ -4,7 +4,6 @@ from datetime import datetime
 
 try:
     from .analytics import filter_review_entries_by_lookback, summarize_missed_cards
-    from .anki_browser import open_browser_search, open_card_in_browser
     from .anki_gateway import load_review_entries
     from .browser_search import browser_search_for_card, browser_search_for_study_target
     from .config import load_config
@@ -12,7 +11,6 @@ try:
     from .debrief import StudyTarget, build_debrief
 except ImportError:
     from analytics import filter_review_entries_by_lookback, summarize_missed_cards
-    from anki_browser import open_browser_search, open_card_in_browser
     from anki_gateway import load_review_entries
     from browser_search import browser_search_for_card, browser_search_for_study_target
     from config import load_config
@@ -94,16 +92,7 @@ def show_session_debrief() -> None:
 
 
 def _open_card_from_debrief(card_id: int) -> None:
-    from aqt import mw
-    from aqt.qt import QApplication
-    from aqt.utils import showInfo
-
-    query = browser_search_for_card(card_id)
-    try:
-        open_card_in_browser(mw, card_id)
-    except Exception:
-        QApplication.clipboard().setText(query)
-        showInfo(f"Could not open Browse. Copied this search instead: {query}")
+    _copy_search_from_debrief(browser_search_for_card(card_id))
 
 
 def _open_material_from_debrief(target: StudyTarget) -> None:
@@ -112,15 +101,15 @@ def _open_material_from_debrief(target: StudyTarget) -> None:
 
 
 def _open_search_from_debrief(query: str) -> None:
-    from aqt import mw
     from aqt.qt import QApplication
     from aqt.utils import showInfo
 
-    try:
-        open_browser_search(mw, query)
-    except Exception:
-        QApplication.clipboard().setText(query)
-        showInfo(f"Could not open Browse. Copied this search instead: {query}")
+    QApplication.clipboard().setText(query)
+    showInfo(f"Copied Browser search:\n\n{query}\n\nOpen Browse and paste it into search.")
+
+
+def _copy_search_from_debrief(query: str) -> None:
+    _open_search_from_debrief(query)
 
 
 def show_missed_card_analytics() -> None:

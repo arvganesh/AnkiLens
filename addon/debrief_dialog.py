@@ -78,8 +78,8 @@ def _next_step_card(
         card = debrief.cards_to_fix.cards[0]
         actions = ()
         if open_card:
-            button = primary_button("Inspect top card")
-            button.clicked.connect(lambda _checked=False: _run_then_accept(dialog, lambda: open_card(card.card_id)))
+            button = primary_button("Copy card search")
+            button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(card.card_id)))
             actions = (button,)
         return panel_card(
             "Best next step: inspect missed cards",
@@ -99,8 +99,8 @@ def _next_step_card(
         target = debrief.study_next[0]
         actions = ()
         if open_material:
-            button = primary_button("Review related cards")
-            button.clicked.connect(lambda _checked=False: _run_then_accept(dialog, lambda: open_material(target)))
+            button = primary_button("Copy related search")
+            button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
         return panel_card(
             f"Best next step: study {_target_label(target)}",
@@ -125,8 +125,8 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
     card = cards_to_fix.cards[0]
     actions = ()
     if open_card:
-        button = primary_button("Find top card in Browse")
-        button.clicked.connect(lambda _checked=False: _run_then_accept(dialog, lambda: open_card(card.card_id)))
+        button = primary_button("Copy card search")
+        button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(card.card_id)))
         actions = (button,)
     rows = tuple(
         (
@@ -159,8 +159,8 @@ def _study_material_card(
     rows = tuple(("Also watch", _target_summary(target)) for target in targets[1:3])
     actions = ()
     if open_material:
-        button = secondary_button("Browse related cards")
-        button.clicked.connect(lambda _checked=False: _run_then_accept(dialog, lambda: open_material(top_target)))
+        button = secondary_button("Copy related search")
+        button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(top_target)))
         actions = (button,)
     return panel_card(
         f"Related study signal: {_target_label(top_target)}",
@@ -241,8 +241,3 @@ def _cards_to_fix_body(cards_to_fix: CardsToFix) -> str:
 
 def _verb(count: int, singular: str, plural: str) -> str:
     return singular if count == 1 else plural
-
-
-def _run_then_accept(dialog: QDialog, callback: Callable[[], None]) -> None:
-    callback()
-    dialog.accept()
