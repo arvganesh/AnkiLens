@@ -127,15 +127,13 @@ def recommendation_card(
     heading.setStyleSheet("border: none; color: #1f2a20; font-size: 18px; font-weight: 700;")
     layout.addWidget(heading)
 
-    layout.addWidget(_plain_text(evidence, "#3f473e", "13px"))
-    layout.addSpacing(4)
-    layout.addWidget(_plain_text(next_step, "#263726", "14px", weight=700))
-    layout.addWidget(_plain_text(check, "#5a6358", "12px"))
+    layout.addLayout(_detail_row("Evidence", evidence))
+    layout.addWidget(_next_step_callout(next_step))
+    layout.addLayout(_detail_row("Check", check, quiet=True))
 
     if actions:
         action_row = QHBoxLayout()
         action_row.setContentsMargins(0, 8, 0, 0)
-        action_row.addStretch(1)
         for action in actions:
             action_row.addWidget(action)
         layout.addLayout(action_row)
@@ -150,7 +148,30 @@ def _plain_text(text: str, color: str, size: str, *, weight: int = 400) -> QLabe
     return label
 
 
-def _detail_row(label: str, value: str) -> QHBoxLayout:
+def _next_step_callout(text: str) -> QFrame:
+    frame = QFrame()
+    frame.setFrameShape(QFrame.Shape.StyledPanel)
+    frame.setStyleSheet(
+        "QFrame {"
+        "background: #eef6e6;"
+        "border: 1px solid #d7e7ca;"
+        "border-radius: 10px;"
+        "}"
+    )
+    layout = QHBoxLayout()
+    layout.setSpacing(10)
+    layout.setContentsMargins(12, 10, 12, 10)
+    label = QLabel("Next")
+    label.setFixedWidth(74)
+    label.setAlignment(Qt.AlignmentFlag.AlignTop)
+    label.setStyleSheet("border: none; color: #4f674a; font-size: 12px; font-weight: 700;")
+    layout.addWidget(label)
+    layout.addWidget(_plain_text(text, "#263726", "14px", weight=700), 1)
+    frame.setLayout(layout)
+    return frame
+
+
+def _detail_row(label: str, value: str, *, quiet: bool = False) -> QHBoxLayout:
     row = QHBoxLayout()
     row.setSpacing(10)
     row.setContentsMargins(0, 0, 0, 0)
@@ -163,7 +184,9 @@ def _detail_row(label: str, value: str) -> QHBoxLayout:
 
     value_widget = QLabel(value)
     value_widget.setWordWrap(True)
-    value_widget.setStyleSheet("border: none; color: #2f382f; font-size: 13px; line-height: 125%;")
+    value_color = "#5a6358" if quiet else "#2f382f"
+    value_size = "12px" if quiet else "13px"
+    value_widget.setStyleSheet(f"border: none; color: {value_color}; font-size: {value_size}; line-height: 125%;")
     row.addWidget(value_widget, 1)
     return row
 
