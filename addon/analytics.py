@@ -50,6 +50,7 @@ class MissedCardSummary:
     first_reviewed_at: datetime | None = None
     learning_review_count: int = 0
     is_early_exposure: bool = False
+    card_queue: int | None = None
 
     @property
     def miss_rate(self) -> float:
@@ -158,6 +159,7 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
         first_reviewed_at=ordered[0].reviewed_at,
         learning_review_count=learning_reviews,
         is_early_exposure=_is_early_exposure(ordered, learning_reviews),
+        card_queue=latest.card_queue,
     )
 
 

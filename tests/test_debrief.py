@@ -20,6 +20,7 @@ def _entry(
     card_reps: int | None = None,
     card_lapses: int | None = None,
     review_type: int | None = None,
+    card_queue: int | None = None,
 ) -> ReviewLogEntry:
     return ReviewLogEntry(
         card_id=card_id,
@@ -33,6 +34,7 @@ def _entry(
         card_reps=card_reps,
         card_lapses=card_lapses,
         review_type=review_type,
+        card_queue=card_queue,
     )
 
 
@@ -115,6 +117,43 @@ class DebriefTest(unittest.TestCase):
 
         self.assertEqual(debrief.study_next[0].label, topic)
         self.assertEqual(debrief.study_next[0].related_cards, ("Card 2", "Card 1"))
+
+    def test_tag_study_targets_use_active_unsuspended_cards(self) -> None:
+        tag = "AnKing::Cardiology::Valves"
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="aortic stenosis", tags=(tag,), card_queue=-1, label="Suspended AS"),
+                _entry(1, 1, 1, text="aortic stenosis", tags=(tag,), card_queue=-1, label="Suspended AS"),
+                _entry(2, 1, 2, text="aortic murmur", tags=(tag,), card_queue=2, label="Active AS"),
+                _entry(2, 1, 3, text="aortic murmur", tags=(tag,), card_queue=2, label="Active AS"),
+                _entry(3, 1, 4, text="mitral regurgitation", tags=(tag,), card_queue=2, label="Active MR"),
+                _entry(3, 1, 5, text="mitral regurgitation", tags=(tag,), card_queue=2, label="Active MR"),
+                _entry(4, 3, 6, text="mitral stenosis", tags=(tag,), card_queue=2),
+                _entry(5, 3, 7, text="tricuspid regurgitation", tags=(tag,), card_queue=2),
+                _entry(6, 3, 8, text="pulmonic stenosis", tags=(tag,), card_queue=2),
+            ]
+        )
+
+        self.assertEqual(debrief.study_next[0].label, tag)
+        self.assertEqual(debrief.study_next[0].count, 2)
+        self.assertEqual(debrief.study_next[0].reviewed_count, 5)
+        self.assertEqual(debrief.study_next[0].related_cards, ("Active MR", "Active AS"))
+
+    def test_suspended_only_tag_misses_do_not_create_study_target(self) -> None:
+        tag = "AnKing::Cardiology::Valves"
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="aortic stenosis", tags=(tag,), card_queue=-1),
+                _entry(1, 1, 1, text="aortic stenosis", tags=(tag,), card_queue=-1),
+                _entry(2, 1, 2, text="aortic murmur", tags=(tag,), card_queue=-1),
+                _entry(2, 1, 3, text="aortic murmur", tags=(tag,), card_queue=-1),
+                _entry(3, 3, 4, text="mitral regurgitation", tags=(tag,), card_queue=-1),
+                _entry(4, 3, 5, text="mitral stenosis", tags=(tag,), card_queue=-1),
+                _entry(5, 3, 6, text="tricuspid regurgitation", tags=(tag,), card_queue=-1),
+            ]
+        )
+
+        self.assertNotEqual(debrief.study_next[0].kind, "tag")
 
     def test_study_targets_require_enough_denominator_support(self) -> None:
         debrief = build_debrief(

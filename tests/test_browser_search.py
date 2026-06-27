@@ -12,7 +12,7 @@ class BrowserSearchTest(unittest.TestCase):
     def test_builds_raw_tag_search_query(self) -> None:
         self.assertEqual(
             browser_search_for_study_target("tag", "AnKing_Cardiology_Valves"),
-            "tag:AnKing_Cardiology_Valves",
+            "tag:AnKing_Cardiology_Valves -is:suspended",
         )
 
     def test_builds_quoted_deck_search_query(self) -> None:
@@ -22,7 +22,7 @@ class BrowserSearchTest(unittest.TestCase):
         self.assertEqual(browser_search_for_study_target("term", "mitral"), "w:mitral")
 
     def test_quotes_ambiguous_search_values(self) -> None:
-        self.assertEqual(browser_search_for_study_target("tag", '-needs "work"'), 'tag:"-needs \\"work\\""')
+        self.assertEqual(browser_search_for_study_target("tag", '-needs "work"'), 'tag:"-needs \\"work\\"" -is:suspended')
 
 
 if __name__ == "__main__":

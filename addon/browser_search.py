@@ -7,7 +7,7 @@ def browser_search_for_card(card_id: int) -> str:
 
 def browser_search_for_study_target(kind: str, label: str) -> str:
     if kind == "tag":
-        return f"tag:{_search_value(label)}"
+        return f"tag:{_search_value(label)} -is:suspended"
     if kind == "deck":
         return f"deck:{_quoted(label)}"
     if kind == "term":

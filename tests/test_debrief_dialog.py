@@ -53,8 +53,8 @@ class DebriefDialogTest(unittest.TestCase):
             "Cardiology Valves",
         )
         self.assertEqual(
-            target_evidence_text(2, 5, "Cardiology Valves", ("Murmur?", "Aortic stenosis murmur")),
-            "2 of 5 cards reviewed in Cardiology Valves needed another pass. Examples: Murmur?, Aortic stenosis murmur.",
+            target_evidence_text(2, 5, "Cardiology Valves", ("Murmur?", "Aortic stenosis murmur"), active_cards=True),
+            "2 of 5 active cards reviewed in Cardiology Valves needed another pass. Examples: Murmur?, Aortic stenosis murmur.",
         )
 
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:

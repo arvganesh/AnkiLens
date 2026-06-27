@@ -297,7 +297,13 @@ def _early_learning_count(debrief: Debrief) -> int:
 
 
 def _target_evidence(target: StudyTarget, label: str) -> str:
-    return target_evidence_text(target.count, target.reviewed_count, label, target.related_cards)
+    return target_evidence_text(
+        target.count,
+        target.reviewed_count,
+        label,
+        target.related_cards,
+        active_cards=target.kind == "tag",
+    )
 
 
 def _study_check_text(debrief: Debrief) -> str:

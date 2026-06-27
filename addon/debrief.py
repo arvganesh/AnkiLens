@@ -132,12 +132,12 @@ def _study_targets(entries: list[ReviewLogEntry], summaries: list[MissedCardSumm
         StudyTarget(
             tag.tag,
             "tag",
-            tag.missed_cards,
-            _reviewed_cards(entries, lambda entry, tag=tag.tag: tag in entry.tags),
-            _related_cards(summaries, lambda summary, tag=tag.tag: tag in summary.tags),
+            _matched_summary_count(summaries, lambda summary, tag=tag.tag: tag in summary.tags and _is_active(summary)),
+            _reviewed_cards(entries, lambda entry, tag=tag.tag: tag in entry.tags and _is_active(entry)),
+            _related_cards(summaries, lambda summary, tag=tag.tag: tag in summary.tags and _is_active(summary)),
         )
         for tag in summarize_tag_misses(summaries)
-        if tag.missed_cards >= 2 and _useful_study_tag(tag.tag)
+        if _useful_study_tag(tag.tag)
     ]
     tag_targets = _supported_targets(tag_targets, minimum_reviewed=5, minimum_rate=0.25)
     if tag_targets:
@@ -223,6 +223,10 @@ def _supported_targets(targets: list[StudyTarget], *, minimum_reviewed: int, min
     return [target for target in targets if target.reviewed_count >= minimum_reviewed and target.miss_rate >= minimum_rate]
 
 
+def _matched_summary_count(summaries: list[MissedCardSummary], matches) -> int:
+    return len({summary.card_id for summary in summaries if matches(summary)})
+
+
 def _reviewed_cards(entries: list[ReviewLogEntry], matches) -> int:
     return len({entry.card_id for entry in entries if matches(entry)})
 
@@ -235,6 +239,10 @@ def _related_cards(summaries: list[MissedCardSummary], matches) -> tuple[str, ..
             seen_card_ids.add(summary.card_id)
             labels.append(summary.card_label)
     return tuple(labels[:3])
+
+
+def _is_active(item) -> bool:
+    return getattr(item, "card_queue", None) != -1
 
 
 def _session_habits(entries: list[ReviewLogEntry]) -> SessionHabits:

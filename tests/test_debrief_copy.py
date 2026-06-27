@@ -18,6 +18,11 @@ class DebriefCopyTest(unittest.TestCase):
         self.assertNotIn("due", caption.lower())
         self.assertNotIn("must", caption.lower())
 
+    def test_tag_study_next_caption_names_active_cards(self) -> None:
+        caption = study_next_caption((StudyTarget("AnKing::Cardiology::Valves", "tag", 2, 5, ("Murmur?",)),))
+
+        self.assertIn("2 of 5 reviewed active cards missed in tag", caption)
+
     def test_cards_to_fix_caption_lists_capped_cards_to_inspect(self) -> None:
         card = MissedCardSummary(
             123,

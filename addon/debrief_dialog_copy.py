@@ -33,9 +33,17 @@ def target_display_label(label: str, kind: str) -> str:
     return " ".join(readable) if readable else label.replace("_", " ")
 
 
-def target_evidence_text(count: int, reviewed_count: int, label: str, related_cards: tuple[str, ...] = ()) -> str:
+def target_evidence_text(
+    count: int,
+    reviewed_count: int,
+    label: str,
+    related_cards: tuple[str, ...] = (),
+    *,
+    active_cards: bool = False,
+) -> str:
     card_label = "card" if reviewed_count == 1 else "cards"
-    evidence = f"{count} of {reviewed_count} {card_label} reviewed in {label} needed another pass."
+    scope = "active " if active_cards else ""
+    evidence = f"{count} of {reviewed_count} {scope}{card_label} reviewed in {label} needed another pass."
     if related_cards:
         evidence += f" Examples: {', '.join(related_cards)}."
     return evidence
