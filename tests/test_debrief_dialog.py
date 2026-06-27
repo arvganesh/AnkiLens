@@ -40,7 +40,7 @@ class DebriefDialogTest(unittest.TestCase):
     def test_study_target_title_uses_review_language(self) -> None:
         self.assertEqual(
             study_target_title("Cardiology Valves"),
-            "Possible study target: Cardiology Valves",
+            "Study target to sample: Cardiology Valves",
         )
 
     def test_tag_targets_are_readable_concepts_with_examples(self) -> None:

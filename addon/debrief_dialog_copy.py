@@ -22,7 +22,7 @@ def deck_debrief_button_text() -> str:
 
 
 def study_target_title(label: str) -> str:
-    return f"Possible study target: {label}"
+    return f"Study target to sample: {label}"
 
 
 def target_display_label(label: str, kind: str) -> str:

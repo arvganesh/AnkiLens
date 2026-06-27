@@ -96,7 +96,7 @@ class UiHelpersTest(unittest.TestCase):
         ui_helpers = importlib.import_module("ui_helpers")
 
         ui_helpers.recommendation_card(
-            "Possible study target: Cardiology Valves",
+            "Study target to sample: Cardiology Valves",
             confidence="Limited evidence",
             evidence="2 of 5 active cards reviewed in Cardiology Valves needed another pass.",
             next_step="Open the related cards.",
