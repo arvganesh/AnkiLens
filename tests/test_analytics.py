@@ -53,6 +53,24 @@ class MissedCardAnalyticsTest(unittest.TestCase):
 
         self.assertEqual([summary.card_id for summary in summaries], [2, 1])
 
+    def test_allows_lower_miss_threshold(self) -> None:
+        summaries = summarize_missed_cards([_entry(1, 1, 1)], minimum_misses=1)
+
+        self.assertEqual(len(summaries), 1)
+
+    def test_applies_result_limit(self) -> None:
+        summaries = summarize_missed_cards(
+            [
+                _entry(1, 1, 1),
+                _entry(1, 1, 2),
+                _entry(2, 1, 1),
+                _entry(2, 1, 2),
+            ],
+            limit=1,
+        )
+
+        self.assertEqual(len(summaries), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
