@@ -154,7 +154,7 @@ def _next_step_card(
         actions = ()
         if open_material and debrief.study_next:
             target = debrief.study_next[0]
-            button = primary_button(related_search_button_text())
+            button = secondary_button(related_search_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
         return recommendation_card(
@@ -169,7 +169,7 @@ def _next_step_card(
         target = debrief.study_next[0]
         actions = ()
         if open_material:
-            button = primary_button(related_search_button_text())
+            button = secondary_button(related_search_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_material(target)))
             actions = (button,)
         return recommendation_card(

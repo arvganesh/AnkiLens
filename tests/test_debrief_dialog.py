@@ -68,8 +68,8 @@ class DebriefDialogTest(unittest.TestCase):
 
     def test_debrief_action_copy_is_clear_and_cautious(self) -> None:
         self.assertEqual(early_learning_title(), "Likely normal first-pass learning")
-        self.assertEqual(card_search_button_text(), "View this card in Browse")
-        self.assertEqual(related_search_button_text(), "View related cards in Browse")
+        self.assertEqual(card_search_button_text(), "Open card in Browse")
+        self.assertEqual(related_search_button_text(), "Review evidence in Browse")
         self.assertEqual(supporting_cards_button_text(), "See missed-card evidence")
         self.assertEqual(no_repair_signal_text(), "No obvious card-format issue stood out.")
         self.assertIn("One card also has format clues", mixed_repair_signal_text())

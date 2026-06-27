@@ -46,7 +46,7 @@ def early_learning_title() -> str:
 
 
 def card_search_button_text() -> str:
-    return "View this card in Browse"
+    return "Open card in Browse"
 
 
 def repair_title(label: str) -> str:
@@ -54,7 +54,7 @@ def repair_title(label: str) -> str:
 
 
 def related_search_button_text() -> str:
-    return "View related cards in Browse"
+    return "Review evidence in Browse"
 
 
 def evidence_confidence_text(
