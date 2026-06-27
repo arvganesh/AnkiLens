@@ -45,6 +45,9 @@ class MissedCardsDialog(QDialog):
         table.setHorizontalHeaderLabels(
             ["Card", "Deck", "Priority", "Misses", "Reviews", "Miss rate", "Last missed"]
         )
+        table.setEditTriggers(QTableWidget.NoEditTriggers)
+        table.setSelectionBehavior(QTableWidget.SelectRows)
+        table.setSortingEnabled(True)
         for row, summary in enumerate(summaries):
             table.setItem(row, 0, QTableWidgetItem(summary.card_label))
             table.setItem(row, 1, QTableWidgetItem(summary.deck_name))
@@ -53,6 +56,7 @@ class MissedCardsDialog(QDialog):
             table.setItem(row, 4, QTableWidgetItem(str(summary.total_reviews)))
             table.setItem(row, 5, QTableWidgetItem(f"{summary.miss_rate:.0%}"))
             table.setItem(row, 6, QTableWidgetItem(format_review_date(summary.last_missed_at)))
+        table.resizeColumnsToContents()
 
         layout.addWidget(table)
         self.setLayout(layout)
