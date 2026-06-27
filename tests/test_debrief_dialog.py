@@ -294,13 +294,10 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertEqual(context, "")
 
-    def test_session_context_warns_when_again_rate_is_high(self) -> None:
+    def test_session_context_hides_high_again_rate_without_actionable_context(self) -> None:
         context = session_context_text(SessionHabits(10, 4, 0.4, "Evening", 1, 7.0, 7.0))
 
-        self.assertNotIn("Session note:", context)
-        self.assertIn("40% of reviews needed another pass", context)
-        self.assertIn("study extra only when they felt unfamiliar or clustered", context)
-        self.assertNotIn("revisit the material", context)
+        self.assertEqual(context, "")
 
     def test_session_context_warns_when_reviewing_unusually_fast(self) -> None:
         context = session_context_text(SessionHabits(10, 2, 0.2, "Evening", 8, 60.0, 7.5))

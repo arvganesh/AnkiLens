@@ -9,11 +9,6 @@ except ImportError:
 def session_context_text(habits: SessionHabits) -> str:
     if habits.review_count < 5:
         return ""
-    if habits.again_rate >= 0.35:
-        return (
-            f"{habits.again_rate:.0%} of reviews needed another pass. "
-            "If many cards felt new, study extra only when they felt unfamiliar or clustered."
-        )
     if has_reliable_timing(habits) and habits.seconds_per_timed_card < 3:
         return (
             f"{habits.seconds_per_timed_card:.1f}s/card. "
