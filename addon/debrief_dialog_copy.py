@@ -22,7 +22,7 @@ def deck_debrief_button_text() -> str:
 
 
 def study_target_title(label: str) -> str:
-    return f"Study target to sample: {label}"
+    return f"Material evidence to sample: {label}"
 
 
 def target_display_label(label: str, kind: str) -> str:
@@ -104,11 +104,14 @@ def repair_next_step() -> str:
 
 def study_next_step(kind: str) -> str:
     if kind == "tag":
-        return "Open the related cards. If they feel unfamiliar, revisit the class material behind this tag."
+        return (
+            "Open the active related cards first. If the prompts are clear and the examples still feel unfamiliar, "
+            "revisit nearby material for this tag."
+        )
     if kind == "term":
         return "Skim the examples with this repeated wording. If they still feel unfamiliar, review the material around that concept."
     if kind == "deck":
-        return "Treat this as a broad deck signal: sample the related cards before deciding what to study."
+        return "Treat this as broad deck evidence: sample related cards before deciding what, if anything, to study."
     return "Review the related cards, then decide whether the surrounding material needs another pass."
 
 

@@ -42,7 +42,7 @@ class DebriefDialogTest(unittest.TestCase):
     def test_study_target_title_uses_review_language(self) -> None:
         self.assertEqual(
             study_target_title("Cardiology Valves"),
-            "Study target to sample: Cardiology Valves",
+            "Material evidence to sample: Cardiology Valves",
         )
 
     def test_tag_targets_are_readable_concepts_with_examples(self) -> None:
@@ -104,8 +104,14 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertNotIn("split or simplify", repair_next_step())
         self.assertEqual(
             study_next_step("tag"),
-            "Open the related cards. If they feel unfamiliar, revisit the class material behind this tag.",
+            (
+                "Open the active related cards first. If the prompts are clear and the examples still feel unfamiliar, "
+                "revisit nearby material for this tag."
+            ),
         )
+        self.assertIn("active related cards", study_next_step("tag"))
+        self.assertIn("prompts are clear", study_next_step("tag"))
+        self.assertNotIn("class material", study_next_step("tag"))
 
     def test_evidence_confidence_copy_does_not_overclaim_thin_signals(self) -> None:
         self.assertEqual(evidence_confidence_text(2, 5), "Limited evidence")
@@ -117,7 +123,8 @@ class DebriefDialogTest(unittest.TestCase):
     def test_study_next_step_matches_target_kind(self) -> None:
         self.assertIn("repeated wording", study_next_step("term"))
         self.assertIn("still feel unfamiliar", study_next_step("term"))
-        self.assertIn("broad deck signal", study_next_step("deck"))
+        self.assertIn("broad deck evidence", study_next_step("deck"))
+        self.assertNotIn("signal", study_next_step("deck"))
         self.assertIn("related cards", study_next_step("unknown"))
         self.assertNotIn("source", study_next_step("tag").lower())
         self.assertNotIn("source", no_repair_signal_text().lower())
