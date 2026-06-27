@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from aqt.qt import QDialog, QLabel, QTableWidget, QTableWidgetItem, QVBoxLayout
+from aqt.qt import QAbstractItemView, QDialog, QLabel, QTableWidget, QTableWidgetItem, QVBoxLayout
 
 from .analytics import MissedCardSummary, summarize_deck_misses, summarize_tag_misses
 from .copy_text import analytics_caption, deck_concentration_caption, tag_concentration_caption
@@ -45,8 +45,8 @@ class MissedCardsDialog(QDialog):
         table.setHorizontalHeaderLabels(
             ["Card", "Deck", "Priority", "Misses", "Reviews", "Miss rate", "Last missed"]
         )
-        table.setEditTriggers(QTableWidget.NoEditTriggers)
-        table.setSelectionBehavior(QTableWidget.SelectRows)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         table.setSortingEnabled(True)
         for row, summary in enumerate(summaries):
             table.setItem(row, 0, QTableWidgetItem(summary.card_label))
