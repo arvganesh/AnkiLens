@@ -13,6 +13,9 @@ try:
         early_learning_evidence,
         early_learning_next_step,
         early_learning_title,
+        no_pattern_evidence,
+        no_pattern_next_step,
+        no_pattern_title,
         no_repair_signal_text,
         related_search_button_text,
         repair_evidence,
@@ -34,6 +37,9 @@ except ImportError:
         early_learning_evidence,
         early_learning_next_step,
         early_learning_title,
+        no_pattern_evidence,
+        no_pattern_next_step,
+        no_pattern_title,
         no_repair_signal_text,
         related_search_button_text,
         repair_evidence,
@@ -170,8 +176,12 @@ def _next_step_card(
             featured=True,
         )
     return panel_card(
-        "No strong pattern yet",
-        "Bonsai found repeated misses, but not enough signal to recommend a card edit or study target.",
+        no_pattern_title(),
+        rows=(
+            ("Evidence", no_pattern_evidence()),
+            ("Next", no_pattern_next_step()),
+            ("Check", "Bonsai is staying quiet rather than turning thin data into advice."),
+        ),
         featured=True,
     )
 

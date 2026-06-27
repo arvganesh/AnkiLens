@@ -13,6 +13,9 @@ from debrief_dialog_copy import (
     early_learning_evidence,
     early_learning_next_step,
     early_learning_title,
+    no_pattern_evidence,
+    no_pattern_next_step,
+    no_pattern_title,
     no_repair_signal_text,
     related_search_button_text,
     repair_action_summary,
@@ -64,6 +67,12 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("shared concept", study_next_step("term"))
         self.assertIn("broad deck signal", study_next_step("deck"))
         self.assertIn("related cards", study_next_step("unknown"))
+
+    def test_no_pattern_copy_stays_actionable_without_overclaiming(self) -> None:
+        self.assertEqual(no_pattern_title(), "No clear next check yet")
+        self.assertIn("not enough shared signal", no_pattern_evidence())
+        self.assertIn("inspect supporting cards", no_pattern_next_step())
+        self.assertIn("wait for a clearer pattern", no_pattern_next_step())
 
     def test_repair_action_summary_names_evidence_and_uncertainty(self) -> None:
         summary = MissedCardSummary(

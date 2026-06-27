@@ -64,6 +64,18 @@ def no_repair_signal_text() -> str:
     return "No strong card-construction clue stood out."
 
 
+def no_pattern_title() -> str:
+    return "No clear next check yet"
+
+
+def no_pattern_evidence() -> str:
+    return "There are repeated misses, but not enough shared signal to point at a card edit or study target."
+
+
+def no_pattern_next_step() -> str:
+    return "If one card feels suspicious, inspect supporting cards. Otherwise keep reviewing and wait for a clearer pattern."
+
+
 def early_learning_evidence(count: int) -> str:
     label = "card is" if count == 1 else "cards are"
     return f"{count} early {label} still in first-pass learning."
