@@ -67,7 +67,7 @@ class MissedCardsDialog(QDialog):
         layout.addWidget(table)
         if on_open_card:
             button = QPushButton("Open selected card in Browser")
-            button.clicked.connect(lambda: _open_selected_card(table, on_open_card))
+            button.clicked.connect(lambda _checked=False: _open_selected_card(table, on_open_card))
             layout.addWidget(button)
         self.setLayout(layout)
 
