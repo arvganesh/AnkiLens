@@ -3,10 +3,14 @@ from __future__ import annotations
 import unittest
 
 from debrief import SessionHabits
+from debrief_dialog_copy import study_target_title
 from session_context import session_context_text
 
 
 class DebriefDialogTest(unittest.TestCase):
+    def test_study_target_title_uses_review_language(self) -> None:
+        self.assertEqual(study_target_title("AnKing Cardiology Valves"), "Best next step: review AnKing Cardiology Valves")
+
     def test_session_context_is_hidden_for_tiny_windows(self) -> None:
         context = session_context_text(SessionHabits(4, 1, 0.25, "Evening"))
 

@@ -63,10 +63,10 @@ def panel_card(
         "}"
     )
     layout = QVBoxLayout()
-    margin_x = 16 if featured else 14
-    margin_y = 14 if featured else 12
+    margin_x = 18 if featured else 16
+    margin_y = 16 if featured else 14
     layout.setContentsMargins(margin_x, margin_y, margin_x, margin_y)
-    layout.setSpacing(8 if featured else 6)
+    layout.setSpacing(10 if featured else 8)
 
     heading = QLabel(title)
     heading.setWordWrap(True)
@@ -86,7 +86,7 @@ def panel_card(
         layout.addLayout(_detail_row(label, value))
     if actions:
         action_row = QHBoxLayout()
-        action_row.setContentsMargins(0, 8 if featured else 6, 0, 0)
+        action_row.setContentsMargins(0, 10 if featured else 8, 0, 0)
         action_row.addStretch(1)
         for action in actions:
             action_row.addWidget(action)
