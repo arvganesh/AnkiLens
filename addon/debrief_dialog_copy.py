@@ -1,6 +1,18 @@
 from __future__ import annotations
 
 
+def debrief_window_title() -> str:
+    return "Bonsai Review Check"
+
+
+def debrief_title() -> str:
+    return "Review Check"
+
+
+def deck_debrief_button_text() -> str:
+    return "Review Check"
+
+
 def study_target_title(label: str) -> str:
     return f"Suggested next check: review {label}"
 

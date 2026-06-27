@@ -12,7 +12,8 @@ class DeckButtonTest(unittest.TestCase):
         self.assertIn(BUTTON_MESSAGE, html)
         self.assertIn("Supporting Cards", html)
         self.assertIn(DEBRIEF_MESSAGE, html)
-        self.assertIn("Recent Debrief", html)
+        self.assertIn("Review Check", html)
+        self.assertNotIn("Recent Debrief", html)
 
     def test_summary_shows_repeated_miss_count(self) -> None:
         html = deck_button_html(missed_cards=2, lookback_days=90)

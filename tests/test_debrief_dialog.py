@@ -7,6 +7,9 @@ from analytics import MissedCardSummary
 from debrief import SessionHabits
 from debrief_dialog_copy import (
     card_search_button_text,
+    debrief_title,
+    debrief_window_title,
+    deck_debrief_button_text,
     early_learning_evidence,
     early_learning_next_step,
     early_learning_title,
@@ -29,6 +32,11 @@ class DebriefDialogTest(unittest.TestCase):
             study_target_title("AnKing Cardiology Valves"),
             "Suggested next check: review AnKing Cardiology Valves",
         )
+
+    def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
+        self.assertEqual(debrief_window_title(), "Bonsai Review Check")
+        self.assertEqual(debrief_title(), "Review Check")
+        self.assertEqual(deck_debrief_button_text(), "Review Check")
 
     def test_debrief_action_copy_is_clear_and_cautious(self) -> None:
         self.assertEqual(early_learning_title(), "Suggested next check: retry early material")

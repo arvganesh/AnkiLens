@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+try:
+    from .debrief_dialog_copy import deck_debrief_button_text
+except ImportError:
+    from debrief_dialog_copy import deck_debrief_button_text
+
 
 BUTTON_MESSAGE = "bonsai:open"
 DEBRIEF_MESSAGE = "bonsai:debrief"
@@ -51,7 +56,7 @@ def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | No
       padding: 7px 14px;
     "
   >
-    Recent Debrief
+    {deck_debrief_button_text()}
   </button>
 </div>
 """

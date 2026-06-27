@@ -8,6 +8,8 @@ try:
     from .debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
     from .debrief_dialog_copy import (
         card_search_button_text,
+        debrief_title,
+        debrief_window_title,
         early_learning_evidence,
         early_learning_next_step,
         early_learning_title,
@@ -27,6 +29,8 @@ except ImportError:
     from debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
     from debrief_dialog_copy import (
         card_search_button_text,
+        debrief_title,
+        debrief_window_title,
         early_learning_evidence,
         early_learning_next_step,
         early_learning_title,
@@ -56,7 +60,7 @@ class DebriefDialog(QDialog):
         parent=None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Bonsai Recent Misses Debrief")
+        self.setWindowTitle(debrief_window_title())
         self.resize(640, 440)
         self.setStyleSheet("QDialog { background: #f5f2ea; }")
 
@@ -64,7 +68,7 @@ class DebriefDialog(QDialog):
         layout.setContentsMargins(26, 22, 26, 20)
         layout.setSpacing(12)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        layout.addWidget(title_label("Recent Misses Debrief"))
+        layout.addWidget(title_label(debrief_title()))
         layout.addWidget(body_label(_intro_text(lookback_days)))
 
         content = QWidget()
