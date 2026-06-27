@@ -56,7 +56,7 @@ small change, test it, and commit.
 Bonsai is being shaped into a calm post-study assistant, not a stats dashboard.
 The main flow is:
 
-1. The Anki deck page shows one primary Bonsai action: `Check missed cards`.
+1. The Anki deck page shows one primary Bonsai action: `Analyze missed cards`.
 2. The debrief leads with the most useful check and may show a few secondary checks.
 3. The recommendation distinguishes likely causes where possible:
    - problematic card format,
@@ -153,7 +153,7 @@ Visual verification:
 ## Suggested Next Steps
 
 1. Restart Anki to pick up the latest loader/model changes.
-2. Open `Check missed cards` on the Test Deck.
+2. Open `Analyze missed cards` on the Test Deck.
 3. Confirm the primary action says `Show missed examples`.
 4. Click it and confirm Browse opens the exact missed cards, not the whole tag.
 5. Next product slice: decide whether `Bonsai Details` should be redesigned as a focused card-inspection sheet or left as a low-priority Tools-menu fallback.
