@@ -121,7 +121,7 @@ def recommendation_card(
     layout.setContentsMargins(22, 18, 22, 18)
     layout.setSpacing(8)
 
-    eyebrow = QLabel(f"Recommended next check · {confidence}")
+    eyebrow = QLabel("Recommended next check")
     eyebrow.setStyleSheet("border: none; color: #64705f; font-size: 12px; font-weight: 700;")
     layout.addWidget(eyebrow)
 
@@ -130,9 +130,9 @@ def recommendation_card(
     heading.setStyleSheet("border: none; color: #1f2a20; font-size: 18px; font-weight: 700;")
     layout.addWidget(heading)
 
-    layout.addLayout(_detail_row("Evidence", evidence))
     layout.addWidget(_next_step_callout(next_step))
-    layout.addLayout(_detail_row("Check", check, quiet=True))
+    layout.addLayout(_detail_row("Why", f"{confidence}: {evidence}"))
+    layout.addLayout(_detail_row("Double-check", check, quiet=True))
 
     if actions:
         action_row = QHBoxLayout()

@@ -97,7 +97,7 @@ def _install_fake_aqt() -> None:
 
 
 class UiHelpersTest(unittest.TestCase):
-    def test_recommendation_card_separates_evidence_next_and_check(self) -> None:
+    def test_recommendation_card_leads_with_next_action(self) -> None:
         _install_fake_aqt()
         ui_helpers = importlib.import_module("ui_helpers")
 
@@ -110,10 +110,16 @@ class UiHelpersTest(unittest.TestCase):
             actions=(_FakeWidget("Find related cards in Browse"),),
         )
 
-        self.assertIn("Evidence", _FakeWidget.labels)
+        self.assertIn("Recommended next check", _FakeWidget.labels)
         self.assertIn("Next", _FakeWidget.labels)
-        self.assertIn("Check", _FakeWidget.labels)
+        self.assertIn("Why", _FakeWidget.labels)
+        self.assertIn("Double-check", _FakeWidget.labels)
+        self.assertIn(
+            "Limited evidence: 2 of 5 active cards reviewed in Cardiology Valves needed another pass.",
+            _FakeWidget.labels,
+        )
         self.assertIn("Open the related cards.", _FakeWidget.labels)
+        self.assertLess(_FakeWidget.labels.index("Next"), _FakeWidget.labels.index("Why"))
         self.assertEqual(_FakeLayout.stretch_count, 0)
 
     def test_detail_rows_have_breathing_room(self) -> None:
