@@ -72,6 +72,7 @@ def card_detail_caption(summary: MissedCardSummary) -> str:
         f"Selected card: {summary.card_label}",
         f"Format clues: {clues}",
         f"Needed another pass: {summary.misses}/{summary.total_reviews} reviews ({summary.miss_rate:.0%})",
+        "Next: open the card and read the prompt before deciding whether to edit.",
         f"Browser search: {browser_search_for_card(summary.card_id)}",
     ]
     note_context = same_note_context(summary)
@@ -95,7 +96,7 @@ def _plural(count: int) -> str:
     return "" if count == 1 else "s"
 
 
-def _preview_text(text: str, *, limit: int = 180) -> str:
+def _preview_text(text: str, *, limit: int = 120) -> str:
     compact = " ".join(text.split())
     if len(compact) <= limit:
         return compact

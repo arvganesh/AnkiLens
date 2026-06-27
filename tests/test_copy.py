@@ -125,6 +125,7 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("Format clues: Comparison", caption)
         self.assertNotIn("Same note:", caption)
         self.assertIn("Needed another pass: 3/4 reviews (75%)", caption)
+        self.assertIn("Next: open the card and read the prompt before deciding whether to edit.", caption)
         self.assertNotIn("Misses:", caption)
         self.assertIn("Browser search: cid:123", caption)
         self.assertIn("Text: Mitral regurgitation murmur", caption)
