@@ -58,7 +58,7 @@ def card_search_button_text() -> str:
 
 
 def repair_title(label: str) -> str:
-    return f"Card worth inspecting: {label}"
+    return f"Card to inspect: {label}"
 
 
 def related_search_button_text() -> str:
@@ -88,18 +88,18 @@ def supporting_cards_button_text() -> str:
 def repair_action_summary(card) -> str:
     clues = ", ".join(card.content_labels) if card.content_labels else "repeated misses"
     return (
-        f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; clues: {clues}. "
-        "Inspect it first: simplify overloaded wording, or leave it and study the surrounding material if the card is clear."
+        f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; format clues: {clues}. "
+        "Open it first. If the prompt asks too much, split or simplify it; if it is clear, leave it alone and study nearby material."
     )
 
 
 def repair_evidence(card) -> str:
     clues = ", ".join(card.content_labels) if card.content_labels else "repeated misses"
-    return f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; clues: {clues}."
+    return f"Needed another pass on {card.misses}/{card.total_reviews} recent reviews; format clues: {clues}."
 
 
 def repair_next_step() -> str:
-    return "Inspect the prompt first. If it is clear, leave the card alone and study the surrounding material."
+    return "Open the card. If the prompt asks too much, split or simplify it; if it is clear, leave it alone."
 
 
 def study_next_step(kind: str) -> str:

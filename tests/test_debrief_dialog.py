@@ -91,12 +91,13 @@ class DebriefDialogTest(unittest.TestCase):
             content_labels=("Long card", "Dense card"),
         )
 
-        self.assertEqual(repair_title("Aortic stenosis murmur"), "Card worth inspecting: Aortic stenosis murmur")
+        self.assertEqual(repair_title("Aortic stenosis murmur"), "Card to inspect: Aortic stenosis murmur")
         self.assertEqual(
             repair_evidence(summary),
-            "Needed another pass on 3/5 recent reviews; clues: Long card, Dense card.",
+            "Needed another pass on 3/5 recent reviews; format clues: Long card, Dense card.",
         )
-        self.assertIn("leave the card alone", repair_next_step())
+        self.assertIn("split or simplify it", repair_next_step())
+        self.assertIn("leave it alone", repair_next_step())
         self.assertEqual(
             study_next_step("tag"),
             "Open the related cards. If they feel unfamiliar, revisit the class material behind this tag.",
@@ -142,8 +143,9 @@ class DebriefDialogTest(unittest.TestCase):
         body = repair_action_summary(summary)
 
         self.assertIn("Needed another pass on 3/5 recent reviews", body)
-        self.assertIn("clues: Long card, Dense card", body)
-        self.assertIn("study the surrounding material if the card is clear", body)
+        self.assertIn("format clues: Long card, Dense card", body)
+        self.assertIn("split or simplify it", body)
+        self.assertIn("leave it alone and study nearby material", body)
 
     def test_short_label_truncates_long_card_names(self) -> None:
         self.assertEqual(short_label("A" * 70), "A" * 61 + "...")
