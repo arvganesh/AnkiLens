@@ -6,13 +6,13 @@ from aqt.qt import QDialog, QHBoxLayout, QVBoxLayout, Qt
 
 try:
     from .debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
-    from .debrief_dialog_copy import study_target_title
+    from .debrief_dialog_copy import repair_action_summary, short_label, study_target_title
     from .dialog_actions import accept_then
     from .session_context import session_context_text
     from .ui_helpers import body_label, panel_card, primary_button, secondary_button, title_label
 except ImportError:
     from debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
-    from debrief_dialog_copy import study_target_title
+    from debrief_dialog_copy import repair_action_summary, short_label, study_target_title
     from dialog_actions import accept_then
     from session_context import session_context_text
     from ui_helpers import body_label, panel_card, primary_button, secondary_button, title_label
@@ -88,10 +88,8 @@ def _next_step_card(
             button.clicked.connect(lambda _checked=False: accept_then(dialog, lambda: open_card(card.card_id)))
             actions = (button,)
         return panel_card(
-            "Best next step: inspect missed cards",
-            f"{debrief.cards_to_fix.count} mature card{_plural(debrief.cards_to_fix.count)} "
-            f"{_verb(debrief.cards_to_fix.count, 'keeps', 'keep')} missing with card-specific clues. "
-            "Check whether the miss came from wording, context, or source knowledge before editing or leaving as-is.",
+            f"Suggested next check: {short_label(card.card_label)}",
+            repair_action_summary(card),
             actions=actions,
             featured=True,
         )

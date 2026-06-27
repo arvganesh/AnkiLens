@@ -191,6 +191,18 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.cards_to_fix.count, 1)
         self.assertEqual(debrief.cards_to_fix.clues, (("Long card", 1), ("Dense card", 1)))
 
+    def test_cloze_heavy_alone_is_not_a_repair_signal(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="Aortic stenosis causes a {{c1::crescendo decrescendo}} systolic murmur.", card_reps=8),
+                _entry(1, 1, 1, text="Aortic stenosis causes a {{c1::crescendo decrescendo}} systolic murmur.", card_reps=8),
+                _entry(1, 3, 2, text="Aortic stenosis causes a {{c1::crescendo decrescendo}} systolic murmur.", card_reps=8),
+            ]
+        )
+
+        self.assertEqual(debrief.cards_to_fix.count, 0)
+        self.assertEqual(debrief.cards_to_fix.clues, ())
+
     def test_cards_to_fix_counts_multiple_weaker_clues(self) -> None:
         debrief = build_debrief(
             [

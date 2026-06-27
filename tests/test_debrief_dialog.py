@@ -1,15 +1,37 @@
 from __future__ import annotations
 
 import unittest
+from datetime import datetime
 
+from analytics import MissedCardSummary
 from debrief import SessionHabits
-from debrief_dialog_copy import study_target_title
+from debrief_dialog_copy import repair_action_summary, short_label, study_target_title
 from session_context import session_context_text
 
 
 class DebriefDialogTest(unittest.TestCase):
     def test_study_target_title_uses_review_language(self) -> None:
         self.assertEqual(study_target_title("AnKing Cardiology Valves"), "Best next step: review AnKing Cardiology Valves")
+
+    def test_repair_action_summary_names_evidence_and_uncertainty(self) -> None:
+        summary = MissedCardSummary(
+            1,
+            "Cardiology",
+            "Aortic stenosis murmur",
+            3,
+            5,
+            datetime(2026, 6, 26),
+            content_labels=("Long card", "Dense card"),
+        )
+
+        body = repair_action_summary(summary)
+
+        self.assertIn("Missed 3/5 recent reviews", body)
+        self.assertIn("clues: Long card, Dense card", body)
+        self.assertIn("leave it and review the source if the card is clear", body)
+
+    def test_short_label_truncates_long_card_names(self) -> None:
+        self.assertEqual(short_label("A" * 70), "A" * 61 + "...")
 
     def test_session_context_is_hidden_for_tiny_windows(self) -> None:
         context = session_context_text(SessionHabits(4, 1, 0.25, "Evening"))

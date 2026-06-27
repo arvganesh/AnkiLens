@@ -84,7 +84,6 @@ _STRONG_REPAIR_LABELS = frozenset(
         "Long card",
         "Dense card",
         "Many numbers",
-        "Cloze-heavy",
         "List-like",
         "Media reference",
     }
