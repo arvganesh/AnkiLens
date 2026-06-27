@@ -4,6 +4,7 @@ from aqt.qt import QDialog, QLabel, QTableWidget, QTableWidgetItem, QVBoxLayout
 
 from .analytics import MissedCardSummary, summarize_deck_misses
 from .copy_text import analytics_caption, deck_concentration_caption
+from .formatting import format_review_date
 
 
 class MissedCardsDialog(QDialog):
@@ -37,14 +38,15 @@ class MissedCardsDialog(QDialog):
 
         layout.addWidget(QLabel(deck_concentration_caption(summarize_deck_misses(summaries))))
 
-        table = QTableWidget(len(summaries), 5, self)
-        table.setHorizontalHeaderLabels(["Card", "Deck", "Misses", "Reviews", "Miss rate"])
+        table = QTableWidget(len(summaries), 6, self)
+        table.setHorizontalHeaderLabels(["Card", "Deck", "Misses", "Reviews", "Miss rate", "Last missed"])
         for row, summary in enumerate(summaries):
             table.setItem(row, 0, QTableWidgetItem(summary.card_label))
             table.setItem(row, 1, QTableWidgetItem(summary.deck_name))
             table.setItem(row, 2, QTableWidgetItem(str(summary.misses)))
             table.setItem(row, 3, QTableWidgetItem(str(summary.total_reviews)))
             table.setItem(row, 4, QTableWidgetItem(f"{summary.miss_rate:.0%}"))
+            table.setItem(row, 5, QTableWidgetItem(format_review_date(summary.last_missed_at)))
 
         layout.addWidget(table)
         self.setLayout(layout)
