@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from aqt.qt import QAbstractItemView, QDialog, QLabel, QTableWidget, QTableWidgetItem, QVBoxLayout
 
 from .analytics import MissedCardSummary, summarize_deck_misses, summarize_tag_misses
@@ -51,12 +53,23 @@ class MissedCardsDialog(QDialog):
             table.setItem(row, 0, QTableWidgetItem(summary.card_label))
             table.setItem(row, 1, QTableWidgetItem(summary.deck_name))
             table.setItem(row, 2, QTableWidgetItem(priority_label(summary)))
-            table.setItem(row, 3, QTableWidgetItem(str(summary.misses)))
-            table.setItem(row, 4, QTableWidgetItem(str(summary.total_reviews)))
-            table.setItem(row, 5, QTableWidgetItem(f"{summary.miss_rate:.0%}"))
-            table.setItem(row, 6, QTableWidgetItem(format_review_date(summary.last_missed_at)))
+            table.setItem(row, 3, SortItem(str(summary.misses), summary.misses))
+            table.setItem(row, 4, SortItem(str(summary.total_reviews), summary.total_reviews))
+            table.setItem(row, 5, SortItem(f"{summary.miss_rate:.0%}", summary.miss_rate))
+            table.setItem(row, 6, SortItem(format_review_date(summary.last_missed_at), summary.last_missed_at or 0))
         table.setSortingEnabled(True)
         table.resizeColumnsToContents()
 
         layout.addWidget(table)
         self.setLayout(layout)
+
+
+class SortItem(QTableWidgetItem):
+    def __init__(self, label: str, sort_value: Any) -> None:
+        super().__init__(label)
+        self.sort_value = sort_value
+
+    def __lt__(self, other) -> bool:
+        if isinstance(other, SortItem):
+            return self.sort_value < other.sort_value
+        return super().__lt__(other)
