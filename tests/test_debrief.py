@@ -18,6 +18,8 @@ def _entry(
     duration_ms: int | None = None,
     label: str | None = None,
     card_reps: int | None = None,
+    card_lapses: int | None = None,
+    review_type: int | None = None,
 ) -> ReviewLogEntry:
     return ReviewLogEntry(
         card_id=card_id,
@@ -29,6 +31,8 @@ def _entry(
         source_text=text,
         duration_ms=duration_ms,
         card_reps=card_reps,
+        card_lapses=card_lapses,
+        review_type=review_type,
     )
 
 
@@ -213,9 +217,45 @@ class DebriefTest(unittest.TestCase):
         )
 
         self.assertEqual(debrief.cards_to_fix.count, 0)
-        self.assertEqual(debrief.cards_to_fix.early_exposure_count, 1)
+        self.assertEqual(debrief.early_learning.count, 1)
         self.assertEqual(debrief.study_next[0].label, "AnKing_Cardiology_Valves")
         self.assertEqual(debrief.study_next[0].reviewed_count, 5)
+
+    def test_early_learning_is_first_class_for_low_rep_misses(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="aortic stenosis murmur", tags=("AnKing_Cardiology_Valves",), card_reps=3, card_lapses=0),
+                _entry(1, 1, 1, text="aortic stenosis murmur", tags=("AnKing_Cardiology_Valves",), card_reps=3, card_lapses=0),
+                _entry(2, 3, 2, text="mitral regurgitation murmur", tags=("AnKing_Cardiology_Valves",), card_reps=8),
+                _entry(3, 3, 3, text="mitral stenosis murmur", tags=("AnKing_Cardiology_Valves",), card_reps=8),
+                _entry(4, 3, 4, text="tricuspid regurgitation murmur", tags=("AnKing_Cardiology_Valves",), card_reps=8),
+                _entry(5, 3, 5, text="pulmonic stenosis murmur", tags=("AnKing_Cardiology_Valves",), card_reps=8),
+            ]
+        )
+
+        self.assertEqual(debrief.early_learning.count, 1)
+        self.assertEqual(debrief.early_learning.cards[0].card_id, 1)
+        self.assertEqual(debrief.cards_to_fix.count, 0)
+
+    def test_lapsed_cards_are_not_treated_as_new_material(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="aortic stenosis murmur", card_reps=3, card_lapses=1),
+                _entry(1, 1, 1, text="aortic stenosis murmur", card_reps=3, card_lapses=1),
+            ]
+        )
+
+        self.assertEqual(debrief.early_learning.count, 0)
+
+    def test_limited_recent_history_alone_is_not_early_learning(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="aortic stenosis murmur"),
+                _entry(1, 1, 1, text="aortic stenosis murmur"),
+            ]
+        )
+
+        self.assertEqual(debrief.early_learning.count, 0)
 
     def test_session_habits_report_observed_facts(self) -> None:
         debrief = build_debrief(

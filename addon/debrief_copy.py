@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 try:
-    from .debrief import CardsToFix, SessionHabits, StudyTarget
+    from .debrief import CardsToFix, EarlyLearning, SessionHabits, StudyTarget
 except ImportError:
-    from debrief import CardsToFix, SessionHabits, StudyTarget
+    from debrief import CardsToFix, EarlyLearning, SessionHabits, StudyTarget
 
 
 def study_next_caption(targets: tuple[StudyTarget, ...]) -> str:
@@ -38,13 +38,7 @@ def _target_kind_label(kind: str) -> str:
 
 def cards_to_fix_caption(cards_to_fix: CardsToFix) -> str:
     if cards_to_fix.count == 0:
-        lines = ["No card repair stands out:", "- No strong card-specific pattern surfaced in this window."]
-        if cards_to_fix.early_exposure_count:
-            lines.append(
-                f"- {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "
-                f"{_verb(cards_to_fix.early_exposure_count, 'looks', 'look')} early in learning."
-            )
-        return "\n".join(lines)
+        return "No card repair stands out:\n- No strong card-specific pattern surfaced in this window."
     lines = [
         "Cards worth checking:",
         f"- {cards_to_fix.count} mature card{_plural(cards_to_fix.count)} "
@@ -52,14 +46,21 @@ def cards_to_fix_caption(cards_to_fix: CardsToFix) -> str:
     ]
     for card in cards_to_fix.cards[:3]:
         lines.append(f"- {card.card_label}: {', '.join(card.content_labels)}; missed {card.misses}/{card.total_reviews} reviews")
-    if cards_to_fix.early_exposure_count:
-        lines.append(
-            f"- {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "
-            f"{_verb(cards_to_fix.early_exposure_count, 'looks', 'look')} early in learning."
-        )
     if cards_to_fix.clues:
         clues = ", ".join(f"{label}: {count}" for label, count in cards_to_fix.clues)
         lines.append(f"- Common clues: {clues}")
+    return "\n".join(lines)
+
+
+def early_learning_caption(early_learning: EarlyLearning) -> str:
+    if early_learning.count == 0:
+        return "Early material:\n- No repeated early-learning misses found in this window."
+    lines = [
+        "Early material:",
+        f"- {early_learning.count} repeated-miss card{_plural(early_learning.count)} "
+        f"{_verb(early_learning.count, 'looks', 'look')} early in learning.",
+        "- Treat this as weak evidence before editing; preview the source topic, then retry.",
+    ]
     return "\n".join(lines)
 
 

@@ -160,8 +160,8 @@ def _priority(summary: MissedCardSummary) -> tuple[float, int, datetime]:
 
 def _is_early_exposure(entries: list[ReviewLogEntry], learning_reviews: int) -> bool:
     latest = entries[-1]
+    if latest.card_lapses is not None and latest.card_lapses > 0:
+        return False
     if latest.card_reps is not None:
         return latest.card_reps <= 4
-    if len(entries) <= 3:
-        return True
-    return learning_reviews > len(entries) / 2
+    return learning_reviews >= 2 and learning_reviews >= len(entries) / 2

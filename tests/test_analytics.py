@@ -22,7 +22,15 @@ def _entry(card_id: int, ease: int, day: int) -> ReviewLogEntry:
     )
 
 
-def _lifecycle_entry(card_id: int, ease: int, day: int, *, card_reps: int, review_type: int = 1) -> ReviewLogEntry:
+def _lifecycle_entry(
+    card_id: int,
+    ease: int,
+    day: int,
+    *,
+    card_reps: int | None,
+    card_lapses: int | None = None,
+    review_type: int = 1,
+) -> ReviewLogEntry:
     return ReviewLogEntry(
         card_id=card_id,
         ease=ease,
@@ -31,6 +39,7 @@ def _lifecycle_entry(card_id: int, ease: int, day: int, *, card_reps: int, revie
         card_label=f"Card {card_id}",
         review_type=review_type,
         card_reps=card_reps,
+        card_lapses=card_lapses,
         source_text="weak cue",
     )
 
@@ -107,6 +116,26 @@ class MissedCardAnalyticsTest(unittest.TestCase):
                 _lifecycle_entry(1, 3, 2, card_reps=20),
                 _lifecycle_entry(1, 1, 3, card_reps=20),
                 _lifecycle_entry(1, 3, 4, card_reps=20),
+            ]
+        )
+
+        self.assertFalse(summaries[0].is_early_exposure)
+
+    def test_lapsed_low_rep_cards_are_not_early_exposure(self) -> None:
+        summaries = summarize_missed_cards(
+            [
+                _lifecycle_entry(1, 1, 1, card_reps=2, card_lapses=1),
+                _lifecycle_entry(1, 1, 2, card_reps=2, card_lapses=1),
+            ]
+        )
+
+        self.assertFalse(summaries[0].is_early_exposure)
+
+    def test_few_window_entries_without_reps_are_not_early_exposure(self) -> None:
+        summaries = summarize_missed_cards(
+            [
+                _lifecycle_entry(1, 1, 1, card_reps=None, review_type=2),
+                _lifecycle_entry(1, 1, 2, card_reps=None, review_type=2),
             ]
         )
 

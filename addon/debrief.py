@@ -47,7 +47,12 @@ class CardsToFix:
     count: int
     clues: tuple[tuple[str, int], ...]
     cards: tuple[MissedCardSummary, ...]
-    early_exposure_count: int = 0
+
+
+@dataclass(frozen=True)
+class EarlyLearning:
+    count: int
+    cards: tuple[MissedCardSummary, ...]
 
 
 @dataclass(frozen=True)
@@ -65,6 +70,7 @@ class SessionHabits:
 class Debrief:
     study_next: tuple[StudyTarget, ...]
     cards_to_fix: CardsToFix
+    early_learning: EarlyLearning
     session_habits: SessionHabits
     missed_cards: tuple[MissedCardSummary, ...]
 
@@ -92,6 +98,7 @@ def build_debrief(
     return Debrief(
         study_next=tuple(_study_targets(entries, missed_cards, limit=study_limit)),
         cards_to_fix=_cards_to_fix(missed_cards),
+        early_learning=_early_learning(missed_cards),
         session_habits=_session_habits(entries),
         missed_cards=tuple(missed_cards),
     )
@@ -142,9 +149,13 @@ def _study_targets(entries: list[ReviewLogEntry], summaries: list[MissedCardSumm
 
 def _cards_to_fix(summaries: list[MissedCardSummary]) -> CardsToFix:
     cards = tuple(summary for summary in summaries if _has_repair_signal(summary) and not summary.is_early_exposure)
-    early_exposure_count = sum(1 for summary in summaries if _has_repair_signal(summary) and summary.is_early_exposure)
     clues = tuple(summarize_content_patterns(list(cards)).items())
-    return CardsToFix(count=len(cards), clues=clues, cards=cards, early_exposure_count=early_exposure_count)
+    return CardsToFix(count=len(cards), clues=clues, cards=cards)
+
+
+def _early_learning(summaries: list[MissedCardSummary]) -> EarlyLearning:
+    cards = tuple(summary for summary in summaries if summary.is_early_exposure)
+    return EarlyLearning(count=len(cards), cards=cards)
 
 
 def _has_repair_signal(summary: MissedCardSummary) -> bool:

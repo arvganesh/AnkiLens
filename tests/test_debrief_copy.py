@@ -3,8 +3,8 @@ from __future__ import annotations
 import unittest
 
 from analytics import MissedCardSummary
-from debrief import CardsToFix, SessionHabits, StudyTarget
-from debrief_copy import cards_to_fix_caption, review_habits_caption, study_next_caption
+from debrief import CardsToFix, EarlyLearning, SessionHabits, StudyTarget
+from debrief_copy import cards_to_fix_caption, early_learning_caption, review_habits_caption, study_next_caption
 
 
 class DebriefCopyTest(unittest.TestCase):
@@ -36,11 +36,19 @@ class DebriefCopyTest(unittest.TestCase):
         self.assertIn("Mitral regurgitation: Weak cue, Comparison; missed 3/4 reviews", caption)
 
     def test_cards_to_fix_caption_handles_no_construction_clues(self) -> None:
-        caption = cards_to_fix_caption(CardsToFix(0, (), (), early_exposure_count=1))
+        caption = cards_to_fix_caption(CardsToFix(0, (), ()))
 
         self.assertIn("No card repair stands out", caption)
         self.assertIn("No strong card-specific pattern surfaced", caption)
-        self.assertIn("1 card looks early in learning", caption)
+
+    def test_early_learning_caption_keeps_evidence_cautious(self) -> None:
+        caption = early_learning_caption(EarlyLearning(2, ()))
+
+        self.assertIn("Early material", caption)
+        self.assertIn("2 repeated-miss cards look early in learning", caption)
+        self.assertIn("weak evidence before editing", caption)
+        self.assertNotIn("unlearned", caption.lower())
+        self.assertNotIn("bad card", caption.lower())
 
     def test_session_habits_caption_reports_observed_facts(self) -> None:
         caption = review_habits_caption(SessionHabits(10, 2, 0.2, "Evening", 10, 75.0, 7.5))

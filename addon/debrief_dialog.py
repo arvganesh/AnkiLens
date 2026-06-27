@@ -40,6 +40,8 @@ class DebriefDialog(QDialog):
         layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
         if debrief.cards_to_fix.cards:
             layout.addWidget(_cards_to_fix_card(debrief.cards_to_fix, dialog=self, open_card=None))
+        if debrief.cards_to_fix.cards and _early_learning_cards(debrief):
+            layout.addWidget(_early_learning_card(debrief))
         if debrief.cards_to_fix.cards and debrief.study_next:
             layout.addWidget(_study_material_card(debrief.study_next, dialog=self, open_material=open_material))
         layout.addWidget(_review_habits_card(debrief.session_habits))
@@ -82,6 +84,12 @@ def _next_step_card(
             actions=actions,
             featured=True,
         )
+    if _early_learning_cards(debrief):
+        return panel_card(
+            "Best next step: give early material another pass",
+            _early_learning_body(debrief),
+            featured=True,
+        )
     if debrief.study_next:
         target = debrief.study_next[0]
         actions = ()
@@ -91,7 +99,7 @@ def _next_step_card(
             actions = (button,)
         return panel_card(
             f"Best next step: study {_target_label(target)}",
-            _study_action_summary(target, debrief.cards_to_fix.early_exposure_count),
+            _study_action_summary(target),
             actions=actions,
             featured=True,
         )
@@ -105,15 +113,9 @@ def _next_step_card(
 def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: Callable[[int], None] | None):
     if not cards_to_fix.cards:
         body = "No strong card-specific pattern surfaced in this window. Study signals may be more useful here."
-        if cards_to_fix.early_exposure_count:
-            body += (
-                f" {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "
-                f"{_verb(cards_to_fix.early_exposure_count, 'looks', 'look')} early in learning."
-            )
         return panel_card(
             "No card repair stands out",
             body,
-            featured=True,
         )
     card = cards_to_fix.cards[0]
     actions = ()
@@ -163,6 +165,17 @@ def _study_material_card(
     )
 
 
+def _early_learning_card(debrief: Debrief):
+    rows = tuple(
+        (
+            "Early card" if index == 0 else "Also",
+            f"{summary.card_label}: missed {summary.misses}/{summary.total_reviews} reviews",
+        )
+        for index, summary in enumerate(_early_learning_cards(debrief)[:3])
+    )
+    return panel_card("Why not edit yet", _early_learning_body(debrief), rows=rows)
+
+
 def _review_habits_card(habits: SessionHabits):
     if habits.review_count == 0:
         return panel_card("Review habits", "No reviews found in this window.", quiet=True)
@@ -183,15 +196,27 @@ def _target_summary(target: StudyTarget) -> str:
     return detail
 
 
-def _study_action_summary(target: StudyTarget, early_exposure_count: int) -> str:
-    detail = f"{_target_evidence(target, _target_label(target))} Skim the source topic, then retry related cards."
-    if early_exposure_count:
-        detail += (
-            f" {early_exposure_count} card{_plural(early_exposure_count)} "
-            f"{_verb(early_exposure_count, 'looks', 'look')} early in learning, so do not over-interpret "
-            f"{_verb(early_exposure_count, 'it', 'them')} yet."
-        )
-    return detail
+def _study_action_summary(target: StudyTarget) -> str:
+    return f"{_target_evidence(target, _target_label(target))} Review the source topic, then retry related cards."
+
+
+def _early_learning_body(debrief: Debrief) -> str:
+    count = _early_learning_count(debrief)
+    return (
+        f"{count} repeated-miss card{_plural(count)} "
+        f"{_verb(count, 'looks', 'look')} early in learning. Treat this as weak evidence before "
+        "editing; preview the source topic, then retry."
+    )
+
+
+def _early_learning_cards(debrief: Debrief) -> tuple:
+    early_learning = getattr(debrief, "early_learning", None)
+    return tuple(getattr(early_learning, "cards", ()) or ())
+
+
+def _early_learning_count(debrief: Debrief) -> int:
+    early_learning = getattr(debrief, "early_learning", None)
+    return getattr(early_learning, "count", len(_early_learning_cards(debrief)))
 
 
 def _target_evidence(target: StudyTarget, label: str) -> str:
@@ -216,16 +241,10 @@ def _plural(count: int) -> str:
 
 
 def _cards_to_fix_body(cards_to_fix: CardsToFix) -> str:
-    body = (
+    return (
         f"{cards_to_fix.count} card{_plural(cards_to_fix.count)} "
         f"{_verb(cards_to_fix.count, 'shows', 'show')} stronger card-specific clues."
     )
-    if cards_to_fix.early_exposure_count:
-        body += (
-            f" {cards_to_fix.early_exposure_count} card{_plural(cards_to_fix.early_exposure_count)} "
-            f"{_verb(cards_to_fix.early_exposure_count, 'looks', 'look')} early in learning."
-        )
-    return body
 
 
 def _verb(count: int, singular: str, plural: str) -> str:
