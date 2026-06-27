@@ -162,11 +162,7 @@ def _soft_break_evidence(text: str) -> str:
 def _next_step_block(text: str, *, actions: tuple[QPushButton, ...] = ()) -> QVBoxLayout:
     layout = QVBoxLayout()
     layout.setSpacing(SPACE_1)
-    layout.setContentsMargins(0, SPACE_1, 0, SPACE_1)
-    label = QLabel("Next")
-    label.setAlignment(Qt.AlignmentFlag.AlignTop)
-    label.setStyleSheet("border: none; color: #4f674a; font-size: 12px; font-weight: 700;")
-    layout.addWidget(label)
+    layout.setContentsMargins(0, 0, 0, SPACE_1)
     layout.addWidget(_plain_text(text, "#263726", "13px", weight=600))
     if actions:
         action_row = QHBoxLayout()
