@@ -386,6 +386,53 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.study_next[0].source_count, 4)
         self.assertIsNone(debrief.same_note_cluster)
 
+    def test_same_note_dominated_study_target_recommends_note_inspection(self) -> None:
+        tag = "AnKing_Cardiology_Valves"
+        entries = [
+            _entry(
+                card_id,
+                1,
+                card_id,
+                text=f"same cloze family {card_id}",
+                tags=(tag,),
+                card_reps=8,
+                note_id=50,
+                note_card_count=5,
+            )
+            for card_id in range(1, 4)
+        ]
+        entries.append(
+            _entry(
+                4,
+                1,
+                4,
+                text="independent missed valve",
+                tags=(tag,),
+                card_reps=8,
+                note_id=104,
+                note_card_count=1,
+            )
+        )
+        entries.extend(
+            _entry(
+                card_id,
+                3,
+                card_id,
+                text=f"stable valve {card_id}",
+                tags=(tag,),
+                card_reps=8,
+                note_id=card_id + 100,
+                note_card_count=1,
+            )
+            for card_id in range(5, 9)
+        )
+
+        debrief = build_debrief(entries, minimum_misses=1)
+
+        self.assertEqual(debrief.study_next[0].label, tag)
+        self.assertEqual(debrief.same_note_cluster.note_id, 50)
+        self.assertEqual(debrief.next_check_kind, "same_note")
+
     def test_cards_to_fix_counts_strong_repair_clue(self) -> None:
         debrief = build_debrief(
             [

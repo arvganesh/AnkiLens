@@ -89,6 +89,12 @@ class Debrief:
             return "repair"
         if self.early_learning_is_dominant:
             return "early_learning"
+        if self.same_note_cluster and self.study_next and _same_note_dominates_target(
+            self.same_note_cluster,
+            self.study_next[0],
+            self.missed_cards,
+        ):
+            return "same_note"
         if self.study_next:
             return "study"
         if self.same_note_cluster:
@@ -224,6 +230,39 @@ def _same_note_cluster(summaries: list[MissedCardSummary]) -> MissedCardSummary 
         and not summary.is_early_exposure
     ]
     return candidates[0] if candidates else None
+
+
+def _same_note_dominates_target(
+    cluster_card: MissedCardSummary,
+    target: StudyTarget,
+    summaries: tuple[MissedCardSummary, ...],
+) -> bool:
+    note_id = cluster_card.note_id
+    if not note_id or not cluster_card.note_card_count or cluster_card.note_card_count <= 1:
+        return False
+    matched_cards = {
+        summary.card_id
+        for summary in summaries
+        if _target_matches_summary(target, summary) and not summary.is_early_exposure
+    }
+    if not matched_cards:
+        return False
+    same_note_cards = {
+        summary.card_id
+        for summary in summaries
+        if summary.card_id in matched_cards and summary.note_id == note_id
+    }
+    return len(same_note_cards) > len(matched_cards) / 2
+
+
+def _target_matches_summary(target: StudyTarget, summary: MissedCardSummary) -> bool:
+    if target.kind == "tag":
+        return target.label in summary.tags and _is_active(summary)
+    if target.kind == "term":
+        return target.label in summary.source_text.lower()
+    if target.kind == "deck":
+        return summary.deck_name == target.label
+    return False
 
 
 def _is_fresh_exposure(summary: MissedCardSummary) -> bool:
