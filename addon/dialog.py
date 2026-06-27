@@ -66,8 +66,10 @@ class MissedCardsDialog(QDialog):
 
         layout.addWidget(table)
         button = QPushButton("Copy Browser search for selected card")
-        button.clicked.connect(lambda _checked=False: _copy_selected_card_search(table))
+        status = QLabel("")
+        button.clicked.connect(lambda _checked=False: _copy_selected_card_search(table, status))
         layout.addWidget(button)
+        layout.addWidget(status)
         self.setLayout(layout)
 
 
@@ -82,11 +84,13 @@ class SortItem(QTableWidgetItem):
         return super().__lt__(other)
 
 
-def _copy_selected_card_search(table: QTableWidget) -> None:
+def _copy_selected_card_search(table: QTableWidget, status: QLabel) -> None:
     selected_rows = table.selectionModel().selectedRows()
     row = selected_rows[0].row() if selected_rows else 0
     item = table.item(row, 0)
     if item is None:
         return
     card_id = int(item.data(Qt.ItemDataRole.UserRole))
-    QApplication.clipboard().setText(browser_search_for_card(card_id))
+    query = browser_search_for_card(card_id)
+    QApplication.clipboard().setText(query)
+    status.setText(f"Copied: {query}")
