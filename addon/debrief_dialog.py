@@ -326,11 +326,26 @@ def _target_summary(target: StudyTarget) -> str:
 
 def _early_learning_body(debrief: Debrief) -> str:
     count = _early_learning_count(debrief)
+    if _all_fresh_early_learning(debrief):
+        return (
+            f"{count} early card{_plural(count)} "
+            f"{_verb(count, 'is', 'are')} still early in learning. Treat this as normal first-pass learning, "
+            "not a card-edit signal; study extra only if these felt unfamiliar or clustered."
+        )
     return (
         f"{count} early card{_plural(count)} "
-        f"{_verb(count, 'is', 'are')} still early in learning. Treat this as normal first-pass learning, "
-        "not a card-edit signal; study extra only if these felt unfamiliar or clustered."
+        f"{_verb(count, 'is', 'are')} still early in review history. Do not over-interpret yet; "
+        "check again only if the same cards keep failing after a few more reps."
     )
+
+
+def _all_fresh_early_learning(debrief: Debrief) -> bool:
+    cards = _early_learning_cards(debrief)
+    return bool(cards) and all(_is_fresh_early_card(summary) for summary in cards)
+
+
+def _is_fresh_early_card(summary) -> bool:
+    return summary.misses == 1 or (summary.card_reps is not None and summary.card_reps <= 2)
 
 
 def _early_learning_cards(debrief: Debrief) -> tuple:

@@ -170,6 +170,44 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertNotIn("source", calls[0][0][1].lower())
         self.assertNotIn("weak evidence", calls[0][0][1].lower())
 
+    def test_repeated_low_rep_support_copy_does_not_call_it_first_pass_learning(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        calls = []
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        try:
+            widget = debrief_dialog._early_learning_card(
+                Debrief(
+                    study_next=(),
+                    cards_to_fix=CardsToFix(0, (), ()),
+                    early_learning=EarlyLearning(
+                        1,
+                        (
+                            MissedCardSummary(
+                                1,
+                                "Cardiology",
+                                "Aortic stenosis",
+                                2,
+                                2,
+                                datetime(2026, 6, 26),
+                                card_reps=4,
+                            ),
+                        ),
+                    ),
+                    session_habits=SessionHabits(2, 2, 1.0, "Morning"),
+                    missed_cards=(),
+                )
+            )
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+
+        self.assertEqual(widget, "panel")
+        self.assertIn("early in review history", calls[0][0][1])
+        self.assertIn("Do not over-interpret yet", calls[0][0][1])
+        self.assertIn("same cards keep failing after a few more reps", calls[0][0][1])
+        self.assertNotIn("first-pass learning", calls[0][0][1])
+
     def test_no_pattern_recommendation_uses_quiet_confidence(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")
