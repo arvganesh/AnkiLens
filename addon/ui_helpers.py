@@ -110,6 +110,7 @@ def recommendation_card(
     next_step: str,
     check: str,
     actions: tuple[QPushButton, ...] = (),
+    eyebrow: str = "Check first",
 ) -> QFrame:
     frame = QFrame()
     frame.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
@@ -125,9 +126,9 @@ def recommendation_card(
     layout.setContentsMargins(20, SPACE_4, 20, 18)
     layout.setSpacing(0)
 
-    eyebrow = QLabel("Check first")
-    eyebrow.setStyleSheet("border: none; color: #64705f; font-size: 11px; font-weight: 700;")
-    layout.addWidget(eyebrow)
+    eyebrow_label = QLabel(eyebrow)
+    eyebrow_label.setStyleSheet("border: none; color: #64705f; font-size: 11px; font-weight: 700;")
+    layout.addWidget(eyebrow_label)
     layout.addSpacing(SPACE_1)
 
     heading = QLabel(title)

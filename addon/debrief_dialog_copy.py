@@ -9,12 +9,13 @@ def debrief_title() -> str:
     return "Missed card analytics"
 
 
-def debrief_intro_text(lookback_days: int) -> str:
+def debrief_intro_text(lookback_days: int, *, deck_label: str | None = None) -> str:
+    scope = f"{deck_label} · " if deck_label else ""
     if lookback_days <= 0:
-        return "Read-only patterns across available reviews. Bonsai does not change scheduling."
+        return f"{scope}Read-only patterns across available reviews. Bonsai does not change scheduling."
     if lookback_days == 1:
-        return "Last 24 hours · read-only · Bonsai does not change scheduling."
-    return f"Last {lookback_days} days · read-only · Bonsai does not change scheduling."
+        return f"{scope}Last 24 hours · read-only · Bonsai does not change scheduling."
+    return f"{scope}Last {lookback_days} days · read-only · Bonsai does not change scheduling."
 
 
 def deck_debrief_button_text() -> str:

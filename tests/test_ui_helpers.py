@@ -154,6 +154,22 @@ class UiHelpersTest(unittest.TestCase):
 
         self.assertNotIn("Before studying more", _FakeWidget.labels)
 
+    def test_recommendation_card_accepts_custom_eyebrow(self) -> None:
+        _install_fake_aqt()
+        ui_helpers = importlib.import_module("ui_helpers")
+
+        ui_helpers.recommendation_card(
+            "No action needed yet",
+            confidence="No signal",
+            evidence="No card crossed the repeated-miss threshold in this window.",
+            next_step="Keep reviewing normally.",
+            check="No card needs attention from this window.",
+            eyebrow="No action",
+        )
+
+        self.assertIn("No action", _FakeWidget.labels)
+        self.assertNotIn("Check first", _FakeWidget.labels)
+
     def test_detail_blocks_have_breathing_room(self) -> None:
         _install_fake_aqt()
         ui_helpers = importlib.import_module("ui_helpers")

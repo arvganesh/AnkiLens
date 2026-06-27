@@ -141,6 +141,10 @@ class DebriefDialogTest(unittest.TestCase):
 
     def test_debrief_intro_names_short_recent_window(self) -> None:
         self.assertEqual(debrief_intro_text(1), "Last 24 hours · read-only · Bonsai does not change scheduling.")
+        self.assertEqual(
+            debrief_intro_text(1, deck_label="Bonsai E2E Large Review Window"),
+            "Bonsai E2E Large Review Window · Last 24 hours · read-only · Bonsai does not change scheduling.",
+        )
         self.assertIn("Last 2 days", debrief_intro_text(2))
 
     def test_debrief_action_copy_is_clear_and_cautious(self) -> None:

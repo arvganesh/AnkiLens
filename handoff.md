@@ -69,6 +69,9 @@ The main flow is:
 The Missed Cards debrief currently leads with a single card:
 
 - Window heading: `Missed card analytics`.
+- The deck-browser Bonsai panel includes a `Deck` dropdown with `All decks` plus decks seen in recent reviews.
+- Selecting a deck scopes the panel count and the debrief to that deck for the current Anki session.
+- Long nested deck names display as the last two path parts, for example `Zanki Biochemistry / Metabolism`.
 - Title example: `Check missed examples from Cardiology Valves`.
 - Signal badge example: `2 of 5 cards in this group needed another pass.`
 - Primary action example: `Show 2 missed examples`.
@@ -101,13 +104,21 @@ Recent UI simplifications:
 - Live Anki visual QA against the 380-review fixture showed the debrief rendering the new copy cleanly.
 - Clicking `Show 3 missed examples` still cannot be visually verified through Computer Use because the tool
   returns `noWindowsAvailable` after the dialog closes.
+- No-signal debriefs now use the eyebrow `No action` instead of `Check first`.
 
 ## Latest Completed Slice
 
-The latest working slice adds a real large-deck E2E fixture and fixes two issues it exposed.
+The latest working slice adds an in-session deck-scope dropdown to the Bonsai deck panel.
 
 Behavior:
 
+- The panel dropdown sends `bonsai:deck:<encoded deck name>` and refreshes the deck browser.
+- The panel count uses the selected deck when one is chosen; otherwise it uses all decks.
+- The debrief uses the same selected deck scope and names it in the intro line.
+- Long nested deck names are shortened in visible panel copy while retaining the full deck value internally.
+- Live Anki visual QA verified `All decks` at 82 repeated misses, `Bonsai E2E Large Review Window` at 80,
+  and `Zanki Biochemistry / Metabolism` with no repeated misses.
+- No-signal debriefs now say `No action` above `No action needed yet`.
 - Study-target evidence says `2 of 5 cards from Cardiology Valves...` instead of `related cards`.
 - Lapsed exact-card next steps say `Check the missed examples first...`.
 - Broad fallback buttons say `Show cards to check`.
@@ -158,7 +169,7 @@ make test
 
 Result:
 
-- 191 tests passed.
+- 201 tests passed.
 
 Also run before commits:
 

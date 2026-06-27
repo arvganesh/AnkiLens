@@ -114,6 +114,7 @@ class DebriefDialog(QDialog):
         debrief: Debrief,
         *,
         lookback_days: int,
+        deck_label: str | None = None,
         open_card: Callable[[int], None] | None = None,
         open_material: Callable[[StudyTarget], None] | None = None,
         open_full_analytics: Callable[[], None] | None = None,
@@ -129,7 +130,7 @@ class DebriefDialog(QDialog):
         layout.setSpacing(SPACE_3)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addWidget(title_label(debrief_title()))
-        layout.addWidget(body_label(debrief_intro_text(lookback_days)))
+        layout.addWidget(body_label(debrief_intro_text(lookback_days, deck_label=deck_label)))
 
         content = QWidget()
         content.setStyleSheet("background: transparent;")
@@ -261,6 +262,7 @@ def _next_step_card(
         evidence=no_pattern_evidence(has_repeated_misses=has_repeated_misses),
         next_step=no_pattern_next_step(has_repeated_misses=has_repeated_misses),
         check=no_pattern_check_text(has_repeated_misses=has_repeated_misses),
+        eyebrow="No action",
     )
 
 

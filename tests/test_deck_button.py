@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, deck_button_html
+from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, DECK_SCOPE_MESSAGE_PREFIX, deck_button_html
 
 
 class DeckButtonTest(unittest.TestCase):
@@ -26,6 +26,32 @@ class DeckButtonTest(unittest.TestCase):
 
         self.assertIn("2 cards needed another pass", html)
         self.assertIn("last 90 days", html)
+
+    def test_panel_can_select_deck_scope(self) -> None:
+        html = deck_button_html(
+            missed_cards=2,
+            lookback_days=90,
+            deck_options=("Cardiology", "Renal"),
+            selected_deck="Renal",
+        )
+
+        self.assertIn("<select", html)
+        self.assertIn(DECK_SCOPE_MESSAGE_PREFIX, html)
+        self.assertIn("All decks", html)
+        self.assertIn('<option value="Renal" selected title="Renal">Renal</option>', html)
+        self.assertIn("2 cards needed another pass in Renal", html)
+
+    def test_panel_shortens_long_subdeck_labels(self) -> None:
+        html = deck_button_html(
+            missed_cards=0,
+            lookback_days=90,
+            deck_options=("Zanki Step Decks::Zanki Biochemistry::Metabolism",),
+            selected_deck="Zanki Step Decks::Zanki Biochemistry::Metabolism",
+        )
+
+        self.assertIn("No repeated misses found in Zanki Biochemistry / Metabolism", html)
+        self.assertIn('value="Zanki Step Decks::Zanki Biochemistry::Metabolism"', html)
+        self.assertIn(">Zanki Biochemistry / Metabolism</option>", html)
 
     def test_summary_handles_zero_repeated_misses(self) -> None:
         html = deck_button_html(missed_cards=0, lookback_days=90)

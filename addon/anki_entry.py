@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib
 import sys
 from datetime import datetime
+from urllib.parse import unquote
 
 try:
     from .analytics import filter_review_entries_by_lookback, summarize_missed_cards
@@ -10,7 +11,7 @@ try:
     from .anki_gateway import load_review_entries
     from .browser_search import browser_search_for_card, browser_search_for_study_target
     from .config import load_config
-    from .deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, deck_button_html
+    from .deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, DECK_SCOPE_MESSAGE_PREFIX, deck_button_html
     from .debrief import StudyTarget, build_debrief
 except ImportError:
     from analytics import filter_review_entries_by_lookback, summarize_missed_cards
@@ -18,8 +19,11 @@ except ImportError:
     from anki_gateway import load_review_entries
     from browser_search import browser_search_for_card, browser_search_for_study_target
     from config import load_config
-    from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, deck_button_html
+    from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, DECK_SCOPE_MESSAGE_PREFIX, deck_button_html
     from debrief import StudyTarget, build_debrief
+
+
+_selected_deck_name: str | None = None
 
 
 def register_menu() -> None:
@@ -72,10 +76,18 @@ def _deck_browser_summary() -> dict[str, int | None]:
             lookback_days=config.lookback_days,
             now=datetime.now(),
         )
+        deck_options = _deck_options(entries)
+        selected_deck = _valid_selected_deck(deck_options)
+        entries = _filter_entries_by_deck(entries, selected_deck)
         missed_cards = _missed_card_count(entries, config)
     except Exception:
         return {"missed_cards": None, "lookback_days": None}
-    return {"missed_cards": missed_cards, "lookback_days": config.lookback_days}
+    return {
+        "missed_cards": missed_cards,
+        "lookback_days": config.lookback_days,
+        "deck_options": deck_options,
+        "selected_deck": selected_deck,
+    }
 
 
 def _missed_card_count(entries, config) -> int:
@@ -94,6 +106,10 @@ def _handle_js_message(handled, message: str, _context):
     if message == DEBRIEF_MESSAGE:
         show_session_debrief()
         return (True, None)
+    if message.startswith(DECK_SCOPE_MESSAGE_PREFIX):
+        _set_selected_deck(unquote(message.removeprefix(DECK_SCOPE_MESSAGE_PREFIX)))
+        _refresh_deck_browser()
+        return (True, None)
     return handled
 
 
@@ -105,9 +121,11 @@ def show_session_debrief() -> None:
 
     config = load_config(mw.addonManager.getConfig(__package__))
     entries = _debrief_entries(load_review_entries(mw), config, now=datetime.now())
+    entries = _filter_entries_by_deck(entries, _selected_deck_name)
     dialog = DebriefDialog(
         current_build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
         lookback_days=config.debrief_lookback_days,
+        deck_label=_deck_display_label(_selected_deck_name) if _selected_deck_name else None,
         open_card=_open_card_from_debrief,
         open_material=_open_material_from_debrief,
         open_full_analytics=lambda: show_missed_card_analytics(lookback_days=config.debrief_lookback_days),
@@ -165,6 +183,45 @@ def _debrief_entries(entries, config, *, now: datetime):
         lookback_days=config.debrief_lookback_days,
         now=now,
     )
+
+
+def _deck_options(entries) -> tuple[str, ...]:
+    return tuple(sorted({entry.deck_name for entry in entries if entry.deck_name}))
+
+
+def _valid_selected_deck(deck_options: tuple[str, ...]) -> str | None:
+    if _selected_deck_name in deck_options:
+        return _selected_deck_name
+    return None
+
+
+def _set_selected_deck(deck_name: str) -> None:
+    global _selected_deck_name
+    _selected_deck_name = deck_name or None
+
+
+def _filter_entries_by_deck(entries, deck_name: str | None):
+    if not deck_name:
+        return entries
+    return [entry for entry in entries if entry.deck_name == deck_name]
+
+
+def _deck_display_label(deck_name: str | None) -> str | None:
+    if not deck_name:
+        return None
+    parts = [part.strip() for part in deck_name.split("::") if part.strip()]
+    if len(parts) > 2:
+        return " / ".join(parts[-2:])
+    return deck_name
+
+
+def _refresh_deck_browser() -> None:
+    try:
+        from aqt import mw
+
+        mw.deckBrowser.refresh()
+    except Exception:
+        return
 
 
 def _open_card_from_debrief(card_id: int) -> None:

@@ -342,6 +342,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
 
         self.assertEqual(widget, "recommendation")
         self.assertEqual(calls[0][1]["confidence"], "Not enough signal")
+        self.assertEqual(calls[0][1]["eyebrow"], "No action")
         self.assertIn("intentionally staying quiet", calls[0][1]["check"])
         self.assertNotIn("Weak evidence", calls[0][1]["confidence"])
 
