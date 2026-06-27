@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from datetime import datetime
 
-from analytics import ReviewLogEntry, summarize_missed_cards
+from analytics import ReviewLogEntry, summarize_deck_misses, summarize_missed_cards
 
 
 def _entry(card_id: int, ease: int, day: int) -> ReviewLogEntry:
@@ -70,6 +70,25 @@ class MissedCardAnalyticsTest(unittest.TestCase):
         )
 
         self.assertEqual(len(summaries), 1)
+
+    def test_summarizes_deck_miss_concentration(self) -> None:
+        missed_cards = summarize_missed_cards(
+            [
+                _entry(1, 1, 1),
+                _entry(1, 1, 2),
+                _entry(2, 1, 3),
+                _entry(2, 1, 4),
+                ReviewLogEntry(3, 1, datetime(2026, 6, 5), "Renal", "Card 3"),
+                ReviewLogEntry(3, 1, datetime(2026, 6, 6), "Renal", "Card 3"),
+                ReviewLogEntry(3, 1, datetime(2026, 6, 7), "Renal", "Card 3"),
+            ]
+        )
+
+        decks = summarize_deck_misses(missed_cards)
+
+        self.assertEqual(decks[0].deck_name, "Cardiology")
+        self.assertEqual(decks[0].missed_cards, 2)
+        self.assertEqual(decks[0].misses, 4)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from copy_text import analytics_caption
+from analytics import DeckMissSummary
+from copy_text import analytics_caption, deck_concentration_caption
 
 
 class AnalyticsCopyTest(unittest.TestCase):
@@ -18,6 +19,13 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("Showing 2 cards", caption)
         self.assertIn("at least 2 times", caption)
         self.assertIn("Limit: 10", caption)
+
+    def test_deck_concentration_caption_lists_decks(self) -> None:
+        caption = deck_concentration_caption([DeckMissSummary("Cardiology", 2, 5)])
+
+        self.assertIn("concentrated", caption)
+        self.assertIn("Cardiology", caption)
+        self.assertIn("2 cards, 5 misses", caption)
 
 
 if __name__ == "__main__":

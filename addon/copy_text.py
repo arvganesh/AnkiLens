@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+try:
+    from .analytics import DeckMissSummary
+except ImportError:
+    from analytics import DeckMissSummary
+
 
 def analytics_caption(*, shown_count: int, minimum_misses: int, result_limit: int) -> str:
     if shown_count == 0:
@@ -16,3 +21,14 @@ def analytics_caption(*, shown_count: int, minimum_misses: int, result_limit: in
 
 def _plural(count: int) -> str:
     return "" if count == 1 else "s"
+
+
+def deck_concentration_caption(decks: list[DeckMissSummary]) -> str:
+    if not decks:
+        return ""
+    lines = ["Where repeated misses are concentrated:"]
+    lines.extend(
+        f"- {deck.deck_name}: {deck.missed_cards} card{_plural(deck.missed_cards)}, {deck.misses} misses"
+        for deck in decks
+    )
+    return "\n".join(lines)

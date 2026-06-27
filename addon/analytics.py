@@ -32,6 +32,13 @@ class MissedCardSummary:
         return self.misses / self.total_reviews
 
 
+@dataclass(frozen=True)
+class DeckMissSummary:
+    deck_name: str
+    missed_cards: int
+    misses: int
+
+
 def summarize_missed_cards(
     entries: list[ReviewLogEntry],
     *,
@@ -45,6 +52,18 @@ def summarize_missed_cards(
     summaries = [_summarize_card(card_entries) for card_entries in grouped.values()]
     candidates = [summary for summary in summaries if summary.misses >= minimum_misses]
     return sorted(candidates, key=_priority, reverse=True)[:limit]
+
+
+def summarize_deck_misses(summaries: list[MissedCardSummary], *, limit: int = 5) -> list[DeckMissSummary]:
+    grouped: dict[str, DeckMissSummary] = {}
+    for summary in summaries:
+        current = grouped.get(summary.deck_name)
+        grouped[summary.deck_name] = DeckMissSummary(
+            deck_name=summary.deck_name,
+            missed_cards=(current.missed_cards if current else 0) + 1,
+            misses=(current.misses if current else 0) + summary.misses,
+        )
+    return sorted(grouped.values(), key=lambda deck: (deck.misses, deck.missed_cards), reverse=True)[:limit]
 
 
 def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
