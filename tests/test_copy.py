@@ -127,6 +127,14 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertIn("Browser search: cid:123", caption)
         self.assertIn("Text: Mitral regurgitation murmur", caption)
 
+    def test_card_detail_caption_names_missing_format_clues(self) -> None:
+        summary = MissedCardSummary(123, "Deck", "Card", 2, 3, None)
+
+        caption = card_detail_caption(summary)
+
+        self.assertIn("Format clues: No format clue", caption)
+        self.assertNotIn("No obvious clue", caption)
+
     def test_card_detail_caption_truncates_long_text(self) -> None:
         summary = MissedCardSummary(123, "Deck", "Card", 2, 3, None, source_text="word " * 80)
 

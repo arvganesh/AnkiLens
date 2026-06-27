@@ -201,7 +201,7 @@ def _selected_summary(table: QTableWidget, summaries_by_card_id: dict[int, Misse
 
 
 def _signals_label(summary: MissedCardSummary) -> str:
-    return ", ".join(summary.content_labels) if summary.content_labels else "No obvious clue"
+    return ", ".join(summary.content_labels) if summary.content_labels else "No format clue"
 
 
 def _table_height(row_count: int) -> int:

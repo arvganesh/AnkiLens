@@ -66,7 +66,7 @@ def selected_card_status_text(query: str, *, opened: bool) -> str:
 
 
 def card_detail_caption(summary: MissedCardSummary) -> str:
-    clues = ", ".join(summary.content_labels) if summary.content_labels else "No obvious clue"
+    clues = ", ".join(summary.content_labels) if summary.content_labels else "No format clue"
     text = _preview_text(summary.source_text)
     lines = [
         f"Selected card: {summary.card_label}",
