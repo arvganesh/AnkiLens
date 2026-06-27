@@ -69,7 +69,7 @@ def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | No
 
 def _summary_text(missed_cards: int | None, lookback_days: int | None) -> str:
     if missed_cards is None or lookback_days is None:
-        return "Review repeated misses and content patterns."
+        return "Check whether missed cards point to an edit or a study pass."
     if missed_cards == 0:
         return f"No repeated misses found in the last {lookback_days} days."
     card_label = "card" if missed_cards == 1 else "cards"
