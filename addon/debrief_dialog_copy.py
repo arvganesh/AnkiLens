@@ -103,7 +103,7 @@ def no_pattern_evidence(*, has_repeated_misses: bool = True) -> str:
 def no_pattern_next_step(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
         return "Keep reviewing. Bonsai will speak up when a stronger pattern appears."
-    return "If one card feels suspicious, inspect supporting cards. Otherwise keep reviewing and wait for a clearer pattern."
+    return "If one card feels suspicious, review evidence cards. Otherwise keep reviewing and wait for a clearer pattern."
 
 
 def early_learning_evidence(count: int) -> str:

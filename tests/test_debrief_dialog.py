@@ -95,7 +95,7 @@ class DebriefDialogTest(unittest.TestCase):
     def test_no_pattern_copy_stays_actionable_without_overclaiming(self) -> None:
         self.assertEqual(no_pattern_title(), "No clear next check yet")
         self.assertIn("not enough shared signal", no_pattern_evidence())
-        self.assertIn("inspect supporting cards", no_pattern_next_step())
+        self.assertIn("review evidence cards", no_pattern_next_step())
         self.assertIn("wait for a clearer pattern", no_pattern_next_step())
 
     def test_no_pattern_copy_handles_no_repeated_misses(self) -> None:
