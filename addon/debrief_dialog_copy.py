@@ -18,7 +18,7 @@ def debrief_intro_text(lookback_days: int) -> str:
 
 
 def deck_debrief_button_text() -> str:
-    return "Next Check"
+    return "What should I check?"
 
 
 def study_target_title(label: str) -> str:

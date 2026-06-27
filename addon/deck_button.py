@@ -41,7 +41,7 @@ def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | No
       padding: 7px 14px;
     "
   >
-    Supporting Cards
+    See missed cards
   </button>
   <button
     onclick="pycmd('bonsai:debrief')"
@@ -58,6 +58,9 @@ def deck_button_html(*, missed_cards: int | None = None, lookback_days: int | No
   >
     {deck_debrief_button_text()}
   </button>
+  <div style="color: #7a7267; font-size: 11px; line-height: 1.35; margin-top: 9px;">
+    Read-only: decide whether to inspect a card or review the source.
+  </div>
 </div>
 """
 
