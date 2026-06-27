@@ -88,15 +88,21 @@ def mixed_repair_signal_text() -> str:
     return "One card also has construction clues; sample examples before deciding whether to edit or study."
 
 
-def no_pattern_title() -> str:
+def no_pattern_title(*, has_repeated_misses: bool = True) -> str:
+    if not has_repeated_misses:
+        return "Nothing to check yet"
     return "No clear next check yet"
 
 
-def no_pattern_evidence() -> str:
+def no_pattern_evidence(*, has_repeated_misses: bool = True) -> str:
+    if not has_repeated_misses:
+        return "No card crossed the repeated-miss threshold in this window."
     return "There are repeated misses, but not enough shared signal to point at a card edit or study target."
 
 
-def no_pattern_next_step() -> str:
+def no_pattern_next_step(*, has_repeated_misses: bool = True) -> str:
+    if not has_repeated_misses:
+        return "Keep reviewing. Bonsai will speak up when a stronger pattern appears."
     return "If one card feels suspicious, inspect supporting cards. Otherwise keep reviewing and wait for a clearer pattern."
 
 

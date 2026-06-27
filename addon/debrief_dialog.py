@@ -186,11 +186,12 @@ def _next_step_card(
             actions=actions,
             featured=True,
         )
+    has_repeated_misses = bool(debrief.missed_cards)
     return panel_card(
-        no_pattern_title(),
+        no_pattern_title(has_repeated_misses=has_repeated_misses),
         rows=(
-            ("Evidence", no_pattern_evidence()),
-            ("Next", no_pattern_next_step()),
+            ("Evidence", no_pattern_evidence(has_repeated_misses=has_repeated_misses)),
+            ("Next", no_pattern_next_step(has_repeated_misses=has_repeated_misses)),
             ("Check", "Bonsai is staying quiet rather than turning thin data into advice."),
         ),
         featured=True,

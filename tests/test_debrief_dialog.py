@@ -98,6 +98,11 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("inspect supporting cards", no_pattern_next_step())
         self.assertIn("wait for a clearer pattern", no_pattern_next_step())
 
+    def test_no_pattern_copy_handles_no_repeated_misses(self) -> None:
+        self.assertEqual(no_pattern_title(has_repeated_misses=False), "Nothing to check yet")
+        self.assertIn("No card crossed the repeated-miss threshold", no_pattern_evidence(has_repeated_misses=False))
+        self.assertIn("Keep reviewing", no_pattern_next_step(has_repeated_misses=False))
+
     def test_repair_action_summary_names_evidence_and_uncertainty(self) -> None:
         summary = MissedCardSummary(
             1,
