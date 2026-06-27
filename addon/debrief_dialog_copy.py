@@ -57,13 +57,14 @@ def target_evidence_text(
     early_count: int = 0,
     mature_count: int = 0,
     lapsed_count: int = 0,
+    total_examples: int | None = None,
 ) -> str:
     card_label = "card" if reviewed_count == 1 else "cards"
     scope = f" from {label}" if active_cards else f" in {label}"
     sample = "In this window, " if _is_small_sample(reviewed_count) else ""
     evidence = f"{sample}{count} of {reviewed_count} {card_label}{scope} needed another pass."
     if related_cards:
-        evidence += f" Examples: {_example_summary(related_cards)}."
+        evidence += f" Examples: {_example_summary(related_cards, total_count=total_examples)}."
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
     if maturity:
         evidence += f" {maturity}."
@@ -92,10 +93,11 @@ def target_detail_text(
     early_count: int = 0,
     mature_count: int = 0,
     lapsed_count: int = 0,
+    total_examples: int | None = None,
 ) -> str:
     details = []
     if related_cards:
-        details.append(f"Examples: {_example_summary(related_cards)}.")
+        details.append(f"Examples: {_example_summary(related_cards, total_count=total_examples)}.")
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
     if maturity:
         details.append(f"{maturity}.")
@@ -276,16 +278,18 @@ def short_label(label: str) -> str:
     return label if len(label) <= 64 else label[:61].rstrip() + "..."
 
 
-def _example_summary(related_cards: tuple[str, ...]) -> str:
+def _example_summary(related_cards: tuple[str, ...], *, total_count: int | None = None) -> str:
     visible = tuple(_short_example(card) for card in related_cards[:2])
-    hidden_count = max(0, len(related_cards) - len(visible))
+    represented_count = max(len(related_cards), total_count or 0)
+    hidden_count = max(0, represented_count - len(visible))
     if hidden_count:
-        return f"{'; '.join(visible)}; +{hidden_count} more"
+        hidden_label = "more" if total_count is None else f"more missed card{'' if hidden_count == 1 else 's'}"
+        return f"{'; '.join(visible)}; +{hidden_count} {hidden_label}"
     return ", ".join(visible)
 
 
 def _short_example(label: str) -> str:
-    return label if len(label) <= 44 else label[:41].rstrip() + "..."
+    return label if len(label) <= 38 else label[:35].rstrip() + "..."
 
 
 def _maturity_text(early_count: int, mature_count: int, lapsed_count: int) -> str:

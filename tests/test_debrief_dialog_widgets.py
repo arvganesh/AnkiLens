@@ -772,6 +772,46 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertNotIn("4 of 8", calls[0][1]["evidence"])
         self.assertEqual(button_calls, ["Show 2 missed examples"])
 
+    def test_study_recommendation_names_hidden_large_missed_set(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_recommendation_card = debrief_dialog.recommendation_card
+        calls = []
+        debrief_dialog.recommendation_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "recommendation"
+        try:
+            widget = debrief_dialog._next_step_card(
+                Debrief(
+                    study_next=(
+                        StudyTarget(
+                            "AnKing::Cardiology::Valves",
+                            "tag",
+                            80,
+                            300,
+                            (
+                                "Valve physiology missed example 298 with long AnKing-style clinical wording",
+                                "Valve physiology missed example 299 with long AnKing-style clinical wording",
+                                "Valve physiology missed example 300 with long AnKing-style clinical wording",
+                            ),
+                            lapsed_count=80,
+                            related_card_ids=(298, 299, 300),
+                        ),
+                    ),
+                    cards_to_fix=CardsToFix(0, (), ()),
+                    early_learning=EarlyLearning(0, ()),
+                    session_habits=SessionHabits(380, 80, 0.21, "Evening"),
+                    missed_cards=(),
+                ),
+                dialog=None,
+                open_card=None,
+                open_material=None,
+            )
+        finally:
+            debrief_dialog.recommendation_card = original_recommendation_card
+
+        self.assertEqual(widget, "recommendation")
+        self.assertIn("+78 more missed cards", calls[0][1]["evidence"])
+        self.assertLessEqual(len(calls[0][1]["evidence"].split("Breakdown:")[0]), 150)
+
     def test_study_recommendation_names_missed_examples_when_action_is_exact_cards(self) -> None:
         _install_fake_aqt()
         debrief_dialog = importlib.import_module("debrief_dialog")

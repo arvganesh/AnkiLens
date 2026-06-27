@@ -87,7 +87,8 @@ Recent UI simplifications:
 - Softened remaining `related cards` copy in the primary study path to `cards`, `examples`, or `missed examples`.
 - Softened the secondary study support heading to `Also check cards`.
 - Debrief action callbacks now close the dialog, then schedule Browse/open callbacks on the next Qt tick.
-- Evidence examples are capped to two shortened labels plus `+N more` so large sessions stay readable.
+- Evidence examples are capped to two shortened labels plus `+N more missed cards` when the full missed
+  set is larger than the visible examples.
 
 ## Latest Completed Slice
 
@@ -104,7 +105,7 @@ Behavior:
   instead of the generic `Anki Browse` wording.
 - Debrief action callbacks are scheduled after dialog close so Browser opening does not race modal teardown.
 - A 380-review workflow test covers many misses in one tag and verifies the exact-card target remains capped
-  while the visible examples line stays short.
+  while the visible examples line stays short and names the hidden missed-card count truthfully.
 - The exact missed-card Browse behavior is unchanged.
 
 Why:
@@ -115,6 +116,8 @@ Why:
 - Fallback Browse messages should name exact-card actions clearly when opening Browse fails.
 - Browse actions should run after the debrief modal has started closing, not inside the same click stack.
 - Long AnKing-style labels should not make `Why this came up` unreadable as study volume grows.
+- If Bonsai shows only a few exact examples from a large cluster, the evidence should still acknowledge
+  the full cluster size instead of implying only one hidden example exists.
 
 Commit:
 
@@ -130,7 +133,7 @@ make test
 
 Result:
 
-- 188 tests passed.
+- 189 tests passed.
 
 Also run before commits:
 
@@ -143,6 +146,11 @@ Visual verification:
 - Use Computer Use `get_app_state("Anki")`.
 - Do not rely on terminal `screencapture`; it captures the Codex desktop/wallpaper in this environment.
 - The documented workflow is in `docs/anki_ui_verification.md`.
+- On June 27, 2026, a temporary `/tmp/bonsai_large_debrief_preview` hook was used and then removed to
+  preview a 380-review / 80-miss workflow in the actual Anki dialog. The screen stayed readable with:
+  `80 of 300 cards...`, `Show 3 missed examples`, and
+  `Examples: Valve physiology missed example 239...; Valve physiology missed example 240...; +78 more missed cards.`
+  After removing the hook and sentinel, the real profile dialog returned to the normal 2-card fixture.
 
 ## Known Caveats
 
@@ -157,6 +165,7 @@ Visual verification:
 
 ## Recent Commits
 
+- `782a3c5` Keep large debrief examples scannable
 - `373f6f6` Name single-card Browse fallback
 - `3eab6a0` Clarify secondary debrief checks
 - `a213072` Soften missed-example debrief copy

@@ -287,7 +287,11 @@ class DebriefTest(unittest.TestCase):
 
         debrief = build_debrief(entries)
         target = debrief.study_next[0]
-        detail = target_detail_text(target.related_cards, lapsed_count=target.lapsed_count)
+        detail = target_detail_text(
+            target.related_cards,
+            lapsed_count=target.lapsed_count,
+            total_examples=target.count,
+        )
 
         self.assertEqual(debrief.session_habits.review_count, 380)
         self.assertEqual(target.label, tag)
@@ -296,7 +300,7 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(len(target.related_card_ids), 3)
         self.assertTrue(all(221 <= card_id <= 300 for card_id in target.related_card_ids))
         self.assertEqual(len(target.related_cards), 3)
-        self.assertIn("+1 more", detail)
+        self.assertIn("+78 more missed cards", detail)
         self.assertLessEqual(len(detail.split("Breakdown:")[0]), 150)
 
     def test_study_targets_prefer_repeated_tags_over_deck_fallback(self) -> None:

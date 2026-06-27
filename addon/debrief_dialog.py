@@ -428,6 +428,7 @@ def _target_evidence(target: StudyTarget, label: str) -> str:
         early_count=target.early_count,
         mature_count=target.mature_count,
         lapsed_count=target.lapsed_count,
+        total_examples=target.count,
     )
 
 
@@ -437,6 +438,7 @@ def _target_detail(target: StudyTarget) -> str:
         early_count=target.early_count,
         mature_count=target.mature_count,
         lapsed_count=target.lapsed_count,
+        total_examples=target.count,
     )
 
 
