@@ -1,0 +1,114 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime
+
+try:
+    from .analytics import (
+        AGAIN_EASE,
+        MissedCardSummary,
+        ReviewLogEntry,
+        summarize_content_patterns,
+        summarize_deck_misses,
+        summarize_missed_cards,
+        summarize_tag_misses,
+        summarize_terms,
+    )
+except ImportError:
+    from analytics import (
+        AGAIN_EASE,
+        MissedCardSummary,
+        ReviewLogEntry,
+        summarize_content_patterns,
+        summarize_deck_misses,
+        summarize_missed_cards,
+        summarize_tag_misses,
+        summarize_terms,
+    )
+
+
+@dataclass(frozen=True)
+class StudyTarget:
+    label: str
+    kind: str
+    count: int
+
+
+@dataclass(frozen=True)
+class CardsToFix:
+    count: int
+    clues: tuple[tuple[str, int], ...]
+    cards: tuple[MissedCardSummary, ...]
+
+
+@dataclass(frozen=True)
+class SessionHabits:
+    review_count: int
+    again_count: int
+    again_rate: float
+    time_of_day: str
+
+
+@dataclass(frozen=True)
+class Debrief:
+    study_next: tuple[StudyTarget, ...]
+    cards_to_fix: CardsToFix
+    session_habits: SessionHabits
+    missed_cards: tuple[MissedCardSummary, ...]
+
+
+def build_debrief(
+    entries: list[ReviewLogEntry],
+    *,
+    minimum_misses: int = 2,
+    result_limit: int = 20,
+    study_limit: int = 3,
+) -> Debrief:
+    missed_cards = summarize_missed_cards(entries, minimum_misses=minimum_misses, limit=result_limit)
+    return Debrief(
+        study_next=tuple(_study_targets(missed_cards, limit=study_limit)),
+        cards_to_fix=_cards_to_fix(missed_cards),
+        session_habits=_session_habits(entries),
+        missed_cards=tuple(missed_cards),
+    )
+
+
+def _study_targets(summaries: list[MissedCardSummary], *, limit: int) -> list[StudyTarget]:
+    targets: list[StudyTarget] = []
+    targets.extend(StudyTarget(term, "term", count) for term, count in summarize_terms(summaries))
+    targets.extend(StudyTarget(deck.deck_name, "deck", deck.missed_cards) for deck in summarize_deck_misses(summaries))
+    targets.extend(StudyTarget(tag.tag, "tag", tag.missed_cards) for tag in summarize_tag_misses(summaries))
+    return sorted(targets, key=lambda target: (-target.count, _kind_priority(target.kind), target.label))[:limit]
+
+
+def _cards_to_fix(summaries: list[MissedCardSummary]) -> CardsToFix:
+    cards = tuple(summary for summary in summaries if summary.content_labels)
+    clues = tuple(summarize_content_patterns(list(cards)).items())
+    return CardsToFix(count=len(cards), clues=clues, cards=cards)
+
+
+def _kind_priority(kind: str) -> int:
+    return {"term": 0, "deck": 1, "tag": 2}.get(kind, 3)
+
+
+def _session_habits(entries: list[ReviewLogEntry]) -> SessionHabits:
+    ordered = sorted(entries, key=lambda entry: entry.reviewed_at)
+    review_count = len(ordered)
+    again_count = sum(1 for entry in ordered if entry.ease == AGAIN_EASE)
+    return SessionHabits(
+        review_count=review_count,
+        again_count=again_count,
+        again_rate=again_count / review_count if review_count else 0,
+        time_of_day=_time_of_day(ordered[-1].reviewed_at) if ordered else "No reviews",
+    )
+
+
+def _time_of_day(reviewed_at: datetime) -> str:
+    hour = reviewed_at.hour
+    if 5 <= hour < 12:
+        return "Morning"
+    if 12 <= hour < 17:
+        return "Afternoon"
+    if 17 <= hour < 22:
+        return "Evening"
+    return "Late night"
