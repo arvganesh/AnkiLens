@@ -109,7 +109,7 @@ class DebriefDialogTest(unittest.TestCase):
             ),
             (
                 "In this window, 4 of 8 related cards in Cardiology Valves needed another pass. "
-                "Breakdown: 2 early/new, 1 mature, 1 previously learned. Examples: Murmur?."
+                "Examples: Murmur?. Breakdown: 2 early/new, 1 mature, 1 previously learned."
             ),
         )
         self.assertNotIn("In this window", target_evidence_text(4, 12, "Cardiology Valves", active_cards=True))
@@ -123,7 +123,7 @@ class DebriefDialogTest(unittest.TestCase):
         )
         self.assertEqual(
             target_detail_text(("Murmur?",), early_count=2, mature_count=1, lapsed_count=1),
-            "Breakdown: 2 early/new, 1 mature, 1 previously learned. Examples: Murmur?.",
+            "Examples: Murmur?. Breakdown: 2 early/new, 1 mature, 1 previously learned.",
         )
         self.assertEqual(
             target_detail_text(),

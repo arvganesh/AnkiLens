@@ -62,11 +62,11 @@ def target_evidence_text(
     scope = "related " if active_cards else ""
     sample = "In this window, " if _is_small_sample(reviewed_count) else ""
     evidence = f"{sample}{count} of {reviewed_count} {scope}{card_label} in {label} needed another pass."
+    if related_cards:
+        evidence += f" Examples: {', '.join(related_cards)}."
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
     if maturity:
         evidence += f" {maturity}."
-    if related_cards:
-        evidence += f" Examples: {', '.join(related_cards)}."
     return evidence
 
 
@@ -91,11 +91,11 @@ def target_detail_text(
     lapsed_count: int = 0,
 ) -> str:
     details = []
+    if related_cards:
+        details.append(f"Examples: {', '.join(related_cards)}.")
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
     if maturity:
         details.append(f"{maturity}.")
-    if related_cards:
-        details.append(f"Examples: {', '.join(related_cards)}.")
     return " ".join(details) if details else "Bonsai saw this pattern in the current review window."
 
 
