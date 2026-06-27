@@ -77,7 +77,7 @@ class AnalyticsCopyTest(unittest.TestCase):
     def test_workflow_copy_separates_card_fixing_from_study(self) -> None:
         self.assertIn("inspect the cards behind the recommendation", workflow_caption())
         self.assertEqual(check_cards_caption(), "Inspect card quality")
-        self.assertEqual(study_content_caption(), "Review material if the cards look clear")
+        self.assertEqual(study_content_caption(), "Study evidence if cards look clear")
 
     def test_supporting_metric_labels_are_evidence_oriented(self) -> None:
         self.assertEqual(

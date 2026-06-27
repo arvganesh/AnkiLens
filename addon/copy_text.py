@@ -36,7 +36,7 @@ def check_cards_caption() -> str:
 
 
 def study_content_caption() -> str:
-    return "Review material if the cards look clear"
+    return "Study evidence if cards look clear"
 
 
 def supporting_metric_labels() -> tuple[str, str, str]:
