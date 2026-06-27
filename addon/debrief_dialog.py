@@ -282,7 +282,7 @@ def _early_learning_body(debrief: Debrief) -> str:
     return (
         f"{count} early card{_plural(count)} "
         f"{_verb(count, 'is', 'are')} still early in learning. Treat this as weak evidence before "
-        "editing from it alone; preview the source topic, then retry."
+        "editing from it alone; revisit the material briefly, then retry."
     )
 
 

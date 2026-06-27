@@ -97,7 +97,7 @@ class UiHelpersTest(unittest.TestCase):
 
         ui_helpers.recommendation_card(
             "Possible study target: Cardiology Valves",
-            confidence="Small pattern",
+            confidence="Limited evidence",
             evidence="2 of 5 active cards reviewed in Cardiology Valves needed another pass.",
             next_step="Open the related cards.",
             check="No obvious card-format issue stood out.",

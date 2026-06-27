@@ -103,11 +103,11 @@ class DebriefDialogTest(unittest.TestCase):
         )
 
     def test_evidence_confidence_copy_does_not_overclaim_thin_signals(self) -> None:
-        self.assertEqual(evidence_confidence_text(2, 5), "Small pattern")
-        self.assertEqual(evidence_confidence_text(3, 8), "Small pattern")
-        self.assertEqual(evidence_confidence_text(4, 10), "Supported pattern")
-        self.assertEqual(evidence_confidence_text(4, 10, mixed_signals=True), "Mixed signal")
-        self.assertEqual(evidence_confidence_text(3, 0, early_learning=True), "Early signal")
+        self.assertEqual(evidence_confidence_text(2, 5), "Limited evidence")
+        self.assertEqual(evidence_confidence_text(3, 8), "Limited evidence")
+        self.assertEqual(evidence_confidence_text(4, 10), "Stronger evidence")
+        self.assertEqual(evidence_confidence_text(4, 10, mixed_signals=True), "Check both causes")
+        self.assertEqual(evidence_confidence_text(3, 0, early_learning=True), "Early learning")
 
     def test_study_next_step_matches_target_kind(self) -> None:
         self.assertIn("repeated wording", study_next_step("term"))

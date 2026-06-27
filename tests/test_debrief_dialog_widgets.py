@@ -7,7 +7,7 @@ import unittest
 from datetime import datetime
 
 from analytics import MissedCardSummary
-from debrief import CardsToFix
+from debrief import CardsToFix, Debrief, EarlyLearning, SessionHabits
 
 
 class _QtBase:
@@ -127,6 +127,42 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(widget, "panel")
         self.assertEqual(button_calls, ["Open card in Browse"])
         self.assertIsInstance(panel_calls[0][1]["actions"][0], _FakeButton)
+
+    def test_early_learning_support_panel_uses_material_language(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        calls = []
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        try:
+            widget = debrief_dialog._early_learning_card(
+                Debrief(
+                    study_next=(),
+                    cards_to_fix=CardsToFix(0, (), ()),
+                    early_learning=EarlyLearning(
+                        1,
+                        (
+                            MissedCardSummary(
+                                1,
+                                "Cardiology",
+                                "Aortic stenosis",
+                                1,
+                                1,
+                                datetime(2026, 6, 26),
+                            ),
+                        ),
+                    ),
+                    session_habits=SessionHabits(1, 1, 1.0, "Morning"),
+                    missed_cards=(),
+                )
+            )
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+
+        self.assertEqual(widget, "panel")
+        self.assertEqual(calls[0][0][0], "Early signal")
+        self.assertIn("revisit the material briefly", calls[0][0][1])
+        self.assertNotIn("source", calls[0][0][1].lower())
 
 
 if __name__ == "__main__":
