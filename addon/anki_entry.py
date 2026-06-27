@@ -95,12 +95,13 @@ def _handle_js_message(handled, message: str, _context):
 def show_session_debrief() -> None:
     from aqt import mw
 
+    current_build_debrief = _load_debrief_builder()
     DebriefDialog = _load_debrief_dialog_class()
 
     config = load_config(mw.addonManager.getConfig(__package__))
     entries = _debrief_entries(load_review_entries(mw), config, now=datetime.now())
     dialog = DebriefDialog(
-        build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
+        current_build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
         lookback_days=config.debrief_lookback_days,
         open_card=_open_card_from_debrief,
         open_material=_open_material_from_debrief,
@@ -108,6 +109,26 @@ def show_session_debrief() -> None:
         parent=mw,
     )
     dialog.exec()
+
+
+def _load_debrief_builder():
+    if __package__:
+        for module_name in _debrief_model_module_names(__package__):
+            module = sys.modules.get(module_name)
+            if module:
+                importlib.reload(module)
+        module = importlib.import_module(f"{__package__}.debrief")
+        return module.build_debrief
+    return build_debrief
+
+
+def _debrief_model_module_names(package: str) -> tuple[str, ...]:
+    return (
+        f"{package}.content_signals",
+        f"{package}.terms",
+        f"{package}.analytics",
+        f"{package}.debrief",
+    )
 
 
 def _load_debrief_dialog_class():
@@ -145,8 +166,20 @@ def _open_card_from_debrief(card_id: int) -> None:
 
 
 def _open_material_from_debrief(target: StudyTarget) -> None:
-    query = browser_search_for_study_target(target.kind, target.label, target.related_card_ids)
+    current_browser_search_for_study_target = _load_browser_search_for_study_target()
+    query = current_browser_search_for_study_target(target.kind, target.label, target.related_card_ids)
     _open_search_from_debrief(query)
+
+
+def _load_browser_search_for_study_target():
+    if __package__:
+        module_name = f"{__package__}.browser_search"
+        module = sys.modules.get(module_name)
+        if module:
+            importlib.reload(module)
+        module = importlib.import_module(module_name)
+        return module.browser_search_for_study_target
+    return browser_search_for_study_target
 
 
 def _open_search_from_debrief(query: str) -> None:

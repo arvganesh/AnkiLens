@@ -236,14 +236,8 @@ def _next_step_card(
                 mixed_signals=bool(debrief.cards_to_fix.cards),
             ),
             evidence=_target_evidence(target, _target_label(target)),
-            next_step=study_next_step(
-                target.kind,
-                mostly_early=target.mostly_early,
-                early_count=target.early_count,
-                mature_count=target.mature_count,
-                lapsed_count=target.lapsed_count,
-            ),
-            check=_study_check_text(debrief),
+            next_step=_study_next_step_for_target(target),
+            check=_study_check_text(debrief, target),
             actions=actions,
         )
     if next_check_kind == "same_note" and (cluster_card := debrief.same_note_cluster):
@@ -402,9 +396,11 @@ def _target_evidence(target: StudyTarget, label: str) -> str:
     )
 
 
-def _study_check_text(debrief: Debrief) -> str:
+def _study_check_text(debrief: Debrief, target: StudyTarget) -> str:
     if debrief.cards_to_fix.cards:
         return mixed_repair_signal_text()
+    if target.related_card_ids:
+        return "No obvious card-format issue stood out, so inspect these examples before deciding to study more."
     return no_repair_signal_text()
 
 
@@ -416,6 +412,28 @@ def _material_button_text(target: StudyTarget) -> str:
     if target.related_card_ids:
         return missed_examples_button_text()
     return related_search_button_text()
+
+
+def _study_next_step_for_target(target: StudyTarget) -> str:
+    next_step = study_next_step(
+        target.kind,
+        mostly_early=target.mostly_early,
+        early_count=target.early_count,
+        mature_count=target.mature_count,
+        lapsed_count=target.lapsed_count,
+    )
+    if not target.related_card_ids:
+        return next_step
+    return _missed_examples_next_step(next_step)
+
+
+def _missed_examples_next_step(text: str) -> str:
+    return (
+        text.replace("Open related cards", "Open the missed examples")
+        .replace("Open a few related cards", "Open the missed examples")
+        .replace("Review the related cards", "Review the missed examples")
+        .replace("check related cards", "check the missed examples")
+    )
 
 
 def _target_label(target: StudyTarget) -> str:

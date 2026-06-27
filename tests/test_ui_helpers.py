@@ -110,17 +110,17 @@ class UiHelpersTest(unittest.TestCase):
             actions=(_FakeWidget("Show related cards"),),
         )
 
-        self.assertIn("Recommended next check", _FakeWidget.labels)
+        self.assertIn("Check first", _FakeWidget.labels)
         self.assertIn("Next", _FakeWidget.labels)
-        self.assertIn("Why", _FakeWidget.labels)
-        self.assertIn("Double-check", _FakeWidget.labels)
+        self.assertIn("Why this came up", _FakeWidget.labels)
+        self.assertIn("Before studying more", _FakeWidget.labels)
         self.assertIn(
             "Worth a quick check: 2 of 5 related cards in Cardiology Valves needed another pass.",
             _FakeWidget.labels,
         )
         self.assertIn("Open the related cards.", _FakeWidget.labels)
-        self.assertLess(_FakeWidget.labels.index("Next"), _FakeWidget.labels.index("Why"))
-        self.assertLess(_FakeWidget.labels.index("Show related cards"), _FakeWidget.labels.index("Why"))
+        self.assertLess(_FakeWidget.labels.index("Next"), _FakeWidget.labels.index("Why this came up"))
+        self.assertLess(_FakeWidget.labels.index("Show related cards"), _FakeWidget.labels.index("Why this came up"))
         self.assertEqual(len(_FakeLayout.action_rows), 1)
         self.assertEqual(_FakeLayout.stretch_count, 1)
 
@@ -137,9 +137,25 @@ class UiHelpersTest(unittest.TestCase):
         )
 
         self.assertIn((0, 4, 0, 4), _FakeLayout.margins)
+        self.assertIn((20, 16, 20, 18), _FakeLayout.margins)
         self.assertIn(4, _FakeLayout.spacings)
         self.assertNotIn(5, _FakeLayout.spacings)
         self.assertNotIn(14, _FakeLayout.spacings)
+
+    def test_recommendation_card_uses_subtle_container_treatment(self) -> None:
+        _install_fake_aqt()
+        ui_helpers = importlib.import_module("ui_helpers")
+
+        card = ui_helpers.recommendation_card(
+            "Check related material: Cardiology Valves",
+            confidence="Worth a quick check",
+            evidence="2 of 5 related cards in Cardiology Valves needed another pass.",
+            next_step="Open the related cards.",
+            check="No obvious card-format issue stood out.",
+        )
+
+        self.assertIn("background: #fbfdf7", card.style)
+        self.assertIn("border-radius: 12px", card.style)
 
     def test_quiet_panels_are_compact(self) -> None:
         _install_fake_aqt()

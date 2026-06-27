@@ -115,31 +115,31 @@ def recommendation_card(
     frame.setFrameShape(QFrame.Shape.StyledPanel)
     frame.setStyleSheet(
         "QFrame {"
-        "background: #f7fbef;"
-        "border: 1px solid #cfddbd;"
-        "border-radius: 15px;"
+        "background: #fbfdf7;"
+        "border: 1px solid #d8e8cc;"
+        "border-radius: 12px;"
         "}"
     )
     layout = QVBoxLayout()
-    layout.setContentsMargins(24, SPACE_5, 24, 22)
+    layout.setContentsMargins(20, SPACE_4, 20, 18)
     layout.setSpacing(0)
 
-    eyebrow = QLabel("Recommended next check")
+    eyebrow = QLabel("Check first")
     eyebrow.setStyleSheet("border: none; color: #64705f; font-size: 11px; font-weight: 700;")
     layout.addWidget(eyebrow)
     layout.addSpacing(SPACE_1)
 
     heading = QLabel(title)
     heading.setWordWrap(True)
-    heading.setStyleSheet("border: none; color: #1f2a20; font-size: 18px; font-weight: 700;")
+    heading.setStyleSheet("border: none; color: #1f2a20; font-size: 17px; font-weight: 700;")
     layout.addWidget(heading)
 
     layout.addSpacing(SPACE_4)
-    layout.addWidget(_next_step_callout(next_step, actions=actions))
+    layout.addLayout(_next_step_block(next_step, actions=actions))
     layout.addSpacing(SPACE_3)
-    layout.addLayout(_detail_block("Why", f"{confidence}: {evidence}"))
+    layout.addLayout(_detail_block("Why this came up", f"{confidence}: {evidence}"))
     layout.addSpacing(SPACE_2)
-    layout.addLayout(_detail_block("Double-check", check, quiet=True))
+    layout.addLayout(_detail_block("Before studying more", check, quiet=True))
     frame.setLayout(layout)
     return frame
 
@@ -151,24 +151,15 @@ def _plain_text(text: str, color: str, size: str, *, weight: int = 400) -> QLabe
     return label
 
 
-def _next_step_callout(text: str, *, actions: tuple[QPushButton, ...] = ()) -> QFrame:
-    frame = QFrame()
-    frame.setFrameShape(QFrame.Shape.StyledPanel)
-    frame.setStyleSheet(
-        "QFrame {"
-        "background: #eef6e6;"
-        "border: 1px solid #d7e7ca;"
-        "border-radius: 10px;"
-        "}"
-    )
+def _next_step_block(text: str, *, actions: tuple[QPushButton, ...] = ()) -> QVBoxLayout:
     layout = QVBoxLayout()
     layout.setSpacing(SPACE_1)
-    layout.setContentsMargins(14, 12, 14, 12)
+    layout.setContentsMargins(0, SPACE_1, 0, SPACE_1)
     label = QLabel("Next")
     label.setAlignment(Qt.AlignmentFlag.AlignTop)
     label.setStyleSheet("border: none; color: #4f674a; font-size: 12px; font-weight: 700;")
     layout.addWidget(label)
-    layout.addWidget(_plain_text(text, "#263726", "14px", weight=700))
+    layout.addWidget(_plain_text(text, "#263726", "13px", weight=600))
     if actions:
         action_row = QHBoxLayout()
         action_row.setContentsMargins(0, SPACE_2, 0, 0)
@@ -177,8 +168,7 @@ def _next_step_callout(text: str, *, actions: tuple[QPushButton, ...] = ()) -> Q
             action_row.addWidget(action, 0, Qt.AlignmentFlag.AlignLeft)
         action_row.addStretch(1)
         layout.addLayout(action_row)
-    frame.setLayout(layout)
-    return frame
+    return layout
 
 
 def _detail_block(label: str, value: str, *, quiet: bool = False) -> QVBoxLayout:

@@ -48,6 +48,11 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertIn("Copied search", message)
         self.assertIn("Open Browse and paste", message)
 
+    def test_browser_search_loader_returns_current_search_helper(self) -> None:
+        search_helper = anki_entry._load_browser_search_for_study_target()
+
+        self.assertEqual(search_helper("tag", "Cardiology", (10, 11)), "cid:10 or cid:11")
+
     def test_debrief_entries_use_short_recent_window(self) -> None:
         entries = [
             ReviewLogEntry(1, 1, datetime(2026, 6, 25, 8), "Deck", "Old"),
@@ -85,6 +90,17 @@ class AnkiEntryMessagesTest(unittest.TestCase):
                 "bonsai.session_context",
                 "bonsai.ui_helpers",
                 "bonsai.debrief_dialog",
+            ),
+        )
+
+    def test_debrief_loader_refreshes_model_dependencies_first(self) -> None:
+        self.assertEqual(
+            anki_entry._debrief_model_module_names("bonsai"),
+            (
+                "bonsai.content_signals",
+                "bonsai.terms",
+                "bonsai.analytics",
+                "bonsai.debrief",
             ),
         )
 
