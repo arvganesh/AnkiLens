@@ -108,7 +108,7 @@ class DebriefDialog(QDialog):
             content_layout.addWidget(_study_material_card(debrief.study_next, dialog=self, open_material=open_material))
         context = session_context_text(debrief.session_habits)
         if context:
-            content_layout.addWidget(body_label(context))
+            content_layout.addWidget(panel_card("Session note", context, quiet=True))
         if open_full_analytics:
             button = secondary_button(supporting_cards_button_text())
             button.clicked.connect(lambda _checked=False: accept_then(self, open_full_analytics))
