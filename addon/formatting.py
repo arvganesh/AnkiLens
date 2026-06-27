@@ -16,7 +16,7 @@ def format_review_date(reviewed_at: datetime | None) -> str:
 
 def priority_label(summary: MissedCardSummary) -> str:
     if summary.miss_rate >= 0.75 and summary.misses >= 3:
-        return "Often needs another pass"
+        return "Start here"
     if summary.misses >= 3:
-        return "Needs attention"
-    return "Recently difficult"
+        return "Check soon"
+    return "Watch next review"

@@ -66,7 +66,7 @@ def panel_card(
     margin_x = 20 if featured else 17
     margin_y = 16 if featured else 13
     layout.setContentsMargins(margin_x, margin_y, margin_x, margin_y)
-    layout.setSpacing(10 if featured else 8)
+    layout.setSpacing(9 if featured else 7)
 
     heading = QLabel(title)
     heading.setWordWrap(True)
@@ -86,7 +86,7 @@ def panel_card(
         layout.addLayout(_detail_row(label, value))
     if actions:
         action_row = QHBoxLayout()
-        action_row.setContentsMargins(0, 10 if featured else 7, 0, 0)
+        action_row.setContentsMargins(0, 8 if featured else 6, 0, 0)
         action_row.addStretch(1)
         for action in actions:
             action_row.addWidget(action)
@@ -97,11 +97,11 @@ def panel_card(
 
 def _detail_row(label: str, value: str) -> QHBoxLayout:
     row = QHBoxLayout()
-    row.setSpacing(14)
+    row.setSpacing(10)
     row.setContentsMargins(0, 0, 0, 0)
 
     label_widget = QLabel(label)
-    label_widget.setFixedWidth(88)
+    label_widget.setFixedWidth(74)
     label_widget.setAlignment(Qt.AlignmentFlag.AlignTop)
     label_widget.setStyleSheet("border: none; color: #667064; font-size: 12px; font-weight: 600;")
     row.addWidget(label_widget)
@@ -152,13 +152,15 @@ def secondary_button(text: str) -> QPushButton:
 def metric_card(label: str, value: str) -> QFrame:
     frame = QFrame()
     frame.setFrameShape(QFrame.Shape.StyledPanel)
-    frame.setStyleSheet("background: #fbfaf5; border: 1px solid #e6dfd2; border-radius: 10px; padding: 5px;")
+    frame.setStyleSheet("QFrame { background: #fbfaf5; border: 1px solid #e6dfd2; border-radius: 10px; }")
     layout = QVBoxLayout()
-    layout.setSpacing(2)
-    layout.setContentsMargins(8, 5, 8, 5)
-    layout.addWidget(QLabel(f"<b>{value}</b>"))
+    layout.setSpacing(4)
+    layout.setContentsMargins(13, 10, 13, 10)
+    value_label = QLabel(f"<b>{value}</b>")
+    value_label.setStyleSheet("border: none; background: transparent; color: #1f2a20; font-size: 14px;")
+    layout.addWidget(value_label)
     caption = QLabel(label)
-    caption.setStyleSheet("color: #5f675e; font-size: 12px;")
+    caption.setStyleSheet("border: none; background: transparent; color: #5f675e; font-size: 12px;")
     layout.addWidget(caption)
     frame.setLayout(layout)
     return frame

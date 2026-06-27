@@ -18,17 +18,17 @@ class FormattingTest(unittest.TestCase):
     def test_labels_high_rate_repeated_misses(self) -> None:
         summary = MissedCardSummary(1, "Deck", "Card", 3, 4, datetime(2026, 6, 26))
 
-        self.assertEqual(priority_label(summary), "Often needs another pass")
+        self.assertEqual(priority_label(summary), "Start here")
 
     def test_labels_high_count_lower_rate_misses(self) -> None:
         summary = MissedCardSummary(1, "Deck", "Card", 3, 10, datetime(2026, 6, 26))
 
-        self.assertEqual(priority_label(summary), "Needs attention")
+        self.assertEqual(priority_label(summary), "Check soon")
 
     def test_labels_lower_count_repeated_misses(self) -> None:
         summary = MissedCardSummary(1, "Deck", "Card", 2, 3, datetime(2026, 6, 26))
 
-        self.assertEqual(priority_label(summary), "Recently difficult")
+        self.assertEqual(priority_label(summary), "Watch next review")
 
 
 if __name__ == "__main__":

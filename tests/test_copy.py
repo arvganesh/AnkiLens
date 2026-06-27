@@ -88,7 +88,7 @@ class AnalyticsCopyTest(unittest.TestCase):
     def test_supporting_table_headers_name_card_clues(self) -> None:
         self.assertEqual(
             supporting_table_headers(),
-            ("Card", "Deck", "Priority", "Card clues", "Misses", "Reviews", "Miss rate", "Last missed"),
+            ("Card", "Deck", "Triage", "Card clues", "Misses", "Reviews", "Miss rate", "Last missed"),
         )
 
     def test_selected_card_action_opens_browse_with_copy_fallback(self) -> None:
