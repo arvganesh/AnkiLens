@@ -3,7 +3,12 @@ from __future__ import annotations
 import unittest
 from datetime import datetime
 
-from analytics import ReviewLogEntry, summarize_deck_misses, summarize_missed_cards
+from analytics import (
+    ReviewLogEntry,
+    filter_review_entries_by_lookback,
+    summarize_deck_misses,
+    summarize_missed_cards,
+)
 
 
 def _entry(card_id: int, ease: int, day: int) -> ReviewLogEntry:
@@ -70,6 +75,28 @@ class MissedCardAnalyticsTest(unittest.TestCase):
         )
 
         self.assertEqual(len(summaries), 1)
+
+    def test_filters_reviews_by_recent_window(self) -> None:
+        entries = [_entry(1, 1, 1), _entry(2, 1, 20)]
+
+        filtered = filter_review_entries_by_lookback(
+            entries,
+            lookback_days=7,
+            now=datetime(2026, 6, 21),
+        )
+
+        self.assertEqual([entry.card_id for entry in filtered], [2])
+
+    def test_zero_lookback_keeps_all_reviews(self) -> None:
+        entries = [_entry(1, 1, 1), _entry(2, 1, 20)]
+
+        filtered = filter_review_entries_by_lookback(
+            entries,
+            lookback_days=0,
+            now=datetime(2026, 6, 21),
+        )
+
+        self.assertEqual(filtered, entries)
 
     def test_summarizes_deck_miss_concentration(self) -> None:
         missed_cards = summarize_missed_cards(

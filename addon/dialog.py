@@ -13,6 +13,7 @@ class MissedCardsDialog(QDialog):
         *,
         minimum_misses: int,
         result_limit: int,
+        lookback_days: int,
         parent=None,
     ) -> None:
         super().__init__(parent)
@@ -26,6 +27,7 @@ class MissedCardsDialog(QDialog):
                     shown_count=len(summaries),
                     minimum_misses=minimum_misses,
                     result_limit=result_limit,
+                    lookback_days=lookback_days,
                 )
             )
         )

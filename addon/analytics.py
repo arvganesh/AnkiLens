@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 AGAIN_EASE = 1
@@ -52,6 +52,18 @@ def summarize_missed_cards(
     summaries = [_summarize_card(card_entries) for card_entries in grouped.values()]
     candidates = [summary for summary in summaries if summary.misses >= minimum_misses]
     return sorted(candidates, key=_priority, reverse=True)[:limit]
+
+
+def filter_review_entries_by_lookback(
+    entries: list[ReviewLogEntry],
+    *,
+    lookback_days: int,
+    now: datetime,
+) -> list[ReviewLogEntry]:
+    if lookback_days <= 0:
+        return entries
+    cutoff = now - timedelta(days=lookback_days)
+    return [entry for entry in entries if entry.reviewed_at >= cutoff]
 
 
 def summarize_deck_misses(summaries: list[MissedCardSummary], *, limit: int = 5) -> list[DeckMissSummary]:

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from .analytics import summarize_missed_cards
+from datetime import datetime
+
+from .analytics import filter_review_entries_by_lookback, summarize_missed_cards
 from .anki_gateway import load_review_entries
 from .config import load_config
 
@@ -20,7 +22,11 @@ def show_missed_card_analytics() -> None:
     from .dialog import MissedCardsDialog
 
     config = load_config(mw.addonManager.getConfig(__package__))
-    entries = load_review_entries(mw)
+    entries = filter_review_entries_by_lookback(
+        load_review_entries(mw),
+        lookback_days=config.lookback_days,
+        now=datetime.now(),
+    )
     summaries = summarize_missed_cards(
         entries,
         minimum_misses=config.minimum_misses,
@@ -30,6 +36,7 @@ def show_missed_card_analytics() -> None:
         summaries,
         minimum_misses=config.minimum_misses,
         result_limit=config.result_limit,
+        lookback_days=config.lookback_days,
         parent=mw,
     )
     dialog.exec()

@@ -8,6 +8,7 @@ from typing import Any
 class BonsaiConfig:
     minimum_misses: int = 2
     result_limit: int = 20
+    lookback_days: int = 90
 
 
 def load_config(raw_config: dict[str, Any] | None) -> BonsaiConfig:
@@ -15,6 +16,7 @@ def load_config(raw_config: dict[str, Any] | None) -> BonsaiConfig:
     return BonsaiConfig(
         minimum_misses=_bounded_int(raw.get("minimum_misses"), default=2, low=1, high=25),
         result_limit=_bounded_int(raw.get("result_limit"), default=20, low=1, high=200),
+        lookback_days=_bounded_int(raw.get("lookback_days"), default=90, low=0, high=3650),
     )
 
 
