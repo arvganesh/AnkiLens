@@ -33,7 +33,7 @@ def study_target_title(
     if kind == "tag" and mostly_early:
         return f"New material to keep reviewing: {label}"
     if kind == "tag" and lapsed_count > early_count + mature_count:
-        return f"Relearning signal: {label}"
+        return f"Worth checking: {label}"
     if kind == "tag" and mature_count >= 2 and mature_count >= early_count:
         return f"Revisit this material: {label}"
     return f"Check related material: {label}"
@@ -165,8 +165,7 @@ def study_next_step(
         )
     if lapsed_count > early_count + mature_count:
         return (
-            "Open related cards and check whether this is relearning old material. If the prompts look clear, "
-            "review the surrounding concept again."
+            "Open related cards first. If the prompts look clear, this may just be old material that needs another pass."
         )
     if mature_count >= 2 and mature_count >= early_count:
         return (
@@ -252,7 +251,7 @@ def _maturity_text(early_count: int, mature_count: int, lapsed_count: int) -> st
     if mature_count:
         parts.append(f"{mature_count} mature")
     if lapsed_count:
-        parts.append(f"{lapsed_count} lapsed")
+        parts.append(f"{lapsed_count} previously learned")
     if not parts or parts == [f"{mature_count} mature"]:
         return ""
     return "Breakdown: " + ", ".join(parts)

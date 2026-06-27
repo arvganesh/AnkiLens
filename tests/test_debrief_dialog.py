@@ -75,7 +75,7 @@ class DebriefDialogTest(unittest.TestCase):
                 early_count=1,
                 lapsed_count=2,
             ),
-            "Relearning signal: Cardiology Valves",
+            "Worth checking: Cardiology Valves",
         )
 
     def test_tag_targets_are_readable_concepts_with_examples(self) -> None:
@@ -107,7 +107,7 @@ class DebriefDialogTest(unittest.TestCase):
             ),
             (
                 "In this window, 4 of 8 related cards in Cardiology Valves needed another pass. "
-                "Breakdown: 2 early/new, 1 mature, 1 lapsed. Examples: Murmur?."
+                "Breakdown: 2 early/new, 1 mature, 1 previously learned. Examples: Murmur?."
             ),
         )
         self.assertNotIn("In this window", target_evidence_text(4, 12, "Cardiology Valves", active_cards=True))
@@ -178,8 +178,8 @@ class DebriefDialogTest(unittest.TestCase):
 
         self.assertIn("revisit the surrounding concept", mature_step)
         self.assertIn("clear and still feel unfamiliar", mature_step)
-        self.assertIn("relearning old material", lapsed_step)
-        self.assertIn("review the surrounding concept again", lapsed_step)
+        self.assertIn("Open related cards first", lapsed_step)
+        self.assertIn("old material that needs another pass", lapsed_step)
 
     def test_same_note_cluster_copy_names_limited_scope(self) -> None:
         summary = MissedCardSummary(

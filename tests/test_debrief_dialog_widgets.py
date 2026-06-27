@@ -586,6 +586,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(widget, "recommendation")
         self.assertIn("Open the missed examples", calls[0][1]["next_step"])
         self.assertNotIn("Open related cards", calls[0][1]["next_step"])
+        self.assertIn("old material that needs another pass", calls[0][1]["next_step"])
         self.assertIn("inspect these examples", calls[0][1]["check"])
 
 

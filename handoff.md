@@ -68,7 +68,7 @@ The main flow is:
 
 The Recent Debrief currently leads with a single card:
 
-- Title example: `Relearning signal: Cardiology Valves`.
+- Title example: `Worth checking: Cardiology Valves`.
 - Primary action example: `Show missed examples`.
 - Evidence appears below the action under `What Bonsai saw`, split into short lines.
 - Safety copy appears under `Before studying more`.
