@@ -66,9 +66,21 @@ def card_detail_caption(summary: MissedCardSummary) -> str:
         f"Misses: {summary.misses}/{summary.total_reviews} reviews ({summary.miss_rate:.0%})",
         f"Browser search: {browser_search_for_card(summary.card_id)}",
     ]
+    note_context = same_note_context(summary)
+    if note_context:
+        lines.insert(2, note_context)
     if text:
         lines.append(f"Text: {text}")
     return "\n".join(lines)
+
+
+def same_note_context(summary: MissedCardSummary) -> str:
+    if not summary.note_id or not summary.note_card_count or summary.note_card_count <= 1:
+        return ""
+    repeated = summary.note_repeated_miss_count or 1
+    if repeated <= 1:
+        return f"Same note: only this card flagged out of {summary.note_card_count}"
+    return f"Same note: {repeated} of {summary.note_card_count} cards flagged"
 
 
 def _plural(count: int) -> str:

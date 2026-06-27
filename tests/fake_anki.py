@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-ReviewRow = tuple[int, int, int, int, int, int, int, int, int, int, str, str, str]
+ReviewRow = tuple[int, int, int, int, int, int, int, int, int, int, int, int, str, str, str]
 
 
 class FakeDb:

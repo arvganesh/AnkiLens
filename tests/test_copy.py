@@ -12,6 +12,7 @@ from copy_text import (
     deck_concentration_caption,
     selected_card_button_text,
     selected_card_status_text,
+    same_note_context,
     study_content_caption,
     supporting_metric_labels,
     supporting_table_headers,
@@ -115,6 +116,7 @@ class AnalyticsCopyTest(unittest.TestCase):
 
         self.assertIn("Selected card: Mitral regurgitation", caption)
         self.assertIn("Card clues: Comparison", caption)
+        self.assertNotIn("Same note:", caption)
         self.assertIn("Misses: 3/4 reviews (75%)", caption)
         self.assertIn("Browser search: cid:123", caption)
         self.assertIn("Text: Mitral regurgitation murmur", caption)
@@ -126,6 +128,35 @@ class AnalyticsCopyTest(unittest.TestCase):
 
         self.assertLess(len(caption), 320)
         self.assertIn("...", caption)
+
+    def test_same_note_context_distinguishes_isolated_and_clustered_clozes(self) -> None:
+        unavailable = MissedCardSummary(122, "Deck", "Solo", 2, 3, None)
+        isolated = MissedCardSummary(
+            123,
+            "Deck",
+            "Card",
+            2,
+            3,
+            None,
+            note_id=50,
+            note_card_count=4,
+            note_repeated_miss_count=1,
+        )
+        clustered = MissedCardSummary(
+            124,
+            "Deck",
+            "Sibling",
+            2,
+            3,
+            None,
+            note_id=50,
+            note_card_count=4,
+            note_repeated_miss_count=3,
+        )
+
+        self.assertEqual(same_note_context(unavailable), "")
+        self.assertEqual(same_note_context(isolated), "Same note: only this card flagged out of 4")
+        self.assertEqual(same_note_context(clustered), "Same note: 3 of 4 cards flagged")
 
 
 if __name__ == "__main__":

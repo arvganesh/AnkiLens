@@ -32,6 +32,7 @@ try:
         supporting_cards_button_text,
     )
     from .dialog_actions import accept_then
+    from .copy_text import same_note_context
     from .session_context import session_context_text
     from .ui_helpers import body_label, panel_card, primary_button, recommendation_card, secondary_button, title_label
 except ImportError:
@@ -62,6 +63,7 @@ except ImportError:
         supporting_cards_button_text,
     )
     from dialog_actions import accept_then
+    from copy_text import same_note_context
     from session_context import session_context_text
     from ui_helpers import body_label, panel_card, primary_button, recommendation_card, secondary_button, title_label
 
@@ -147,7 +149,7 @@ def _next_step_card(
         return recommendation_card(
             repair_title(short_label(card.card_label)),
             confidence=evidence_confidence_text(card.misses, card.total_reviews),
-            evidence=repair_evidence(card),
+            evidence=_repair_evidence_with_note_context(card),
             next_step=repair_next_step(),
             check="Inspect first; edit only if the prompt is unclear after opening it.",
             actions=actions,
@@ -216,6 +218,13 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
         )
         for index, summary in enumerate(cards_to_fix.cards[:3])
     )
+
+
+def _repair_evidence_with_note_context(card) -> str:
+    note_context = same_note_context(card)
+    if not note_context:
+        return repair_evidence(card)
+    return f"{repair_evidence(card)} {note_context}"
     return panel_card(
         "Why this recommendation",
         _cards_to_fix_body(cards_to_fix),

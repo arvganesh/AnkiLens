@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 
 try:
@@ -21,6 +21,8 @@ class ReviewLogEntry:
     reviewed_at: datetime
     deck_name: str
     card_label: str
+    note_id: int | None = None
+    note_card_count: int | None = None
     tags: tuple[str, ...] = ()
     source_text: str = ""
     duration_ms: int | None = None
@@ -42,6 +44,9 @@ class MissedCardSummary:
     tags: tuple[str, ...] = ()
     source_text: str = ""
     content_labels: tuple[str, ...] = ()
+    note_id: int | None = None
+    note_card_count: int | None = None
+    note_repeated_miss_count: int = 0
     first_reviewed_at: datetime | None = None
     learning_review_count: int = 0
     is_early_exposure: bool = False
@@ -79,6 +84,7 @@ def summarize_missed_cards(
 
     summaries = [_summarize_card(card_entries) for card_entries in grouped.values()]
     candidates = [summary for summary in summaries if summary.misses >= minimum_misses]
+    candidates = _with_note_context(candidates)
     return sorted(candidates, key=_priority, reverse=True)[:limit]
 
 
@@ -144,6 +150,8 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
         misses=len(missed),
         total_reviews=len(ordered),
         last_missed_at=missed[-1].reviewed_at if missed else None,
+        note_id=latest.note_id,
+        note_card_count=latest.note_card_count,
         tags=latest.tags,
         source_text=latest.source_text,
         content_labels=content_labels(latest.source_text),
@@ -151,6 +159,19 @@ def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
         learning_review_count=learning_reviews,
         is_early_exposure=_is_early_exposure(ordered, learning_reviews),
     )
+
+
+def _with_note_context(summaries: list[MissedCardSummary]) -> list[MissedCardSummary]:
+    repeated_by_note: dict[int, int] = {}
+    for summary in summaries:
+        if summary.note_id is not None:
+            repeated_by_note[summary.note_id] = repeated_by_note.get(summary.note_id, 0) + 1
+    return [
+        replace(summary, note_repeated_miss_count=repeated_by_note.get(summary.note_id, 0))
+        if summary.note_id is not None
+        else summary
+        for summary in summaries
+    ]
 
 
 def _priority(summary: MissedCardSummary) -> tuple[float, int, datetime]:

@@ -17,6 +17,8 @@ class AnkiGatewayTest(unittest.TestCase):
                     3200,
                     1,
                     7,
+                    1001,
+                    3,
                     12,
                     2,
                     2,
@@ -32,6 +34,8 @@ class AnkiGatewayTest(unittest.TestCase):
                     2100,
                     1,
                     7,
+                    1001,
+                    3,
                     12,
                     2,
                     2,
@@ -50,6 +54,8 @@ class AnkiGatewayTest(unittest.TestCase):
         self.assertEqual(entries[0].card_id, 101)
         self.assertEqual(entries[0].deck_name, "Cardiology")
         self.assertEqual(entries[0].card_label, "Aortic regurgitation")
+        self.assertEqual(entries[0].note_id, 1001)
+        self.assertEqual(entries[0].note_card_count, 3)
         self.assertEqual(entries[0].tags, ("cardiology", "murmurs"))
         self.assertEqual(entries[0].source_text, "Aortic regurgitation Wide pulse pressure")
         self.assertEqual(entries[0].duration_ms, 3200)
@@ -61,7 +67,7 @@ class AnkiGatewayTest(unittest.TestCase):
 
     def test_uses_calm_unknown_deck_fallback(self) -> None:
         mw = FakeMainWindow(
-            rows=[(202, 1, 1782432000000, 1500, 1, 99, 2, 0, 1, 1, "Renal clue", "", "Renal clue")],
+            rows=[(202, 1, 1782432000000, 1500, 1, 99, 2002, 1, 2, 0, 1, 1, "Renal clue", "", "Renal clue")],
             deck_names={},
         )
 

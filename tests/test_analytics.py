@@ -22,6 +22,18 @@ def _entry(card_id: int, ease: int, day: int) -> ReviewLogEntry:
     )
 
 
+def _note_entry(card_id: int, note_id: int, ease: int, day: int, *, note_card_count: int = 3) -> ReviewLogEntry:
+    return ReviewLogEntry(
+        card_id=card_id,
+        ease=ease,
+        reviewed_at=datetime(2026, 6, day),
+        deck_name="Cardiology",
+        card_label=f"Card {card_id}",
+        note_id=note_id,
+        note_card_count=note_card_count,
+    )
+
+
 def _lifecycle_entry(
     card_id: int,
     ease: int,
@@ -96,6 +108,20 @@ class MissedCardAnalyticsTest(unittest.TestCase):
         summaries = summarize_missed_cards([_entry(1, 1, 1)], minimum_misses=1)
 
         self.assertEqual(len(summaries), 1)
+
+    def test_counts_repeated_miss_siblings_from_same_note(self) -> None:
+        summaries = summarize_missed_cards(
+            [
+                _note_entry(1, 500, 1, 1),
+                _note_entry(1, 500, 1, 2),
+                _note_entry(2, 500, 1, 3),
+                _note_entry(2, 500, 1, 4),
+                _note_entry(3, 500, 3, 5),
+            ]
+        )
+
+        self.assertEqual({summary.card_id: summary.note_repeated_miss_count for summary in summaries}, {1: 2, 2: 2})
+        self.assertEqual(summaries[0].note_card_count, 3)
 
     def test_marks_low_repetition_all_again_cards_as_early_exposure(self) -> None:
         summaries = summarize_missed_cards(
