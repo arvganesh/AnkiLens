@@ -94,7 +94,7 @@ def _next_step_card(
     open_card: Callable[[int], None] | None,
     open_material: Callable[[StudyTarget], None] | None,
 ):
-    if debrief.cards_to_fix.cards:
+    if getattr(debrief, "repair_is_top_check", bool(debrief.cards_to_fix.cards)):
         card = debrief.cards_to_fix.cards[0]
         actions = ()
         if open_card:

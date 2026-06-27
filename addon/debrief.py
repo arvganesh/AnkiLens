@@ -78,6 +78,16 @@ class Debrief:
     def early_learning_is_dominant(self) -> bool:
         return self.early_learning.count >= 2 and all(summary.is_early_exposure for summary in self.missed_cards)
 
+    @property
+    def repair_is_top_check(self) -> bool:
+        if not self.cards_to_fix.cards:
+            return False
+        if not self.study_next:
+            return True
+        repair = self.cards_to_fix.cards[0]
+        study = self.study_next[0]
+        return self.cards_to_fix.count >= study.count or repair.misses >= study.count
+
 
 _STRONG_REPAIR_LABELS = frozenset(
     {
