@@ -101,7 +101,7 @@ class DebriefDialog(QDialog):
         content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         content_layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
         if debrief.cards_to_fix.cards:
-            content_layout.addWidget(_cards_to_fix_card(debrief.cards_to_fix, dialog=self, open_card=None))
+            content_layout.addWidget(_cards_to_fix_card(debrief.cards_to_fix, dialog=self, open_card=open_card))
         if (debrief.cards_to_fix.cards or debrief.study_next) and _early_learning_cards(debrief):
             content_layout.addWidget(_early_learning_card(debrief))
         if debrief.cards_to_fix.cards and debrief.study_next:
@@ -210,9 +210,15 @@ def _cards_to_fix_card(cards_to_fix: CardsToFix, *, dialog: QDialog, open_card: 
     rows = tuple(
         (
             "Top card" if index == 0 else "Also",
-            f"{summary.card_label}: {', '.join(summary.content_labels)}; missed {summary.misses}/{summary.total_reviews} reviews",
+            f"{summary.card_label}: {_repair_clues(summary)}; missed {summary.misses}/{summary.total_reviews} reviews",
         )
         for index, summary in enumerate(cards_to_fix.cards[:3])
+    )
+    return panel_card(
+        "Why this recommendation",
+        _cards_to_fix_body(cards_to_fix),
+        rows=rows,
+        actions=actions,
     )
 
 
@@ -221,12 +227,10 @@ def _repair_evidence_with_note_context(card) -> str:
     if not note_context:
         return repair_evidence(card)
     return f"{repair_evidence(card)} {note_context}"
-    return panel_card(
-        "Why this recommendation",
-        _cards_to_fix_body(cards_to_fix),
-        rows=rows,
-        actions=actions,
-    )
+
+
+def _repair_clues(summary) -> str:
+    return ", ".join(summary.content_labels) if summary.content_labels else "repeated misses"
 
 
 def _study_material_card(
