@@ -24,7 +24,16 @@ from .analytics import (
     summarize_terms,
 )
 from .browser_search import browser_search_for_card
-from .copy_text import analytics_caption, content_pattern_caption, deck_concentration_caption, tag_concentration_caption, term_caption
+from .copy_text import (
+    analytics_caption,
+    check_cards_caption,
+    content_pattern_caption,
+    deck_concentration_caption,
+    study_content_caption,
+    tag_concentration_caption,
+    term_caption,
+    workflow_caption,
+)
 from .formatting import format_review_date, priority_label
 from .ui_helpers import body_label, metric_card, section_label, title_label
 
@@ -67,16 +76,11 @@ class MissedCardsDialog(QDialog):
         metrics.addWidget(metric_card("review window", "all time" if lookback_days <= 0 else f"{lookback_days} days"))
         layout.addLayout(metrics)
 
-        layout.addWidget(section_label(deck_concentration_caption(summarize_deck_misses(summaries))))
-        tag_caption = tag_concentration_caption(summarize_tag_misses(summaries))
-        if tag_caption:
-            layout.addWidget(section_label(tag_caption))
+        layout.addWidget(body_label(workflow_caption()))
+        layout.addWidget(section_label(check_cards_caption()))
         pattern_caption = content_pattern_caption(summarize_content_patterns(summaries))
         if pattern_caption:
             layout.addWidget(section_label(pattern_caption))
-        term_text = term_caption(summarize_terms(summaries))
-        if term_text:
-            layout.addWidget(section_label(term_text))
 
         table = QTableWidget(len(summaries), 8, self)
         table.setHorizontalHeaderLabels(
@@ -113,6 +117,15 @@ class MissedCardsDialog(QDialog):
         actions.addWidget(button)
         layout.addLayout(actions)
         layout.addWidget(status)
+
+        layout.addWidget(section_label(study_content_caption()))
+        layout.addWidget(section_label(deck_concentration_caption(summarize_deck_misses(summaries))))
+        tag_caption = tag_concentration_caption(summarize_tag_misses(summaries))
+        if tag_caption:
+            layout.addWidget(section_label(tag_caption))
+        term_text = term_caption(summarize_terms(summaries))
+        if term_text:
+            layout.addWidget(section_label(term_text))
         self.setLayout(layout)
 
 

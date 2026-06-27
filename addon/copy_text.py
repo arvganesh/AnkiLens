@@ -25,6 +25,18 @@ def analytics_caption(
     )
 
 
+def workflow_caption() -> str:
+    return "Repeated misses can mean the card needs editing, the content needs more study, or both."
+
+
+def check_cards_caption() -> str:
+    return "Check the cards first:"
+
+
+def study_content_caption() -> str:
+    return "Then study the content:"
+
+
 def _plural(count: int) -> str:
     return "" if count == 1 else "s"
 
@@ -38,7 +50,7 @@ def _lookback_label(lookback_days: int) -> str:
 def deck_concentration_caption(decks: list[DeckMissSummary]) -> str:
     if not decks:
         return ""
-    lines = ["Where repeated misses are concentrated:"]
+    lines = ["Decks with repeated misses:"]
     lines.extend(
         f"- {deck.deck_name}: {deck.missed_cards} card{_plural(deck.missed_cards)}, {deck.misses} misses"
         for deck in decks
@@ -60,7 +72,7 @@ def tag_concentration_caption(tags: list[TagMissSummary]) -> str:
 def content_pattern_caption(pattern_counts: dict[str, int]) -> str:
     if not pattern_counts:
         return ""
-    lines = ["Content patterns in repeated misses:"]
+    lines = ["Card construction clues:"]
     lines.extend(f"- {label}: {count} card{_plural(count)}" for label, count in pattern_counts.items())
     return "\n".join(lines)
 
@@ -68,6 +80,6 @@ def content_pattern_caption(pattern_counts: dict[str, int]) -> str:
 def term_caption(terms: list[tuple[str, int]]) -> str:
     if not terms:
         return ""
-    lines = ["Terms appearing in repeated misses:"]
+    lines = ["Repeated terms to study:"]
     lines.extend(f"- {term}: {count}" for term, count in terms)
     return "\n".join(lines)

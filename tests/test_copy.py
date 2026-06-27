@@ -3,7 +3,16 @@ from __future__ import annotations
 import unittest
 
 from analytics import DeckMissSummary, TagMissSummary
-from copy_text import analytics_caption, content_pattern_caption, deck_concentration_caption, tag_concentration_caption, term_caption
+from copy_text import (
+    analytics_caption,
+    check_cards_caption,
+    content_pattern_caption,
+    deck_concentration_caption,
+    study_content_caption,
+    tag_concentration_caption,
+    term_caption,
+    workflow_caption,
+)
 
 
 class AnalyticsCopyTest(unittest.TestCase):
@@ -35,7 +44,7 @@ class AnalyticsCopyTest(unittest.TestCase):
     def test_deck_concentration_caption_lists_decks(self) -> None:
         caption = deck_concentration_caption([DeckMissSummary("Cardiology", 2, 5)])
 
-        self.assertIn("concentrated", caption)
+        self.assertIn("Decks with repeated misses", caption)
         self.assertIn("Cardiology", caption)
         self.assertIn("2 cards, 5 misses", caption)
 
@@ -49,15 +58,20 @@ class AnalyticsCopyTest(unittest.TestCase):
     def test_content_pattern_caption_lists_patterns(self) -> None:
         caption = content_pattern_caption({"Dense card": 2})
 
-        self.assertIn("Content patterns", caption)
+        self.assertIn("Card construction clues", caption)
         self.assertIn("Dense card", caption)
         self.assertIn("2 cards", caption)
 
     def test_term_caption_lists_terms(self) -> None:
         caption = term_caption([("mitral", 2)])
 
-        self.assertIn("Terms appearing", caption)
+        self.assertIn("Repeated terms to study", caption)
         self.assertIn("mitral", caption)
+
+    def test_workflow_copy_separates_card_fixing_from_study(self) -> None:
+        self.assertIn("card needs editing", workflow_caption())
+        self.assertIn("Check the cards", check_cards_caption())
+        self.assertIn("study the content", study_content_caption())
 
 
 if __name__ == "__main__":
