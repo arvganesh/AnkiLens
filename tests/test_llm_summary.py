@@ -109,7 +109,7 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.summary, "Several missed cards cluster around valve murmurs.")
         self.assertEqual(result.check_first.title, "Valve murmur examples")
-        self.assertEqual(result.check_first.examples, ("Card 1", "Card 2", "Card 3"))
+        self.assertEqual(result.check_first.examples, ("Card 1", "Card 2"))
         self.assertEqual(result.other_checks[0].action, "ignore_for_now")
         self.assertEqual(requests[0][1], 7)
         request = requests[0][0]
@@ -118,8 +118,16 @@ class LlmSummaryTest(unittest.TestCase):
         body = json.loads(request.data.decode("utf-8"))
         self.assertEqual(body["model"], "openrouter/free")
         self.assertEqual(body["response_format"]["type"], "json_schema")
+        self.assertEqual(
+            body["response_format"]["json_schema"]["schema"]["$defs"]["check"]["properties"]["examples"]["maxItems"],
+            2,
+        )
+        system_prompt = body["messages"][0]["content"]
+        self.assertIn("summary: 14 words or fewer", system_prompt)
+        self.assertIn("Do not say what the student understands", system_prompt)
         self.assertIn("Card 1", body["messages"][1]["content"])
         self.assertIn("aortic stenosis murmur", body["messages"][1]["content"])
+        self.assertIn("content_labels=", body["messages"][1]["content"])
 
     def test_invalid_model_action_drops_check(self) -> None:
         payload = {

@@ -139,8 +139,10 @@ class DebriefDialog(QDialog):
         content_layout.setSpacing(SPACE_3)
         content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         content_layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
+        self._content_layout = content_layout
+        self._llm_summary_widget = None
         if debrief.llm_summary:
-            content_layout.addWidget(_llm_summary_card(debrief.llm_summary))
+            self.set_llm_summary(debrief.llm_summary)
         if debrief.cards_to_fix.cards:
             primary_repair_id = debrief.cards_to_fix.cards[0].card_id if debrief.next_check_kind == "repair" else None
             card_details = _cards_to_fix_card(
@@ -175,6 +177,12 @@ class DebriefDialog(QDialog):
         scroll.setWidget(content)
         layout.addWidget(scroll, 1)
         self.setLayout(layout)
+
+    def set_llm_summary(self, summary: LlmDebriefSummary | None) -> None:
+        if not summary or self._llm_summary_widget is not None:
+            return
+        self._llm_summary_widget = _llm_summary_card(summary)
+        self._content_layout.insertWidget(1, self._llm_summary_widget)
 
 
 def _show_study_support(debrief: Debrief) -> bool:

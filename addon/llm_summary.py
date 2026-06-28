@@ -17,15 +17,24 @@ except ImportError:
     from debrief import LlmCheck, LlmDebriefSummary
 
 
-_SYSTEM_PROMPT = """You help a student interpret Anki cards they missed.
+_SYSTEM_PROMPT = """You are Bonsai, a concise missed-card analytics assistant.
+Find observable patterns in the supplied Anki missed-card labels and card text.
 Use only the supplied missed-card data. Do not infer medical, factual, or scheduling conclusions.
-Recommend checks the student can do, not diagnoses of why they failed.
+Do not say what the student understands, forgot, failed to process, or should study for a specific duration.
+Do not address the student as "you".
+Recommend concrete checks the student can do, not diagnoses of why they missed cards.
+Write compact UI copy:
+- summary: 14 words or fewer.
+- title: 5 words or fewer.
+- why: 18 words or fewer.
+- examples: at most 2 short card labels.
+- other_checks: include only meaningfully different checks.
 Return only JSON with this shape:
 {
-  "summary": "one short sentence",
+  "summary": "short observable pattern",
   "check_first": {
     "title": "short label",
-    "why": "one sentence grounded in the supplied cards",
+    "why": "one compact sentence grounded in the supplied cards",
     "examples": ["card label", "card label"],
     "action": "inspect_examples"
   },
@@ -39,7 +48,7 @@ Return only JSON with this shape:
   ]
 }
 Valid actions: inspect_examples, inspect_card, review_material, ignore_for_now.
-Return at most two other_checks and at most three examples per check."""
+Return at most two other_checks and at most two examples per check."""
 
 _VALID_ACTIONS = frozenset({"inspect_examples", "inspect_card", "review_material", "ignore_for_now"})
 
@@ -117,7 +126,7 @@ def _request_body(model: str, user_prompt: str) -> bytes:
                                     "examples": {
                                         "type": "array",
                                         "items": {"type": "string"},
-                                        "maxItems": 3,
+                                        "maxItems": 2,
                                     },
                                     "action": {
                                         "type": "string",
@@ -143,7 +152,8 @@ def _request_body(model: str, user_prompt: str) -> bytes:
 def _missed_card_prompt(summaries, *, max_chars: int) -> str:
     lines = [
         "Summarize these missed Anki cards for a student.",
-        "Focus on useful next checks across the card content and labels.",
+        "Focus on repeated wording, concept, tag, format, or prompt patterns.",
+        "Keep the output concise enough to scan inside a small dialog.",
         "",
     ]
     used = sum(len(line) + 1 for line in lines)
@@ -152,6 +162,7 @@ def _missed_card_prompt(summaries, *, max_chars: int) -> str:
         item = (
             f"{index}. label={summary.card_label!r}; deck={summary.deck_name!r}; "
             f"misses={summary.misses}; reviews={summary.total_reviews}; tags={list(summary.tags)!r}; "
+            f"content_labels={list(summary.content_labels)!r}; early={summary.is_early_exposure}; "
             f"content={text!r}"
         )
         if used + len(item) + 1 > max_chars:
@@ -173,7 +184,7 @@ def _parse_response(payload: dict[str, Any]) -> LlmDebriefSummary | None:
         data = json.loads(content)
     except json.JSONDecodeError:
         return None
-    summary = _clean_string(data.get("summary"), max_length=240)
+    summary = _clean_string(data.get("summary"), max_length=140)
     if not summary:
         return None
     return LlmDebriefSummary(
@@ -190,8 +201,8 @@ def _parse_response(payload: dict[str, Any]) -> LlmDebriefSummary | None:
 def _parse_check(value: Any) -> LlmCheck | None:
     if not isinstance(value, dict):
         return None
-    title = _clean_string(value.get("title"), max_length=80)
-    why = _clean_string(value.get("why"), max_length=240)
+    title = _clean_string(value.get("title"), max_length=60)
+    why = _clean_string(value.get("why"), max_length=180)
     action = _clean_string(value.get("action"), max_length=40) or "inspect_examples"
     if not title or not why or action not in _VALID_ACTIONS:
         return None
@@ -200,7 +211,7 @@ def _parse_check(value: Any) -> LlmCheck | None:
         why=why,
         examples=tuple(
             example
-            for example in (_clean_string(raw, max_length=80) for raw in _list(value.get("examples"))[:3])
+            for example in (_clean_examples(_list(value.get("examples"))[:2]))
             if example
         ),
         action=action,
@@ -215,6 +226,17 @@ def _clean_string(value: Any, *, max_length: int) -> str:
     if not isinstance(value, str):
         return ""
     return " ".join(value.split())[:max_length]
+
+
+def _clean_examples(values: list[Any]) -> tuple[str, ...]:
+    examples = []
+    seen = set()
+    for raw in values:
+        example = _clean_string(raw, max_length=44).rstrip(" ,.;:")
+        if example and example not in seen:
+            examples.append(example)
+            seen.add(example)
+    return tuple(examples)
 
 
 def _compact_text(value: str, max_length: int) -> str:

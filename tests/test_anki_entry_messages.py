@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+import types
 import unittest
 from datetime import datetime
 
@@ -108,6 +110,71 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         )
 
         self.assertEqual([entry.card_label for entry in filtered], ["Recent"])
+
+    def test_llm_summary_attach_is_skipped_when_disabled(self) -> None:
+        calls = []
+        dialog = types.SimpleNamespace(set_llm_summary=lambda summary: calls.append(summary))
+
+        anki_entry._attach_llm_summary(dialog, [], BonsaiConfig(llm_summary_enabled=False))
+
+        self.assertEqual(calls, [])
+        self.assertFalse(hasattr(dialog, "_bonsai_llm_thread"))
+
+    def test_llm_summary_attach_starts_background_worker(self) -> None:
+        original_loader = anki_entry._load_llm_summary_builder
+        original_aqt = sys.modules.get("aqt")
+        original_aqt_qt = sys.modules.get("aqt.qt")
+        calls = []
+        threads = []
+
+        class FakeSignal:
+            def __init__(self) -> None:
+                self.callback = None
+
+            def connect(self, callback) -> None:
+                self.callback = callback
+
+            def emit(self, value) -> None:
+                self.callback(value)
+
+        class FakeNotifier:
+            summary_ready = None
+
+            def __init__(self, _parent) -> None:
+                self.summary_ready = FakeSignal()
+
+        class FakeThread:
+            def __init__(self, *, target, daemon) -> None:
+                self.target = target
+                self.daemon = daemon
+                threads.append(self)
+
+            def start(self) -> None:
+                self.target()
+
+        sys.modules["aqt"] = types.ModuleType("aqt")
+        sys.modules["aqt.qt"] = types.SimpleNamespace(QObject=FakeNotifier, pyqtSignal=lambda _type: FakeSignal())
+        anki_entry._load_llm_summary_builder = lambda: (lambda _entries, _config: "summary")
+        original_thread = anki_entry.threading.Thread
+        anki_entry.threading.Thread = FakeThread
+        dialog = types.SimpleNamespace(set_llm_summary=lambda summary: calls.append(summary))
+        try:
+            anki_entry._attach_llm_summary(dialog, [], BonsaiConfig(llm_summary_enabled=True))
+        finally:
+            anki_entry._load_llm_summary_builder = original_loader
+            anki_entry.threading.Thread = original_thread
+            if original_aqt is None:
+                sys.modules.pop("aqt", None)
+            else:
+                sys.modules["aqt"] = original_aqt
+            if original_aqt_qt is None:
+                sys.modules.pop("aqt.qt", None)
+            else:
+                sys.modules["aqt.qt"] = original_aqt_qt
+
+        self.assertEqual(calls, ["summary"])
+        self.assertEqual(len(threads), 1)
+        self.assertTrue(threads[0].daemon)
 
     def test_deck_panel_count_uses_all_repeated_misses_not_display_cap(self) -> None:
         entries = []

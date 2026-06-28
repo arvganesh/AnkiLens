@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import importlib
 import sys
-from dataclasses import replace
+import threading
 from datetime import datetime
 from urllib.parse import unquote
 
@@ -123,12 +123,8 @@ def show_session_debrief() -> None:
     config = load_config(mw.addonManager.getConfig(__package__))
     entries = _debrief_entries(load_review_entries(mw), config, now=datetime.now())
     entries = _filter_entries_by_deck(entries, _selected_deck_name)
-    debrief = current_build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit)
-    llm_summary = _load_llm_summary_builder()(entries, config)
-    if llm_summary:
-        debrief = replace(debrief, llm_summary=llm_summary)
     dialog = DebriefDialog(
-        debrief,
+        current_build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
         lookback_days=config.debrief_lookback_days,
         deck_label=_deck_display_label(_selected_deck_name) if _selected_deck_name else None,
         open_card=_open_card_from_debrief,
@@ -136,6 +132,7 @@ def show_session_debrief() -> None:
         open_full_analytics=lambda: show_missed_card_analytics(lookback_days=config.debrief_lookback_days),
         parent=mw,
     )
+    _attach_llm_summary(dialog, entries, config)
     dialog.exec()
 
 
@@ -170,6 +167,28 @@ def _load_llm_summary_builder():
     from llm_summary import build_llm_summary as current_build_llm_summary
 
     return current_build_llm_summary
+
+
+def _attach_llm_summary(dialog, entries, config) -> None:
+    if not config.llm_summary_enabled:
+        return
+    from aqt.qt import QObject, pyqtSignal
+
+    class LlmSummaryNotifier(QObject):
+        summary_ready = pyqtSignal(object)
+
+    notifier = LlmSummaryNotifier(dialog)
+    notifier.summary_ready.connect(dialog.set_llm_summary)
+
+    def run() -> None:
+        summary = _load_llm_summary_builder()(entries, config)
+        if summary:
+            notifier.summary_ready.emit(summary)
+
+    thread = threading.Thread(target=run, daemon=True)
+    dialog._bonsai_llm_notifier = notifier
+    dialog._bonsai_llm_thread = thread
+    thread.start()
 
 
 def _load_debrief_dialog_class():
