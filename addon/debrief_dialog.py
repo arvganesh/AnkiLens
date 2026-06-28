@@ -5,7 +5,7 @@ from collections.abc import Callable
 from aqt.qt import QDialog, QFrame, QScrollArea, QVBoxLayout, Qt, QWidget
 
 try:
-    from .debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
+    from .debrief import CardsToFix, Debrief, LlmCheck, LlmDebriefSummary, SessionHabits, StudyTarget
     from .debrief_dialog_copy import (
         card_search_button_text,
         debrief_title,
@@ -56,7 +56,7 @@ try:
         title_label,
     )
 except ImportError:
-    from debrief import CardsToFix, Debrief, SessionHabits, StudyTarget
+    from debrief import CardsToFix, Debrief, LlmCheck, LlmDebriefSummary, SessionHabits, StudyTarget
     from debrief_dialog_copy import (
         card_search_button_text,
         debrief_title,
@@ -139,6 +139,8 @@ class DebriefDialog(QDialog):
         content_layout.setSpacing(SPACE_3)
         content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         content_layout.addWidget(_next_step_card(debrief, dialog=self, open_card=open_card, open_material=open_material))
+        if debrief.llm_summary:
+            content_layout.addWidget(_llm_summary_card(debrief.llm_summary))
         if debrief.cards_to_fix.cards:
             primary_repair_id = debrief.cards_to_fix.cards[0].card_id if debrief.next_check_kind == "repair" else None
             card_details = _cards_to_fix_card(
@@ -177,6 +179,19 @@ class DebriefDialog(QDialog):
 
 def _show_study_support(debrief: Debrief) -> bool:
     return bool(debrief.study_next) and debrief.next_check_kind in {"repair", "same_note", "study"}
+
+
+def _llm_summary_card(summary: LlmDebriefSummary):
+    rows = ()
+    if summary.check_first:
+        rows += (("Suggested check", _llm_check_text(summary.check_first)),)
+    rows += tuple(("Also consider", _llm_check_text(check)) for check in summary.other_checks[:2])
+    return panel_card("Bonsai summary", summary.summary, rows=rows, quiet=True)
+
+
+def _llm_check_text(check: LlmCheck) -> str:
+    examples = f" Examples: {', '.join(check.examples)}." if check.examples else ""
+    return f"{check.title}: {check.why}{examples}"
 
 
 def _next_step_card(

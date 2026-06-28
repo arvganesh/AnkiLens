@@ -1,5 +1,8 @@
 {
   "minimum_misses": 2,
   "result_limit": 20,
-  "lookback_days": 90
+  "lookback_days": 90,
+  "llm_summary_enabled": false,
+  "llm_model": "openrouter/free",
+  "llm_api_key_env": "OPENROUTER_API_KEY"
 }

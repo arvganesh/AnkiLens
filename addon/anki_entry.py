@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import sys
+from dataclasses import replace
 from datetime import datetime
 from urllib.parse import unquote
 
@@ -122,8 +123,12 @@ def show_session_debrief() -> None:
     config = load_config(mw.addonManager.getConfig(__package__))
     entries = _debrief_entries(load_review_entries(mw), config, now=datetime.now())
     entries = _filter_entries_by_deck(entries, _selected_deck_name)
+    debrief = current_build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit)
+    llm_summary = _load_llm_summary_builder()(entries, config)
+    if llm_summary:
+        debrief = replace(debrief, llm_summary=llm_summary)
     dialog = DebriefDialog(
-        current_build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
+        debrief,
         lookback_days=config.debrief_lookback_days,
         deck_label=_deck_display_label(_selected_deck_name) if _selected_deck_name else None,
         open_card=_open_card_from_debrief,
@@ -152,6 +157,19 @@ def _debrief_model_module_names(package: str) -> tuple[str, ...]:
         f"{package}.analytics",
         f"{package}.debrief",
     )
+
+
+def _load_llm_summary_builder():
+    if __package__:
+        module_name = f"{__package__}.llm_summary"
+        module = sys.modules.get(module_name)
+        if module:
+            importlib.reload(module)
+        module = importlib.import_module(module_name)
+        return module.build_llm_summary
+    from llm_summary import build_llm_summary as current_build_llm_summary
+
+    return current_build_llm_summary
 
 
 def _load_debrief_dialog_class():

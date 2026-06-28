@@ -7,7 +7,7 @@ import unittest
 from datetime import datetime
 
 from analytics import MissedCardSummary
-from debrief import CardsToFix, Debrief, EarlyLearning, SessionHabits, StudyTarget
+from debrief import CardsToFix, Debrief, EarlyLearning, LlmCheck, LlmDebriefSummary, SessionHabits, StudyTarget
 
 
 class _QtBase:
@@ -61,6 +61,42 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         debrief_dialog = importlib.import_module("debrief_dialog")
 
         self.assertFalse(hasattr(debrief_dialog, "supporting_cards_button_text"))
+
+    def test_llm_summary_card_stays_scannable(self) -> None:
+        _install_fake_aqt()
+        debrief_dialog = importlib.import_module("debrief_dialog")
+        original_panel_card = debrief_dialog.panel_card
+        calls = []
+        debrief_dialog.panel_card = lambda *args, **kwargs: calls.append((args, kwargs)) or "panel"
+        try:
+            widget = debrief_dialog._llm_summary_card(
+                LlmDebriefSummary(
+                    summary="Several misses cluster around valve murmurs.",
+                    check_first=LlmCheck(
+                        title="Valve murmur examples",
+                        why="Multiple missed cards mention murmur prompts.",
+                        examples=("Murmur?", "Aortic stenosis murmur"),
+                    ),
+                    other_checks=(
+                        LlmCheck(
+                            title="Early exposure",
+                            why="Some misses may be first-pass learning.",
+                            examples=("Mitral regurgitation",),
+                            action="ignore_for_now",
+                        ),
+                    ),
+                )
+            )
+        finally:
+            debrief_dialog.panel_card = original_panel_card
+
+        self.assertEqual(widget, "panel")
+        self.assertEqual(calls[0][0][0], "Bonsai summary")
+        self.assertIn("Several misses cluster", calls[0][0][1])
+        self.assertEqual(calls[0][1]["rows"][0][0], "Suggested check")
+        self.assertIn("Valve murmur examples", calls[0][1]["rows"][0][1])
+        self.assertEqual(calls[0][1]["rows"][1][0], "Also consider")
+        self.assertTrue(calls[0][1]["quiet"])
 
     def test_cards_to_fix_card_returns_support_panel(self) -> None:
         _install_fake_aqt()

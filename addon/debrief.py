@@ -76,6 +76,21 @@ class SessionHabits:
 
 
 @dataclass(frozen=True)
+class LlmCheck:
+    title: str
+    why: str
+    examples: tuple[str, ...] = ()
+    action: str = "inspect_examples"
+
+
+@dataclass(frozen=True)
+class LlmDebriefSummary:
+    summary: str
+    check_first: LlmCheck | None = None
+    other_checks: tuple[LlmCheck, ...] = ()
+
+
+@dataclass(frozen=True)
 class Debrief:
     study_next: tuple[StudyTarget, ...]
     cards_to_fix: CardsToFix
@@ -83,6 +98,7 @@ class Debrief:
     session_habits: SessionHabits
     missed_cards: tuple[MissedCardSummary, ...]
     same_note_cluster: MissedCardSummary | None = None
+    llm_summary: LlmDebriefSummary | None = None
 
     @property
     def next_check_kind(self) -> str:
