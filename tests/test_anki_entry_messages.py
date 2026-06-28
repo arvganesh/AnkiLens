@@ -8,7 +8,6 @@ from datetime import datetime
 import anki_entry
 from analytics import ReviewLogEntry
 from config import BonsaiConfig
-from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, DECK_SCOPE_MESSAGE_PREFIX
 
 
 class AnkiEntryMessagesTest(unittest.TestCase):
@@ -30,43 +29,24 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertEqual(calls[0][3], "Analyze missed cards")
         self.assertEqual(calls[0][4], "bonsai-top-tab")
 
-    def test_handles_bonsai_open_message(self) -> None:
-        calls = []
-        original = anki_entry.show_missed_card_analytics
-        anki_entry.show_missed_card_analytics = lambda: calls.append("analytics")
-        try:
-            handled = anki_entry._handle_js_message((False, None), BUTTON_MESSAGE, None)
-        finally:
-            anki_entry.show_missed_card_analytics = original
-
-        self.assertEqual(handled, (True, None))
-        self.assertEqual(calls, ["analytics"])
-
-    def test_handles_debrief_message(self) -> None:
-        calls = []
-        original = anki_entry.show_session_debrief
-        anki_entry.show_session_debrief = lambda: calls.append("debrief")
-        try:
-            handled = anki_entry._handle_js_message((False, None), DEBRIEF_MESSAGE, None)
-        finally:
-            anki_entry.show_session_debrief = original
-
-        self.assertEqual(handled, (True, None))
-        self.assertEqual(calls, ["debrief"])
-
     def test_handles_deck_scope_message(self) -> None:
         original_deck = anki_entry._selected_deck_name
+        original_show_bonsai_page = anki_entry.show_bonsai_page
+        calls = []
+        anki_entry.show_bonsai_page = lambda: calls.append("page")
         try:
             handled = anki_entry._handle_js_message(
                 (False, None),
-                f"{DECK_SCOPE_MESSAGE_PREFIX}Cardiology%20Deck",
+                f"{anki_entry.DECK_SCOPE_MESSAGE_PREFIX}Cardiology%20Deck",
                 None,
             )
 
             self.assertEqual(handled, (True, None))
             self.assertEqual(anki_entry._selected_deck_name, "Cardiology Deck")
+            self.assertEqual(calls, ["page"])
         finally:
             anki_entry._selected_deck_name = original_deck
+            anki_entry.show_bonsai_page = original_show_bonsai_page
 
     def test_ignores_other_messages(self) -> None:
         self.assertEqual(anki_entry._handle_js_message((False, None), "other", None), (False, None))
@@ -280,14 +260,6 @@ class AnkiEntryMessagesTest(unittest.TestCase):
                 "bonsai.terms",
                 "bonsai.analytics",
                 "bonsai.debrief",
-            ),
-        )
-
-    def test_deck_button_loader_refreshes_button_html(self) -> None:
-        self.assertEqual(
-            anki_entry._deck_button_module_names("bonsai"),
-            (
-                "bonsai.deck_button",
             ),
         )
 

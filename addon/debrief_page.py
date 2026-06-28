@@ -69,7 +69,17 @@ except ImportError:
     from session_context import session_context_text
 
 
-def debrief_page_html(debrief: Debrief, *, lookback_days: int, deck_label: str | None = None) -> str:
+DECK_SCOPE_MESSAGE_PREFIX = "bonsai:deck:"
+
+
+def debrief_page_html(
+    debrief: Debrief,
+    *,
+    lookback_days: int,
+    deck_options: tuple[str, ...] = (),
+    selected_deck: str | None = None,
+    deck_label: str | None = None,
+) -> str:
     llm_summary = llm_summary_html(debrief.llm_summary) if debrief.llm_summary else _llm_loading_html()
     sections = [
         _top_check_html(debrief),
@@ -101,7 +111,38 @@ def debrief_page_html(debrief: Debrief, *, lookback_days: int, deck_label: str |
   .bonsai-intro {{
     color: #4d554d;
     font-size: 14px;
+    margin-bottom: 0;
+  }}
+  .bonsai-header {{
+    align-items: end;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
     margin-bottom: 18px;
+  }}
+  .bonsai-filter label {{
+    color: #667064;
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }}
+  .bonsai-filter select {{
+    background: #fffaf0;
+    border: 1px solid #d8d0c2;
+    border-radius: 9px;
+    box-sizing: border-box;
+    color: #2f382f;
+    font-size: 13px;
+    min-height: 36px;
+    padding: 7px 9px;
+    width: 100%;
+  }}
+  @media (max-width: 680px) {{
+    .bonsai-header {{
+      align-items: stretch;
+      grid-template-columns: 1fr;
+    }}
   }}
   .bonsai-stack {{
     display: grid;
@@ -180,8 +221,13 @@ def debrief_page_html(debrief: Debrief, *, lookback_days: int, deck_label: str |
   }};
 </script>
 <main class="bonsai-page">
-  <h1>{escape(debrief_title())}</h1>
-  <div class="bonsai-intro">{escape(debrief_intro_text(lookback_days, deck_label=deck_label))}</div>
+  <header class="bonsai-header">
+    <div>
+      <h1>{escape(debrief_title())}</h1>
+      <div class="bonsai-intro">{escape(debrief_intro_text(lookback_days, deck_label=deck_label))}</div>
+    </div>
+    {_deck_selector_html(deck_options, selected_deck)}
+  </header>
   <section class="bonsai-stack">
     {"".join(sections)}
   </section>
@@ -199,6 +245,29 @@ def llm_summary_html(summary: LlmDebriefSummary) -> str:
 
 def llm_summary_update_js(summary: LlmDebriefSummary) -> str:
     return f"window.bonsaiSetLlmSummary({json.dumps(llm_summary_html(summary))});"
+
+
+def _deck_selector_html(deck_options: tuple[str, ...], selected_deck: str | None) -> str:
+    if not deck_options:
+        return ""
+    options = ['<option value="">All decks</option>']
+    for deck in deck_options:
+        selected = " selected" if deck == selected_deck else ""
+        options.append(
+            f'<option value="{escape(deck, quote=True)}"{selected} title="{escape(deck, quote=True)}">'
+            f"{escape(_deck_display_label(deck))}</option>"
+        )
+    return f"""
+<div class="bonsai-filter">
+  <label for="bonsai-deck-select">Deck</label>
+  <select
+    id="bonsai-deck-select"
+    onchange="pycmd('{DECK_SCOPE_MESSAGE_PREFIX}' + encodeURIComponent(this.value))"
+  >
+    {"".join(options)}
+  </select>
+</div>
+"""
 
 
 def _top_check_html(debrief: Debrief) -> str:
@@ -362,3 +431,10 @@ def _llm_loading_html() -> str:
 
 def _plural(count: int) -> str:
     return "" if count == 1 else "s"
+
+
+def _deck_display_label(deck_name: str) -> str:
+    parts = [part.strip() for part in deck_name.split("::") if part.strip()]
+    if len(parts) > 2:
+        return " / ".join(parts[-2:])
+    return deck_name

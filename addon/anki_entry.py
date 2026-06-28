@@ -12,7 +12,6 @@ try:
     from .anki_gateway import load_review_entries
     from .browser_search import browser_search_for_card, browser_search_for_study_target
     from .config import load_config
-    from .deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, DECK_SCOPE_MESSAGE_PREFIX, deck_button_html
     from .debrief import StudyTarget, build_debrief
 except ImportError:
     from analytics import filter_review_entries_by_lookback, summarize_missed_cards
@@ -20,10 +19,10 @@ except ImportError:
     from anki_gateway import load_review_entries
     from browser_search import browser_search_for_card, browser_search_for_study_target
     from config import load_config
-    from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, DECK_SCOPE_MESSAGE_PREFIX, deck_button_html
     from debrief import StudyTarget, build_debrief
 
 
+DECK_SCOPE_MESSAGE_PREFIX = "bonsai:deck:"
 _selected_deck_name: str | None = None
 
 
@@ -41,7 +40,6 @@ def _register_deck_browser_button() -> None:
     from aqt import gui_hooks
 
     gui_hooks.top_toolbar_did_init_links.append(_add_top_toolbar_link)
-    gui_hooks.deck_browser_will_render_content.append(_add_deck_browser_button)
     gui_hooks.webview_did_receive_js_message.append(_handle_js_message)
 
 
@@ -57,52 +55,6 @@ def _add_top_toolbar_link(links, toolbar) -> None:
     )
 
 
-def _add_deck_browser_button(_deck_browser, content) -> None:
-    content.stats += _load_deck_button_html()(**_deck_browser_summary())
-
-
-def _load_deck_button_html():
-    if __package__:
-        for module_name in _deck_button_module_names(__package__):
-            module = sys.modules.get(module_name)
-            if module:
-                importlib.reload(module)
-        module = importlib.import_module(f"{__package__}.deck_button")
-    else:
-        module = importlib.import_module("deck_button")
-    return module.deck_button_html
-
-
-def _deck_button_module_names(package: str) -> tuple[str, ...]:
-    return (
-        f"{package}.deck_button",
-    )
-
-
-def _deck_browser_summary() -> dict[str, int | None]:
-    from aqt import mw
-
-    try:
-        config = load_config(mw.addonManager.getConfig(__package__))
-        entries = filter_review_entries_by_lookback(
-            load_review_entries(mw),
-            lookback_days=config.lookback_days,
-            now=datetime.now(),
-        )
-        deck_options = _deck_options(entries)
-        selected_deck = _valid_selected_deck(deck_options)
-        entries = _filter_entries_by_deck(entries, selected_deck)
-        missed_cards = _missed_card_count(entries, config)
-    except Exception:
-        return {"missed_cards": None, "lookback_days": None}
-    return {
-        "missed_cards": missed_cards,
-        "lookback_days": config.lookback_days,
-        "deck_options": deck_options,
-        "selected_deck": selected_deck,
-    }
-
-
 def _missed_card_count(entries, config) -> int:
     summaries = summarize_missed_cards(
         entries,
@@ -113,15 +65,9 @@ def _missed_card_count(entries, config) -> int:
 
 
 def _handle_js_message(handled, message: str, _context):
-    if message == BUTTON_MESSAGE:
-        show_missed_card_analytics()
-        return (True, None)
-    if message == DEBRIEF_MESSAGE:
-        show_session_debrief()
-        return (True, None)
     if message.startswith(DECK_SCOPE_MESSAGE_PREFIX):
         _set_selected_deck(unquote(message.removeprefix(DECK_SCOPE_MESSAGE_PREFIX)))
-        _refresh_deck_browser()
+        show_bonsai_page()
         return (True, None)
     return handled
 
@@ -155,16 +101,20 @@ def show_bonsai_page() -> None:
     page = _load_debrief_page_module()
     config = load_config(mw.addonManager.getConfig(__package__))
     entries = _debrief_entries(load_review_entries(mw), config, now=datetime.now())
-    entries = _filter_entries_by_deck(entries, _selected_deck_name)
-    debrief = current_build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit)
+    deck_options = _deck_options(entries)
+    selected_deck = _valid_selected_deck(deck_options)
+    scoped_entries = _filter_entries_by_deck(entries, selected_deck)
+    debrief = current_build_debrief(scoped_entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit)
     mw.web.stdHtml(
         page.debrief_page_html(
             debrief,
             lookback_days=config.debrief_lookback_days,
-            deck_label=_deck_display_label(_selected_deck_name) if _selected_deck_name else None,
+            deck_options=deck_options,
+            selected_deck=selected_deck,
+            deck_label=_deck_display_label(selected_deck) if selected_deck else None,
         )
     )
-    _attach_llm_summary_to_page(mw.web, entries, config)
+    _attach_llm_summary_to_page(mw.web, scoped_entries, config)
 
 
 def _load_debrief_builder():
@@ -302,15 +252,6 @@ def _deck_display_label(deck_name: str | None) -> str | None:
     if len(parts) > 2:
         return " / ".join(parts[-2:])
     return deck_name
-
-
-def _refresh_deck_browser() -> None:
-    try:
-        from aqt import mw
-
-        mw.deckBrowser.refresh()
-    except Exception:
-        return
 
 
 def _open_card_from_debrief(card_id: int) -> None:

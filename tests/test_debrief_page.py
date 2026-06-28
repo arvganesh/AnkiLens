@@ -19,11 +19,21 @@ def _empty_debrief(*, llm_summary: LlmDebriefSummary | None = None) -> Debrief:
 
 class DebriefPageTest(unittest.TestCase):
     def test_renders_in_window_page_shell(self) -> None:
-        html = debrief_page_html(_empty_debrief(), lookback_days=90, deck_label="Cardiology")
+        html = debrief_page_html(
+            _empty_debrief(),
+            lookback_days=90,
+            deck_options=("Cardiology", "Renal::Tubules", "Zanki::Biochem::Metabolism"),
+            selected_deck="Renal::Tubules",
+            deck_label="Renal::Tubules",
+        )
 
         self.assertIn("<main class=\"bonsai-page\">", html)
         self.assertIn("Missed card analytics", html)
-        self.assertIn("Cardiology · Last 90 days", html)
+        self.assertIn("Renal::Tubules · Last 90 days", html)
+        self.assertIn("<select", html)
+        self.assertIn("bonsai:deck:", html)
+        self.assertIn('<option value="Renal::Tubules" selected title="Renal::Tubules">Renal::Tubules</option>', html)
+        self.assertIn(">Biochem / Metabolism</option>", html)
         self.assertIn("No action needed yet", html)
         self.assertIn("Bonsai summary", html)
         self.assertIn("Looking for patterns", html)
