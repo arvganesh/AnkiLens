@@ -43,6 +43,7 @@ class LlmSummaryTest(unittest.TestCase):
             [_entry(1, 1, 0)],
             BonsaiConfig(llm_summary_enabled=False),
             api_key_getter=lambda _name: "key",
+            env_file_getter=lambda _name: None,
             opener=lambda *args, **kwargs: calls.append((args, kwargs)),
         )
 
@@ -56,6 +57,7 @@ class LlmSummaryTest(unittest.TestCase):
             [_entry(1, 1, 0)],
             BonsaiConfig(llm_summary_enabled=True),
             api_key_getter=lambda _name: None,
+            env_file_getter=lambda _name: None,
             opener=lambda *args, **kwargs: calls.append((args, kwargs)),
         )
 
@@ -100,6 +102,7 @@ class LlmSummaryTest(unittest.TestCase):
             [_entry(1, 1, 0), _entry(2, 1, 1, text="mitral murmur")],
             BonsaiConfig(llm_summary_enabled=True, llm_max_chars=1000, llm_timeout_seconds=7),
             api_key_getter=lambda name: "test-key" if name == "OPENROUTER_API_KEY" else None,
+            env_file_getter=lambda _name: None,
             opener=opener,
         )
 
@@ -143,6 +146,7 @@ class LlmSummaryTest(unittest.TestCase):
             [_entry(1, 1, 0)],
             BonsaiConfig(llm_summary_enabled=True),
             api_key_getter=lambda _name: "test-key",
+            env_file_getter=lambda _name: None,
             opener=lambda *_args, **_kwargs: _FakeResponse(payload),
         )
 

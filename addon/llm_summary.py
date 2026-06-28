@@ -4,6 +4,7 @@ import json
 import os
 import urllib.request
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 try:
@@ -48,11 +49,13 @@ def build_llm_summary(
     config: BonsaiConfig,
     *,
     api_key_getter: Callable[[str], str | None] = os.environ.get,
+    env_file_getter: Callable[[str], str | None] | None = None,
     opener: Callable[..., Any] = urllib.request.urlopen,
 ) -> LlmDebriefSummary | None:
     if not config.llm_summary_enabled:
         return None
-    api_key = api_key_getter(config.llm_api_key_env)
+    current_env_file_getter = env_file_getter or _env_file_value
+    api_key = api_key_getter(config.llm_api_key_env) or current_env_file_getter(config.llm_api_key_env)
     if not api_key:
         return None
     summaries = summarize_missed_cards(entries, minimum_misses=1, limit=config.llm_max_cards)
@@ -217,3 +220,17 @@ def _clean_string(value: Any, *, max_length: int) -> str:
 def _compact_text(value: str, max_length: int) -> str:
     cleaned = " ".join(value.split())
     return cleaned[:max_length]
+
+
+def _env_file_value(name: str) -> str | None:
+    env_path = Path(__file__).resolve().parents[1] / ".env"
+    try:
+        lines = env_path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    prefix = f"{name}="
+    for line in lines:
+        if line.startswith(prefix):
+            value = line.removeprefix(prefix).strip()
+            return value or None
+    return None
