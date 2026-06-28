@@ -32,6 +32,8 @@ class DebriefPageTest(unittest.TestCase):
         self.assertIn("Renal::Tubules · Last 90 days", html)
         self.assertIn("<select", html)
         self.assertIn("bonsai:deck:", html)
+        self.assertNotIn("All decks", html)
+        self.assertNotIn('value=""', html)
         self.assertIn('<option value="Renal::Tubules" selected title="Renal::Tubules">Renal::Tubules</option>', html)
         self.assertIn(">Biochem / Metabolism</option>", html)
         self.assertIn("No action needed yet", html)

@@ -210,14 +210,17 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         self.assertEqual(anki_entry._deck_options(entries), ("Cardiology", "Renal"))
 
-    def test_invalid_selected_deck_falls_back_to_all_decks(self) -> None:
+    def test_invalid_selected_deck_falls_back_to_first_deck(self) -> None:
         original_deck = anki_entry._selected_deck_name
         try:
             anki_entry._selected_deck_name = "Missing"
 
-            self.assertIsNone(anki_entry._valid_selected_deck(("Cardiology", "Renal")))
+            self.assertEqual(anki_entry._valid_selected_deck(("Cardiology", "Renal")), "Cardiology")
         finally:
             anki_entry._selected_deck_name = original_deck
+
+    def test_missing_deck_options_have_no_selected_deck(self) -> None:
+        self.assertIsNone(anki_entry._valid_selected_deck(()))
 
     def test_deck_display_label_shortens_nested_decks(self) -> None:
         self.assertEqual(

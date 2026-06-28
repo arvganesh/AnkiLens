@@ -231,12 +231,12 @@ def _deck_options(entries) -> tuple[str, ...]:
 def _valid_selected_deck(deck_options: tuple[str, ...]) -> str | None:
     if _selected_deck_name in deck_options:
         return _selected_deck_name
-    return None
+    return deck_options[0] if deck_options else None
 
 
 def _set_selected_deck(deck_name: str) -> None:
     global _selected_deck_name
-    _selected_deck_name = deck_name or None
+    _selected_deck_name = deck_name
 
 
 def _filter_entries_by_deck(entries, deck_name: str | None):

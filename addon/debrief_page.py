@@ -250,7 +250,7 @@ def llm_summary_update_js(summary: LlmDebriefSummary) -> str:
 def _deck_selector_html(deck_options: tuple[str, ...], selected_deck: str | None) -> str:
     if not deck_options:
         return ""
-    options = ['<option value="">All decks</option>']
+    options = []
     for deck in deck_options:
         selected = " selected" if deck == selected_deck else ""
         options.append(
