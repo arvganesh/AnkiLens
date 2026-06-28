@@ -26,7 +26,7 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertEqual(links, ["link:Bonsai"])
         self.assertEqual(calls[0][0], "bonsai")
         self.assertEqual(calls[0][1], "Bonsai")
-        self.assertIs(calls[0][2], anki_entry.show_session_debrief)
+        self.assertIs(calls[0][2], anki_entry.show_bonsai_page)
         self.assertEqual(calls[0][3], "Analyze missed cards")
         self.assertEqual(calls[0][4], "bonsai-top-tab")
 

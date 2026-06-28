@@ -50,7 +50,7 @@ def _add_top_toolbar_link(links, toolbar) -> None:
         toolbar.create_link(
             "bonsai",
             "Bonsai",
-            show_session_debrief,
+            show_bonsai_page,
             tip="Analyze missed cards",
             id="bonsai-top-tab",
         )
@@ -148,6 +148,25 @@ def show_session_debrief() -> None:
     dialog.exec()
 
 
+def show_bonsai_page() -> None:
+    from aqt import mw
+
+    current_build_debrief = _load_debrief_builder()
+    page = _load_debrief_page_module()
+    config = load_config(mw.addonManager.getConfig(__package__))
+    entries = _debrief_entries(load_review_entries(mw), config, now=datetime.now())
+    entries = _filter_entries_by_deck(entries, _selected_deck_name)
+    debrief = current_build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit)
+    mw.web.stdHtml(
+        page.debrief_page_html(
+            debrief,
+            lookback_days=config.debrief_lookback_days,
+            deck_label=_deck_display_label(_selected_deck_name) if _selected_deck_name else None,
+        )
+    )
+    _attach_llm_summary_to_page(mw.web, entries, config)
+
+
 def _load_debrief_builder():
     if __package__:
         for module_name in _debrief_model_module_names(__package__):
@@ -181,7 +200,28 @@ def _load_llm_summary_builder():
     return current_build_llm_summary
 
 
+def _load_debrief_page_module():
+    if __package__:
+        module_name = f"{__package__}.debrief_page"
+        module = sys.modules.get(module_name)
+        if module:
+            importlib.reload(module)
+        return importlib.import_module(module_name)
+    import debrief_page as current_debrief_page
+
+    return current_debrief_page
+
+
 def _attach_llm_summary(dialog, entries, config) -> None:
+    _start_llm_summary_worker(dialog, entries, config, dialog.set_llm_summary)
+
+
+def _attach_llm_summary_to_page(web, entries, config) -> None:
+    page = _load_debrief_page_module()
+    _start_llm_summary_worker(web, entries, config, lambda summary: web.eval(page.llm_summary_update_js(summary)))
+
+
+def _start_llm_summary_worker(parent, entries, config, callback) -> None:
     if not config.llm_summary_enabled:
         return
     from aqt.qt import QObject, pyqtSignal
@@ -189,8 +229,8 @@ def _attach_llm_summary(dialog, entries, config) -> None:
     class LlmSummaryNotifier(QObject):
         summary_ready = pyqtSignal(object)
 
-    notifier = LlmSummaryNotifier(dialog)
-    notifier.summary_ready.connect(dialog.set_llm_summary)
+    notifier = LlmSummaryNotifier(parent)
+    notifier.summary_ready.connect(callback)
 
     def run() -> None:
         summary = _load_llm_summary_builder()(entries, config)
@@ -198,8 +238,8 @@ def _attach_llm_summary(dialog, entries, config) -> None:
             notifier.summary_ready.emit(summary)
 
     thread = threading.Thread(target=run, daemon=True)
-    dialog._bonsai_llm_notifier = notifier
-    dialog._bonsai_llm_thread = thread
+    parent._bonsai_llm_notifier = notifier
+    parent._bonsai_llm_thread = thread
     thread.start()
 
 
