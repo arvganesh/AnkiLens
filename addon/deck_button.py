@@ -2,11 +2,6 @@ from __future__ import annotations
 
 from html import escape
 
-try:
-    from .debrief_dialog_copy import deck_debrief_button_text
-except ImportError:
-    from debrief_dialog_copy import deck_debrief_button_text
-
 
 BUTTON_MESSAGE = "bonsai:open"
 DEBRIEF_MESSAGE = "bonsai:debrief"
@@ -40,25 +35,8 @@ def deck_button_html(
     {summary}
   </div>
   {deck_select}
-  <div style="display: flex; flex-wrap: wrap; gap: 9px; align-items: center;">
-    <button
-      onclick="pycmd('bonsai:debrief')"
-      style="
-        border: 1px solid #275f34;
-        border-radius: 999px;
-        background: #2f6f3e;
-        color: #fff;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        padding: 7px 14px;
-      "
-    >
-      {deck_debrief_button_text()}
-    </button>
-  </div>
   <div style="color: #7a7267; font-size: 11px; line-height: 1.35; margin-top: 9px;">
-    Read-only: decide whether a missed card needs editing or more review.
+    Use the Bonsai tab above to analyze missed cards. Read-only: Bonsai does not change scheduling.
   </div>
 </div>
 """

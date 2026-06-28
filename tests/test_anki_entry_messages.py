@@ -12,6 +12,24 @@ from deck_button import BUTTON_MESSAGE, DEBRIEF_MESSAGE, DECK_SCOPE_MESSAGE_PREF
 
 
 class AnkiEntryMessagesTest(unittest.TestCase):
+    def test_adds_bonsai_top_toolbar_tab(self) -> None:
+        links = []
+        calls = []
+
+        class FakeToolbar:
+            def create_link(self, cmd, label, func, tip=None, id=None):
+                calls.append((cmd, label, func, tip, id))
+                return f"link:{label}"
+
+        anki_entry._add_top_toolbar_link(links, FakeToolbar())
+
+        self.assertEqual(links, ["link:Bonsai"])
+        self.assertEqual(calls[0][0], "bonsai")
+        self.assertEqual(calls[0][1], "Bonsai")
+        self.assertIs(calls[0][2], anki_entry.show_session_debrief)
+        self.assertEqual(calls[0][3], "Analyze missed cards")
+        self.assertEqual(calls[0][4], "bonsai-top-tab")
+
     def test_handles_bonsai_open_message(self) -> None:
         calls = []
         original = anki_entry.show_missed_card_analytics
@@ -265,11 +283,10 @@ class AnkiEntryMessagesTest(unittest.TestCase):
             ),
         )
 
-    def test_deck_button_loader_refreshes_copy_before_button_html(self) -> None:
+    def test_deck_button_loader_refreshes_button_html(self) -> None:
         self.assertEqual(
             anki_entry._deck_button_module_names("bonsai"),
             (
-                "bonsai.debrief_dialog_copy",
                 "bonsai.deck_button",
             ),
         )

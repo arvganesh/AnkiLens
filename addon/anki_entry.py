@@ -40,8 +40,21 @@ def register_menu() -> None:
 def _register_deck_browser_button() -> None:
     from aqt import gui_hooks
 
+    gui_hooks.top_toolbar_did_init_links.append(_add_top_toolbar_link)
     gui_hooks.deck_browser_will_render_content.append(_add_deck_browser_button)
     gui_hooks.webview_did_receive_js_message.append(_handle_js_message)
+
+
+def _add_top_toolbar_link(links, toolbar) -> None:
+    links.append(
+        toolbar.create_link(
+            "bonsai",
+            "Bonsai",
+            show_session_debrief,
+            tip="Analyze missed cards",
+            id="bonsai-top-tab",
+        )
+    )
 
 
 def _add_deck_browser_button(_deck_browser, content) -> None:
@@ -62,7 +75,6 @@ def _load_deck_button_html():
 
 def _deck_button_module_names(package: str) -> tuple[str, ...]:
     return (
-        f"{package}.debrief_dialog_copy",
         f"{package}.deck_button",
     )
 
