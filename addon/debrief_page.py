@@ -47,10 +47,27 @@ def debrief_page_html(
     max-width: 900px;
     padding: 34px 26px 56px;
   }}
+  .ankilens-brand {{
+    align-items: center;
+    color: #285c4d;
+    display: flex;
+    font-size: 12px;
+    font-weight: 750;
+    gap: 8px;
+    line-height: 1;
+    margin-bottom: 9px;
+  }}
+  .ankilens-brand-mark {{
+    background: #285c4d;
+    border-radius: 3px;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+  }}
   .ankilens-page h1 {{
-    font-size: 28px;
+    font-size: 32px;
     line-height: 1.1;
-    margin: 0 0 8px;
+    margin: 0 0 6px;
   }}
   .ankilens-intro {{
     color: #5f6368;
@@ -62,7 +79,19 @@ def debrief_page_html(
     display: grid;
     gap: 14px;
     grid-template-columns: minmax(0, 1fr) minmax(300px, 430px);
-    margin-bottom: 18px;
+    margin-bottom: 20px;
+    padding-left: 14px;
+    position: relative;
+  }}
+  .ankilens-header::before {{
+    background: #285c4d;
+    border-radius: 2px;
+    bottom: 2px;
+    content: "";
+    left: 0;
+    position: absolute;
+    top: 2px;
+    width: 4px;
   }}
   .ankilens-filters {{
     display: grid;
@@ -108,6 +137,7 @@ def debrief_page_html(
     padding: 18px 20px;
   }}
   .ankilens-card.primary {{
+    border-top: 4px solid #285c4d;
     padding: 22px 24px;
   }}
   .ankilens-card h2 {{
@@ -183,11 +213,16 @@ def debrief_page_html(
       color: #e8eaed;
     }}
     .ankilens-intro,
+    .ankilens-brand,
     .ankilens-filter label,
     .ankilens-insight-context,
     .ankilens-insight-section h3,
     .ankilens-action {{
       color: #bdc1c6;
+    }}
+    .ankilens-brand-mark,
+    .ankilens-header::before {{
+      background: #7fc7ae;
     }}
     .ankilens-filter select,
     .ankilens-card,
@@ -195,6 +230,9 @@ def debrief_page_html(
       background: #2b2c2f;
       border-color: #3c4043;
       color: #e8eaed;
+    }}
+    .ankilens-card.primary {{
+      border-top-color: #7fc7ae;
     }}
     .ankilens-card p,
     .ankilens-recommendations {{
@@ -220,6 +258,7 @@ def debrief_page_html(
 <main class="ankilens-page">
   <header class="ankilens-header">
     <div>
+      <div class="ankilens-brand"><span class="ankilens-brand-mark"></span>AnkiLens</div>
       <h1>{escape(debrief_title())}</h1>
       <div class="ankilens-intro">{escape(debrief_intro_text(lookback_days))}</div>
     </div>

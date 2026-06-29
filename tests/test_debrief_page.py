@@ -24,6 +24,8 @@ class DebriefPageTest(unittest.TestCase):
         )
 
         self.assertIn("<main class=\"ankilens-page\">", html)
+        self.assertIn("ankilens-brand", html)
+        self.assertIn("AnkiLens", html)
         self.assertIn("<h1>Insights</h1>", html)
         self.assertIn("Last 90 days", html)
         self.assertNotIn("Renal::Tubules · Last 90 days", html)
