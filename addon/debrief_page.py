@@ -184,18 +184,25 @@ def debrief_page_html(
     margin-top: 17px;
     padding-top: 14px;
   }}
-  .ankilens-action-button {{
-    background: #ffffff;
-    border: 1px solid #dadce0;
-    border-radius: 6px;
-    color: #202124;
-    cursor: pointer;
+  .ankilens-action-heading {{
+    color: #5f6368;
     font-size: 12px;
     font-weight: 650;
-    padding: 6px 10px;
+    line-height: 1.25;
+    margin: 0 0 7px;
+  }}
+  .ankilens-action-button {{
+    background: #f8f9fa;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    color: #3c4043;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 8px;
   }}
   .ankilens-action-button:hover {{
-    background: #f8f9fa;
+    background: #f1f3f4;
   }}
   @media (prefers-color-scheme: dark) {{
     body {{
@@ -205,6 +212,7 @@ def debrief_page_html(
     .ankilens-filter label,
     .ankilens-insight-context,
     .ankilens-insight-section h3,
+    .ankilens-action-heading,
     .ankilens-action {{
       color: #bdc1c6;
     }}
@@ -376,6 +384,7 @@ def _insight_actions_html(summary: LlmDebriefSummary) -> str:
         return ""
     return (
         '<div class="ankilens-insight-actions">'
+        '<div class="ankilens-action-heading">Cards to inspect</div>'
         f'<button type="button" class="ankilens-action-button" data-ankilens-browse-query="{escape(query, quote=True)}">'
         f"Open {_count_label(len(card_ids), 'missed card', 'missed cards')} in Browse"
         "</button>"
