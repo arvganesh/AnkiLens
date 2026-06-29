@@ -151,7 +151,11 @@ def debrief_page_html(
     color: #3f7a5c;
   }}
   .ankilens-insight-section.improve h3 {{
-    color: #9a5538;
+    background: #fff4cc;
+    border-radius: 4px;
+    color: #5f4b00;
+    display: inline-block;
+    padding: 2px 6px;
   }}
   .ankilens-recommendations {{
     color: #202124;
