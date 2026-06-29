@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from hashlib import sha256
 import json
 import os
 import urllib.request
@@ -62,6 +63,9 @@ Return only JSON with this shape:
   ]
 }"""
 
+_LLM_TEMPERATURE = 0
+_SUMMARY_CACHE: dict[str, LlmDebriefSummary] = {}
+
 
 def build_llm_summary(
     entries: list[ReviewLogEntry],
@@ -81,10 +85,15 @@ def build_llm_summary(
     summaries = summarize_missed_cards(entries, minimum_misses=1, limit=config.llm_max_cards, miss_eases=miss_eases)
     if not summaries:
         return None
+    user_prompt = _missed_card_prompt(entries, summaries, max_chars=config.llm_max_chars, miss_eases=miss_eases)
+    cache_key = _summary_cache_key(config.llm_model, user_prompt, entries, miss_eases=miss_eases)
+    cached_summary = _SUMMARY_CACHE.get(cache_key)
+    if cached_summary is not None:
+        return cached_summary
 
     request = urllib.request.Request(
         config.llm_api_url,
-        data=_request_body(config.llm_model, _missed_card_prompt(entries, summaries, max_chars=config.llm_max_chars, miss_eases=miss_eases)),
+        data=_request_body(config.llm_model, user_prompt),
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -98,7 +107,14 @@ def build_llm_summary(
             payload = json.loads(response.read().decode("utf-8"))
     except Exception:
         return None
-    return _parse_response(payload, action_card_ids=tuple(summary.card_id for summary in summaries))
+    summary = _parse_response(payload, action_card_ids=tuple(summary.card_id for summary in summaries))
+    if summary is not None:
+        _SUMMARY_CACHE[cache_key] = summary
+    return summary
+
+
+def clear_llm_summary_cache() -> None:
+    _SUMMARY_CACHE.clear()
 
 
 def _request_body(model: str, user_prompt: str) -> bytes:
@@ -109,7 +125,7 @@ def _request_body(model: str, user_prompt: str) -> bytes:
                 {"role": "system", "content": _SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt},
             ),
-            "temperature": 0.2,
+            "temperature": _LLM_TEMPERATURE,
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {
@@ -146,6 +162,36 @@ def _request_body(model: str, user_prompt: str) -> bytes:
             },
         }
     ).encode("utf-8")
+
+
+def _summary_cache_key(
+    model: str,
+    user_prompt: str,
+    entries: list[ReviewLogEntry],
+    *,
+    miss_eases: tuple[int, ...],
+) -> str:
+    event_fingerprint = tuple(
+        sorted(
+            (
+                entry.card_id,
+                entry.ease,
+                entry.reviewed_at.isoformat(),
+                entry.deck_name,
+                entry.card_label,
+            )
+            for entry in entries
+        )
+    )
+    payload = {
+        "model": model,
+        "temperature": _LLM_TEMPERATURE,
+        "miss_eases": miss_eases,
+        "system_prompt": _SYSTEM_PROMPT,
+        "user_prompt": user_prompt,
+        "events": event_fingerprint,
+    }
+    return sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
 def _missed_card_prompt(entries, summaries, *, max_chars: int, miss_eases: tuple[int, ...] = DEFAULT_MISS_EASES) -> str:

@@ -6,7 +6,7 @@ from datetime import datetime
 
 from analytics import ReviewLogEntry
 from config import AnkiLensConfig
-from llm_summary import build_llm_summary
+from llm_summary import build_llm_summary, clear_llm_summary_cache
 
 
 def _entry(card_id: int, ease: int, minute: int, *, text: str = "aortic stenosis murmur") -> ReviewLogEntry:
@@ -36,6 +36,9 @@ class _FakeResponse:
 
 
 class LlmSummaryTest(unittest.TestCase):
+    def setUp(self) -> None:
+        clear_llm_summary_cache()
+
     def test_disabled_summary_does_not_call_api(self) -> None:
         calls = []
 
@@ -121,6 +124,7 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertEqual(request.get_header("X-title"), "Missed Card Insights")
         body = json.loads(request.data.decode("utf-8"))
         self.assertEqual(body["model"], "deepseek/deepseek-v4-flash")
+        self.assertEqual(body["temperature"], 0)
         self.assertEqual(body["response_format"]["type"], "json_schema")
         schema = body["response_format"]["json_schema"]["schema"]
         self.assertEqual(schema["required"], ["positives", "improvements"])
@@ -325,6 +329,101 @@ class LlmSummaryTest(unittest.TestCase):
         prompt = json.loads(requests[0].data.decode("utf-8"))["messages"][1]["content"]
         self.assertIn("Miss definition: Again and Hard review buttons count as misses.", prompt)
         self.assertIn("enzyme kinetics hard card", prompt)
+
+    def test_reuses_cached_summary_for_same_learning_state(self) -> None:
+        requests = []
+        payload = {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "positives": [],
+                                "improvements": [
+                                    {
+                                        "insight": "1 enzyme card appears in the missed-card evidence.",
+                                        "action": "Open the enzyme card and check whether it asks for several facts.",
+                                    }
+                                ],
+                            }
+                        )
+                    }
+                }
+            ]
+        }
+
+        def opener(request, *, timeout):
+            requests.append(request)
+            return _FakeResponse(payload)
+
+        entries = [_entry(1, 1, 0, text="enzyme kinetics card")]
+        config = AnkiLensConfig(llm_summary_enabled=True)
+
+        first = build_llm_summary(
+            entries,
+            config,
+            api_key_getter=lambda _name: "test-key",
+            env_file_getter=lambda _name: None,
+            opener=opener,
+        )
+        second = build_llm_summary(
+            entries,
+            config,
+            api_key_getter=lambda _name: "test-key",
+            env_file_getter=lambda _name: None,
+            opener=opener,
+        )
+
+        self.assertIsNotNone(first)
+        self.assertEqual(second, first)
+        self.assertEqual(len(requests), 1)
+
+    def test_cache_refreshes_when_review_events_change(self) -> None:
+        requests = []
+        payload = {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "positives": [],
+                                "improvements": [
+                                    {
+                                        "insight": "1 enzyme card appears in the missed-card evidence.",
+                                        "action": "Open the enzyme card and check whether it asks for several facts.",
+                                    }
+                                ],
+                            }
+                        )
+                    }
+                }
+            ]
+        }
+
+        def opener(request, *, timeout):
+            requests.append(request)
+            return _FakeResponse(payload)
+
+        config = AnkiLensConfig(llm_summary_enabled=True)
+        base_entries = [_entry(1, 1, 0, text="enzyme kinetics card")]
+        changed_entries = base_entries + [_entry(2, 3, 1, text="enzyme kinetics card")]
+
+        build_llm_summary(
+            base_entries,
+            config,
+            api_key_getter=lambda _name: "test-key",
+            env_file_getter=lambda _name: None,
+            opener=opener,
+        )
+        build_llm_summary(
+            changed_entries,
+            config,
+            api_key_getter=lambda _name: "test-key",
+            env_file_getter=lambda _name: None,
+            opener=opener,
+        )
+
+        self.assertEqual(len(requests), 2)
 
 
 if __name__ == "__main__":
