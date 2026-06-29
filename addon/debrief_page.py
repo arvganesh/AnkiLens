@@ -176,8 +176,10 @@ def debrief_page_html(
   }}
   .ankilens-action {{
     color: #5f6368;
+    display: block;
     font-size: 12px;
     line-height: 1.35;
+    margin-top: 3px;
   }}
   .ankilens-insight-actions {{
     border-top: 1px solid #e8eaed;
@@ -185,16 +187,26 @@ def debrief_page_html(
     padding-top: 14px;
   }}
   .ankilens-action-button {{
+    -webkit-appearance: none;
+    appearance: none;
     background: transparent;
     border: 0;
     border-radius: 0;
+    box-shadow: none;
     color: #3c4043;
     cursor: pointer;
+    font-family: inherit;
     font-size: 12px;
     font-weight: 500;
+    line-height: 1.35;
+    margin: 0;
     padding: 0;
     text-decoration: underline;
     text-underline-offset: 2px;
+  }}
+  .ankilens-action-button:focus {{
+    outline: 1px solid #9aa0a6;
+    outline-offset: 2px;
   }}
   .ankilens-action-button:hover {{
     color: #202124;
