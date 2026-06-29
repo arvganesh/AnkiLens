@@ -9,10 +9,6 @@ ADDON_DIR = ROOT / "addon"
 DIST_DIR = ROOT / "dist"
 PACKAGE_PATH = DIST_DIR / "ankilens.ankiaddon"
 
-EXCLUDED_NAMES = {
-    ".DS_Store",
-}
-
 EXCLUDED_SUFFIXES = {
     ".pyc",
     ".pyo",
@@ -41,7 +37,7 @@ def _include(path: Path) -> bool:
         return False
     if any(part in EXCLUDED_DIRS for part in path.parts):
         return False
-    if path.name in EXCLUDED_NAMES:
+    if path.name.startswith("."):
         return False
     if path.suffix in EXCLUDED_SUFFIXES:
         return False
