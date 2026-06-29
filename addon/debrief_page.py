@@ -118,46 +118,65 @@ def debrief_page_html(
     font-size: 13px;
     line-height: 1.38;
   }}
+  .ankilens-insight-body {{
+    max-width: 760px;
+  }}
   .ankilens-insight-context {{
-    color: #5f6368;
+    border-bottom: 1px solid #e8eaed;
+    color: #3c4043;
     font-size: 13px;
     line-height: 1.35;
-    margin: 0 0 17px;
+    margin: 0 0 18px;
+    padding-bottom: 13px;
   }}
   .ankilens-insight-section {{
-    margin: 0 0 18px;
+    margin: 0;
+    padding: 0 0 17px;
   }}
-  .ankilens-insight-section:last-child {{
-    margin-bottom: 0;
+  .ankilens-insight-section + .ankilens-insight-section {{
+    border-top: 1px solid #e8eaed;
+    padding-top: 16px;
+  }}
+  .ankilens-insight-section:last-of-type {{
+    padding-bottom: 0;
   }}
   .ankilens-insight-section h3 {{
-    color: #5f6368;
-    font-size: 12px;
+    color: #202124;
+    font-size: 13px;
+    font-weight: 750;
     line-height: 1.25;
-    margin: 0 0 8px;
+    margin: 0 0 9px;
   }}
   .ankilens-recommendations {{
     color: #202124;
     font-size: 13px;
-    line-height: 1.42;
+    line-height: 1.45;
     margin: 0;
-    padding-left: 20px;
+    padding-left: 18px;
   }}
   .ankilens-recommendations li {{
-    margin: 0 0 8px;
+    margin: 0 0 10px;
+    padding-left: 2px;
+  }}
+  .ankilens-recommendations li::marker {{
+    color: #5f6368;
   }}
   .ankilens-recommendations li:last-child {{
     margin-bottom: 0;
   }}
   .ankilens-action {{
+    border-left: 2px solid #dadce0;
     color: #5f6368;
     display: block;
     font-size: 12px;
     line-height: 1.35;
-    margin-top: 3px;
+    margin-top: 5px;
+    padding-left: 8px;
   }}
   .ankilens-insight-actions {{
-    margin-top: 16px;
+    border-top: 1px solid #e8eaed;
+    margin-top: 17px;
+    padding-top: 14px;
   }}
   .ankilens-action-button {{
     background: #ffffff;
@@ -190,8 +209,15 @@ def debrief_page_html(
       border-color: #3c4043;
       color: #e8eaed;
     }}
+    .ankilens-insight-context,
+    .ankilens-insight-section + .ankilens-insight-section,
+    .ankilens-insight-actions,
+    .ankilens-action {{
+      border-color: #3c4043;
+    }}
     .ankilens-card p,
-    .ankilens-recommendations {{
+    .ankilens-recommendations,
+    .ankilens-insight-section h3 {{
       color: #e8eaed;
     }}
   }}
@@ -228,7 +254,7 @@ def debrief_page_html(
 def llm_summary_html(summary: LlmDebriefSummary, evidence=None, *, grounding: str = "") -> str:
     return _panel_html(
         "",
-        _insight_context_html(evidence) + _insight_rows_html(summary) + _insight_actions_html(summary),
+        f'<div class="ankilens-insight-body">{_insight_context_html(evidence)}{_insight_rows_html(summary)}{_insight_actions_html(summary)}</div>',
         primary=True,
     )
 
