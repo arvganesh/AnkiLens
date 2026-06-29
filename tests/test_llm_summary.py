@@ -120,7 +120,7 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertEqual(request.get_header("Authorization"), "Bearer test-key")
         self.assertEqual(request.get_header("X-title"), "Missed Card Insights")
         body = json.loads(request.data.decode("utf-8"))
-        self.assertEqual(body["model"], "inclusionai/ling-2.6-flash")
+        self.assertEqual(body["model"], "deepseek/deepseek-v4-flash")
         self.assertEqual(body["response_format"]["type"], "json_schema")
         schema = body["response_format"]["json_schema"]["schema"]
         self.assertEqual(schema["required"], ["positives", "improvements"])

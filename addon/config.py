@@ -11,7 +11,7 @@ class AnkiLensConfig:
     lookback_days: int = 90
     debrief_lookback_days: int = 1
     llm_summary_enabled: bool = False
-    llm_model: str = "inclusionai/ling-2.6-flash"
+    llm_model: str = "deepseek/deepseek-v4-flash"
     llm_api_url: str = "https://openrouter.ai/api/v1/chat/completions"
     llm_api_key_env: str = "OPENROUTER_API_KEY"
     llm_max_cards: int = 30
@@ -29,7 +29,7 @@ def load_config(raw_config: dict[str, Any] | None) -> AnkiLensConfig:
         lookback_days=_bounded_int(raw.get("lookback_days"), default=90, low=0, high=3650),
         debrief_lookback_days=_bounded_int(raw.get("debrief_lookback_days"), default=1, low=0, high=30),
         llm_summary_enabled=_bool(raw.get("llm_summary_enabled"), default=False),
-        llm_model=_string(raw.get("llm_model"), default="inclusionai/ling-2.6-flash", max_length=120),
+        llm_model=_string(raw.get("llm_model"), default="deepseek/deepseek-v4-flash", max_length=120),
         llm_api_url=_string(
             raw.get("llm_api_url"),
             default="https://openrouter.ai/api/v1/chat/completions",

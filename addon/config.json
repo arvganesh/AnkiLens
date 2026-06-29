@@ -4,7 +4,7 @@
   "lookback_days": 90,
   "debrief_lookback_days": 90,
   "llm_summary_enabled": true,
-  "llm_model": "inclusionai/ling-2.6-flash",
+  "llm_model": "deepseek/deepseek-v4-flash",
   "llm_max_cards": 30,
   "llm_max_chars": 10000,
   "llm_timeout_seconds": 30,

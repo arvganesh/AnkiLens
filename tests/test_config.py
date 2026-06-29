@@ -13,7 +13,7 @@ class AnkiLensConfigTest(unittest.TestCase):
         self.assertEqual(config.result_limit, 20)
         self.assertEqual(config.debrief_lookback_days, 1)
         self.assertFalse(config.llm_summary_enabled)
-        self.assertEqual(config.llm_model, "inclusionai/ling-2.6-flash")
+        self.assertEqual(config.llm_model, "deepseek/deepseek-v4-flash")
         self.assertEqual(config.llm_api_key_env, "OPENROUTER_API_KEY")
         self.assertEqual(config.llm_max_cards, 30)
         self.assertFalse(config.demo_data_enabled)
