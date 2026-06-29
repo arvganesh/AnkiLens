@@ -7,20 +7,18 @@ from datetime import datetime
 from urllib.parse import unquote
 
 try:
-    from .analytics import filter_review_entries_by_lookback, summarize_missed_cards
+    from .analytics import filter_review_entries_by_lookback
     from .anki_browser import open_browser_search
     from .anki_gateway import load_review_entries
-    from .browser_search import browser_search_for_card, browser_search_for_study_target
     from .config import load_config
-    from .debrief import StudyTarget, build_debrief
+    from .debrief import build_debrief
     from .demo_data import build_demo_review_entries
 except ImportError:
-    from analytics import filter_review_entries_by_lookback, summarize_missed_cards
+    from analytics import filter_review_entries_by_lookback
     from anki_browser import open_browser_search
     from anki_gateway import load_review_entries
-    from browser_search import browser_search_for_card, browser_search_for_study_target
     from config import load_config
-    from debrief import StudyTarget, build_debrief
+    from debrief import build_debrief
     from demo_data import build_demo_review_entries
 
 
@@ -38,7 +36,7 @@ def register_menu() -> None:
     from aqt.qt import QAction
 
     action = QAction("Insights", mw)
-    action.triggered.connect(show_missed_card_analytics)
+    action.triggered.connect(show_ankilens_page)
     mw.form.menuTools.addAction(action)
     _register_deck_browser_button()
 
@@ -62,15 +60,6 @@ def _add_top_toolbar_link(links, toolbar) -> None:
     )
 
 
-def _missed_card_count(entries, config) -> int:
-    summaries = summarize_missed_cards(
-        entries,
-        minimum_misses=config.minimum_misses,
-        limit=len(entries),
-    )
-    return len(summaries)
-
-
 def _handle_js_message(handled, message: str, _context):
     if message.startswith(DECK_SCOPE_MESSAGE_PREFIX):
         _set_selected_deck(unquote(message.removeprefix(DECK_SCOPE_MESSAGE_PREFIX)))
@@ -84,29 +73,6 @@ def _handle_js_message(handled, message: str, _context):
         _open_search_from_debrief(unquote(message.removeprefix(BROWSE_SEARCH_MESSAGE_PREFIX)))
         return (True, None)
     return handled
-
-
-def show_session_debrief() -> None:
-    from aqt import mw
-
-    current_build_debrief = _load_debrief_builder()
-    DebriefDialog = _load_debrief_dialog_class()
-
-    config = load_config(mw.addonManager.getConfig(__package__))
-    now = datetime.now()
-    entries = _debrief_entries(_load_review_entries(mw, config, now=now), config, now=now)
-    entries = _filter_entries_by_deck(entries, _selected_deck_name)
-    dialog = DebriefDialog(
-        current_build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
-        lookback_days=config.debrief_lookback_days,
-        deck_label=_deck_display_label(_selected_deck_name) if _selected_deck_name else None,
-        open_card=_open_card_from_debrief,
-        open_material=_open_material_from_debrief,
-        open_full_analytics=lambda: show_missed_card_analytics(lookback_days=config.debrief_lookback_days),
-        parent=mw,
-    )
-    _attach_llm_summary(dialog, entries, config)
-    dialog.exec()
 
 
 def show_ankilens_page() -> None:
@@ -187,10 +153,6 @@ def _load_debrief_page_module():
     return current_debrief_page
 
 
-def _attach_llm_summary(dialog, entries, config) -> None:
-    _start_llm_summary_worker(dialog, entries, config, dialog.set_llm_summary)
-
-
 def _attach_llm_summary_to_page(web, entries, config, evidence=None, *, grounding: str = "") -> None:
     page = _load_debrief_page_module()
     request_id = _next_llm_request_id()
@@ -238,29 +200,6 @@ def _start_llm_summary_worker(parent, entries, config, callback) -> None:
     parent._ankilens_llm_notifier = notifier
     parent._ankilens_llm_thread = thread
     thread.start()
-
-
-def _load_debrief_dialog_class():
-    if __package__:
-        for module_name in _debrief_dialog_module_names(__package__):
-            module = sys.modules.get(module_name)
-            if module:
-                importlib.reload(module)
-        module = importlib.import_module(f"{__package__}.debrief_dialog")
-    else:
-        module = importlib.import_module("debrief_dialog")
-    return module.DebriefDialog
-
-
-def _debrief_dialog_module_names(package: str) -> tuple[str, ...]:
-    return (
-        f"{package}.debrief_dialog_copy",
-        f"{package}.copy_text",
-        f"{package}.session_context",
-        f"{package}.ui_helpers",
-        f"{package}.dialog_actions",
-        f"{package}.debrief_dialog",
-    )
 
 
 def _debrief_entries(entries, config=None, *, lookback_days: int | None = None, now: datetime):
@@ -328,27 +267,6 @@ def _deck_display_label(deck_name: str | None) -> str | None:
     return deck_name
 
 
-def _open_card_from_debrief(card_id: int) -> None:
-    _copy_search_from_debrief(browser_search_for_card(card_id))
-
-
-def _open_material_from_debrief(target: StudyTarget) -> None:
-    current_browser_search_for_study_target = _load_browser_search_for_study_target()
-    query = current_browser_search_for_study_target(target.kind, target.label, target.related_card_ids)
-    _open_search_from_debrief(query)
-
-
-def _load_browser_search_for_study_target():
-    if __package__:
-        module_name = f"{__package__}.browser_search"
-        module = sys.modules.get(module_name)
-        if module:
-            importlib.reload(module)
-        module = importlib.import_module(module_name)
-        return module.browser_search_for_study_target
-    return browser_search_for_study_target
-
-
 def _open_search_from_debrief(query: str) -> None:
     from aqt.qt import QApplication
     from aqt.utils import showInfo, tooltip
@@ -393,48 +311,8 @@ def _browse_search_message(query: str, *, opened: bool) -> str:
     return f"Copied search for Anki Browse:\n\n{query}\n\nOpen Browse and paste it into the search field."
 
 
-def _is_exact_card_search(query: str) -> bool:
-    return bool(_exact_card_search_count(query))
-
-
 def _exact_card_search_count(query: str) -> int:
     parts = [part.strip() for part in query.split(" or ")]
     if not parts or not all(part.startswith("cid:") for part in parts):
         return 0
     return len(parts)
-
-
-def _copy_search_from_debrief(query: str) -> None:
-    _open_search_from_debrief(query)
-
-
-def show_missed_card_analytics(*, lookback_days: int | None = None) -> None:
-    from aqt import mw
-
-    from .dialog import MissedCardsDialog
-
-    config = load_config(mw.addonManager.getConfig(__package__))
-    window_days = config.lookback_days if lookback_days is None else lookback_days
-    now = datetime.now()
-    entries = _analytics_entries(_load_review_entries(mw, config, now=now), lookback_days=window_days, now=now)
-    summaries = summarize_missed_cards(
-        entries,
-        minimum_misses=config.minimum_misses,
-        limit=config.result_limit,
-    )
-    dialog = MissedCardsDialog(
-        summaries,
-        minimum_misses=config.minimum_misses,
-        result_limit=config.result_limit,
-        lookback_days=window_days,
-        parent=mw,
-    )
-    dialog.exec()
-
-
-def _analytics_entries(entries, *, lookback_days: int, now: datetime):
-    return filter_review_entries_by_lookback(
-        entries,
-        lookback_days=lookback_days,
-        now=now,
-    )

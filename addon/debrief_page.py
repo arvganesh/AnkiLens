@@ -4,69 +4,9 @@ import json
 from html import escape
 
 try:
-    from .debrief import Debrief, LlmDebriefSummary, StudyTarget
-    from .debrief_dialog_copy import (
-        debrief_intro_text,
-        debrief_title,
-        early_learning_evidence,
-        early_learning_check_text,
-        early_learning_next_step,
-        early_learning_title,
-        evidence_confidence_text,
-        mixed_repair_signal_text,
-        no_pattern_evidence,
-        no_pattern_confidence_text,
-        no_pattern_check_text,
-        no_pattern_next_step,
-        no_pattern_title,
-        repair_evidence,
-        repair_next_step,
-        repair_title,
-        same_note_cluster_check_text,
-        same_note_cluster_evidence,
-        same_note_cluster_next_step,
-        same_note_cluster_title,
-        short_label,
-        scoped_early_learning_evidence,
-        scoped_early_learning_title,
-        target_detail_text,
-        target_display_label,
-        target_signal_text,
-        study_next_step,
-    )
-    from .session_context import session_context_text
+    from .debrief import Debrief, LlmDebriefSummary
 except ImportError:
-    from debrief import Debrief, LlmDebriefSummary, StudyTarget
-    from debrief_dialog_copy import (
-        debrief_intro_text,
-        debrief_title,
-        early_learning_evidence,
-        early_learning_check_text,
-        early_learning_next_step,
-        early_learning_title,
-        evidence_confidence_text,
-        mixed_repair_signal_text,
-        no_pattern_evidence,
-        no_pattern_confidence_text,
-        no_pattern_check_text,
-        no_pattern_next_step,
-        no_pattern_title,
-        repair_evidence,
-        repair_next_step,
-        repair_title,
-        same_note_cluster_check_text,
-        same_note_cluster_evidence,
-        same_note_cluster_next_step,
-        same_note_cluster_title,
-        short_label,
-        scoped_early_learning_evidence,
-        scoped_early_learning_title,
-        target_detail_text,
-        target_display_label,
-        target_signal_text,
-        study_next_step,
-    )
-    from session_context import session_context_text
+    from debrief import Debrief, LlmDebriefSummary
 
 
 DECK_SCOPE_MESSAGE_PREFIX = "ankilens:deck:"
@@ -153,9 +93,6 @@ def debrief_page_html(
     .ankilens-filters {{
       grid-template-columns: 1fr;
     }}
-    .ankilens-evidence {{
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }}
   }}
   .ankilens-stack {{
     display: grid;
@@ -171,17 +108,6 @@ def debrief_page_html(
   .ankilens-card.primary {{
     padding: 22px 24px;
   }}
-  .ankilens-card.quiet {{
-    background: #ffffff;
-    border-color: #e5e7eb;
-    padding: 13px 15px;
-  }}
-  .ankilens-eyebrow {{
-    color: #5f6368;
-    font-size: 11px;
-    font-weight: 700;
-    margin-bottom: 5px;
-  }}
   .ankilens-card h2 {{
     font-size: 19px;
     line-height: 1.2;
@@ -190,77 +116,10 @@ def debrief_page_html(
   .ankilens-card.primary h2 {{
     font-size: 22px;
   }}
-  .ankilens-evidence {{
-    border-bottom: 1px solid #e5e7eb;
-    display: grid;
-    gap: 10px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    margin: 0 0 10px;
-    padding: 0 0 15px;
-  }}
-  .ankilens-stat {{
-    min-width: 0;
-  }}
-  .ankilens-stat strong {{
-    color: #202124;
-    display: block;
-    font-size: 18px;
-    line-height: 1.1;
-  }}
-  .ankilens-stat span {{
-    color: #5f6368;
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    margin-top: 4px;
-  }}
-  .ankilens-grounding {{
-    border-bottom: 1px solid #e5e7eb;
-    color: #5f6368;
-    font-size: 12px;
-    line-height: 1.35;
-    margin: 0 0 17px;
-    padding: 0 0 14px;
-  }}
-  .ankilens-card.quiet h2 {{
-    font-size: 15px;
-    margin-bottom: 6px;
-  }}
-  .ankilens-pill {{
-    background: #eef3fe;
-    border: 1px solid #d3e3fd;
-    border-radius: 8px;
-    color: #174ea6;
-    display: inline-block;
-    font-size: 12px;
-    font-weight: 700;
-    margin-bottom: 13px;
-    padding: 6px 9px;
-  }}
-  .ankilens-main {{
-    color: #202124;
-    font-size: 14px;
-    font-weight: 650;
-    line-height: 1.35;
-    margin: 0 0 13px;
-  }}
-  .ankilens-detail {{
-    margin-top: 9px;
-  }}
-  .ankilens-detail strong {{
-    color: #5f6368;
-    display: block;
-    font-size: 12px;
-    margin-bottom: 4px;
-  }}
-  .ankilens-detail span, .ankilens-card p {{
+  .ankilens-card p {{
     color: #202124;
     font-size: 13px;
     line-height: 1.38;
-  }}
-  .ankilens-card.quiet p, .ankilens-card.quiet .ankilens-detail span {{
-    color: #3c4043;
-    font-size: 12px;
   }}
   .ankilens-insight-context {{
     color: #5f6368;
@@ -323,38 +182,20 @@ def debrief_page_html(
     }}
     .ankilens-intro,
     .ankilens-filter label,
-    .ankilens-eyebrow,
-    .ankilens-stat span,
-    .ankilens-grounding,
     .ankilens-insight-context,
     .ankilens-insight-section h3,
-    .ankilens-action,
-    .ankilens-detail strong {{
+    .ankilens-action {{
       color: #bdc1c6;
-    }}
-    .ankilens-grounding {{
-      border-color: #3c4043;
     }}
     .ankilens-filter select,
     .ankilens-card,
-    .ankilens-card.quiet,
     .ankilens-action-button {{
       background: #2b2c2f;
       border-color: #3c4043;
       color: #e8eaed;
     }}
-    .ankilens-pill {{
-      background: #243b67;
-      border-color: #3f5f99;
-      color: #d2e3fc;
-    }}
-    .ankilens-main,
-    .ankilens-stat strong,
-    .ankilens-detail span,
     .ankilens-card p,
-    .ankilens-recommendations,
-    .ankilens-card.quiet p,
-    .ankilens-card.quiet .ankilens-detail span {{
+    .ankilens-recommendations {{
       color: #e8eaed;
     }}
   }}
@@ -460,124 +301,10 @@ def _lookback_selector_html(lookback_options: tuple[int, ...], selected_lookback
 """
 
 
-def _top_check_html(debrief: Debrief) -> str:
-    kind = debrief.next_check_kind
-    if kind == "repair":
-        card = debrief.cards_to_fix.cards[0]
-        return _recommendation_html(
-            repair_title(short_label(card.card_label)),
-            confidence=evidence_confidence_text(card.misses, card.total_reviews),
-            evidence=repair_evidence(card),
-            next_step=repair_next_step(),
-            check="Inspect first; edit only if the prompt is unclear after opening it.",
-        )
-    if kind == "early_learning":
-        target = debrief.study_next[0] if debrief.study_next else None
-        return _recommendation_html(
-            scoped_early_learning_title(_target_label(target)) if target else early_learning_title(),
-            confidence=evidence_confidence_text(_early_learning_count(debrief), 0, early_learning=True),
-            evidence=(
-                scoped_early_learning_evidence(_early_learning_count(debrief), _target_label(target))
-                if target
-                else early_learning_evidence(_early_learning_count(debrief))
-            ),
-            next_step=early_learning_next_step(),
-            check=early_learning_check_text(),
-        )
-    if kind == "study":
-        target = debrief.study_next[0]
-        return _recommendation_html(
-            f"Check missed examples from {_target_label(target)}",
-            confidence=target_signal_text(
-                target.count,
-                target.reviewed_count,
-                active_cards=target.kind == "tag",
-                mixed_signals=bool(debrief.cards_to_fix.cards),
-            ),
-            evidence=target_detail_text(
-                target.related_cards,
-                early_count=target.early_count,
-                mature_count=target.mature_count,
-                lapsed_count=target.lapsed_count,
-                total_examples=target.count,
-            ),
-            next_step=study_next_step(
-                target.kind,
-                mostly_early=target.mostly_early,
-                early_count=target.early_count,
-                mature_count=target.mature_count,
-                lapsed_count=target.lapsed_count,
-            ),
-            check=mixed_repair_signal_text() if debrief.cards_to_fix.cards else "",
-        )
-    if kind == "same_note" and debrief.same_note_cluster:
-        card = debrief.same_note_cluster
-        return _recommendation_html(
-            same_note_cluster_title(short_label(card.card_label)),
-            confidence="Same note repeated",
-            evidence=same_note_cluster_evidence(card),
-            next_step=same_note_cluster_next_step(),
-            check=same_note_cluster_check_text(),
-        )
-    has_repeated_misses = bool(debrief.missed_cards)
-    return _recommendation_html(
-        no_pattern_title(has_repeated_misses=has_repeated_misses),
-        confidence=no_pattern_confidence_text(has_repeated_misses=has_repeated_misses),
-        evidence=no_pattern_evidence(has_repeated_misses=has_repeated_misses),
-        next_step=no_pattern_next_step(has_repeated_misses=has_repeated_misses),
-        check=no_pattern_check_text(has_repeated_misses=has_repeated_misses),
-        eyebrow="No action",
-    )
-
-
-def _supporting_sections_html(debrief: Debrief) -> str:
-    panels = []
-    if debrief.cards_to_fix.cards:
-        card = debrief.cards_to_fix.cards[0]
-        panels.append(
-            _panel_html(
-                "Also check card format",
-                _paragraph(f"{debrief.cards_to_fix.count} card{_plural(debrief.cards_to_fix.count)} may need a card-format check.")
-                + _detail_html(
-                    "Start here",
-                    f"{card.card_label}: {_repair_clues(card)}; needed another pass on {card.misses}/{card.total_reviews} reviews",
-                ),
-                quiet=True,
-            )
-        )
-    if debrief.study_next and debrief.next_check_kind != "study":
-        target = debrief.study_next[0]
-        panels.append(_panel_html("Also check cards", _detail_html("Also check", _target_summary(target)), quiet=True))
-    return "".join(panels)
-
-
-def _recommendation_html(
-    title: str,
-    *,
-    confidence: str,
-    evidence: str,
-    next_step: str,
-    check: str,
-    eyebrow: str = "Check first",
-) -> str:
-    check_html = _detail_html("Before studying more", check) if check else ""
-    return f"""
-<article class="ankilens-card">
-  <div class="ankilens-eyebrow">{escape(eyebrow)}</div>
-  <h2>{escape(title)}</h2>
-  <div class="ankilens-pill">{escape(confidence)}</div>
-  <p class="ankilens-main">{escape(next_step)}</p>
-  {_detail_html("What stood out", evidence)}
-  {check_html}
-</article>
-"""
-
-
-def _panel_html(title: str, body: str, *, quiet: bool = False, primary: bool = False) -> str:
-    quiet_class = " quiet" if quiet else ""
+def _panel_html(title: str, body: str, *, primary: bool = False) -> str:
     primary_class = " primary" if primary else ""
     title_html = f"<h2>{escape(title)}</h2>" if title else ""
-    return f'<article class="ankilens-card{quiet_class}{primary_class}">{title_html}{body}</article>'
+    return f'<article class="ankilens-card{primary_class}">{title_html}{body}</article>'
 
 
 def _paragraph(text: str) -> str:
@@ -638,60 +365,9 @@ def _count_label(count: int, singular: str, plural: str) -> str:
     return f"{count} {singular if count == 1 else plural}"
 
 
-def _evidence_html(evidence) -> str:
-    if evidence is None:
-        return ""
-    return f"""
-<div class="ankilens-evidence">
-  {_stat_html(str(evidence.missed_cards), "cards with misses")}
-  {_stat_html(str(evidence.reviewed_cards), "cards reviewed")}
-  {_stat_html(str(evidence.misses), "misses")}
-  {_stat_html(_percent(evidence.again_rate), "again rate")}
-</div>
-"""
-
-
-def _grounding_html(text: str) -> str:
-    if not text:
-        return ""
-    return f'<div class="ankilens-grounding">{escape(text)}</div>'
-
-
 def grounding_text(deck_label: str | None, lookback_days: int) -> str:
     deck = deck_label or "selected deck"
     return f"Based on {deck}, last {lookback_days} days. Uses review logs and missed-card text only."
-
-
-def _stat_html(value: str, label: str) -> str:
-    return f'<div class="ankilens-stat"><strong>{escape(value)}</strong><span>{escape(label)}</span></div>'
-
-
-def _detail_html(label: str, value: str) -> str:
-    return f'<div class="ankilens-detail"><strong>{escape(label)}</strong><span>{escape(value)}</span></div>'
-
-
-def _target_label(target: StudyTarget | None) -> str:
-    if target is None:
-        return ""
-    return target_display_label(target.label, target.kind)
-
-
-def _target_summary(target: StudyTarget) -> str:
-    return target_detail_text(
-        target.related_cards,
-        early_count=target.early_count,
-        mature_count=target.mature_count,
-        lapsed_count=target.lapsed_count,
-        total_examples=target.count,
-    )
-
-
-def _repair_clues(summary) -> str:
-    return ", ".join(summary.content_labels) if summary.content_labels else "repeated misses"
-
-
-def _early_learning_count(debrief: Debrief) -> int:
-    return getattr(debrief.early_learning, "count", 0)
 
 
 def _llm_loading_html(evidence=None, *, grounding: str = "") -> str:
@@ -714,16 +390,20 @@ def _llm_status_html(message: str, evidence=None, *, grounding: str = "") -> str
     )
 
 
-def _percent(value: float) -> str:
-    return f"{round(value * 100)}%"
-
-
-def _plural(count: int) -> str:
-    return "" if count == 1 else "s"
-
-
 def _deck_display_label(deck_name: str) -> str:
     parts = [part.strip() for part in deck_name.split("::") if part.strip()]
     if len(parts) > 2:
         return " / ".join(parts[-2:])
     return deck_name
+
+
+def debrief_title() -> str:
+    return "Insights"
+
+
+def debrief_intro_text(lookback_days: int) -> str:
+    if lookback_days <= 0:
+        return "All available reviews"
+    if lookback_days == 1:
+        return "Last 24 hours"
+    return f"Last {lookback_days} days"

@@ -5,7 +5,6 @@ from datetime import datetime
 
 from analytics import ReviewLogEntry
 from debrief import build_debrief
-from debrief_dialog_copy import target_detail_text
 
 
 def _entry(
@@ -302,12 +301,6 @@ class DebriefTest(unittest.TestCase):
 
         debrief = build_debrief(entries)
         target = debrief.study_next[0]
-        detail = target_detail_text(
-            target.related_cards,
-            lapsed_count=target.lapsed_count,
-            total_examples=target.count,
-        )
-
         self.assertEqual(debrief.session_habits.review_count, 380)
         self.assertEqual(target.label, tag)
         self.assertEqual(target.reviewed_count, 300)
@@ -315,8 +308,6 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(len(target.related_card_ids), 3)
         self.assertTrue(all(221 <= card_id <= 300 for card_id in target.related_card_ids))
         self.assertEqual(len(target.related_cards), 3)
-        self.assertIn("+78 more missed cards", detail)
-        self.assertLessEqual(len(detail.split("Breakdown:")[0]), 150)
 
     def test_large_supported_cluster_beats_tiny_high_rate_signal(self) -> None:
         small_tag = "AnKing_Cardiology_Valves"

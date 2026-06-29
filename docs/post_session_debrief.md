@@ -99,14 +99,13 @@ recent/today's reviews until session boundaries are modeled.
      boundaries.
    - Cover semantics with unit tests before adding UI.
 
-2. Add a manual Session Debrief dialog.
-   - Open it from the AnkiLens front-page panel and/or AnkiLens dialog.
-   - Lead with the most useful check.
-   - Use ranked language for secondary checks, such as "Also check" and
-     "Ignore for now."
-   - Keep supporting facts below each action and avoid dashboard-like metric
-     blocks.
-   - Include a path back to full analytics.
+2. Keep the manual debrief as a page-based Insights flow.
+   - Open it from the AnkiLens top toolbar or Tools menu.
+   - Lead with concise LLM-generated sections grounded by the selected deck and
+     time window.
+   - Keep recommendations concrete enough to apply from Browse.
+   - Avoid dashboard-like metric blocks unless they directly support the
+     recommendation.
 
 3. Investigate Anki hooks for automatic post-review display.
    - Do not auto-popup until the manual version is useful and the hook is

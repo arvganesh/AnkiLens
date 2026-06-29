@@ -85,7 +85,7 @@ make test
 ```
 
 The tests cover analytics, prompt construction, page rendering, fake Anki
-integration surfaces, and dialog/page message handling.
+integration surfaces, and page message handling.
 
 ## Repository Layout
 

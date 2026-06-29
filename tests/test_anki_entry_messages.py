@@ -125,11 +125,6 @@ class AnkiEntryMessagesTest(unittest.TestCase):
     def test_exact_card_search_count_rejects_mixed_queries(self) -> None:
         self.assertEqual(anki_entry._exact_card_search_count("cid:10 or tag:cardiology"), 0)
 
-    def test_browser_search_loader_returns_current_search_helper(self) -> None:
-        search_helper = anki_entry._load_browser_search_for_study_target()
-
-        self.assertEqual(search_helper("tag", "Cardiology", (10, 11)), "cid:10 or cid:11")
-
     def test_debrief_entries_use_short_recent_window(self) -> None:
         entries = [
             ReviewLogEntry(1, 1, datetime(2026, 6, 25, 8), "Deck", "Old"),
@@ -144,16 +139,16 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         self.assertEqual([entry.card_label for entry in filtered], ["Recent"])
 
-    def test_llm_summary_attach_is_skipped_when_disabled(self) -> None:
+    def test_llm_summary_worker_is_skipped_when_disabled(self) -> None:
         calls = []
-        dialog = types.SimpleNamespace(set_llm_summary=lambda summary: calls.append(summary))
+        target = types.SimpleNamespace()
 
-        anki_entry._attach_llm_summary(dialog, [], AnkiLensConfig(llm_summary_enabled=False))
+        anki_entry._start_llm_summary_worker(target, [], AnkiLensConfig(llm_summary_enabled=False), calls.append)
 
         self.assertEqual(calls, [])
-        self.assertFalse(hasattr(dialog, "_ankilens_llm_thread"))
+        self.assertFalse(hasattr(target, "_ankilens_llm_thread"))
 
-    def test_llm_summary_attach_starts_background_worker(self) -> None:
+    def test_llm_summary_worker_starts_background_thread(self) -> None:
         original_loader = anki_entry._load_llm_summary_builder
         original_aqt = sys.modules.get("aqt")
         original_aqt_qt = sys.modules.get("aqt.qt")
@@ -190,9 +185,9 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         anki_entry._load_llm_summary_builder = lambda: (lambda _entries, _config: "summary")
         original_thread = anki_entry.threading.Thread
         anki_entry.threading.Thread = FakeThread
-        dialog = types.SimpleNamespace(set_llm_summary=lambda summary: calls.append(summary))
+        target = types.SimpleNamespace()
         try:
-            anki_entry._attach_llm_summary(dialog, [], AnkiLensConfig(llm_summary_enabled=True))
+            anki_entry._start_llm_summary_worker(target, [], AnkiLensConfig(llm_summary_enabled=True), calls.append)
         finally:
             anki_entry._load_llm_summary_builder = original_loader
             anki_entry.threading.Thread = original_thread
@@ -247,23 +242,6 @@ class AnkiEntryMessagesTest(unittest.TestCase):
             anki_entry._start_llm_summary_worker = original_worker
 
         self.assertEqual(evals, ["summary:current result:current scope"])
-
-    def test_deck_panel_count_uses_all_repeated_misses_not_display_cap(self) -> None:
-        entries = []
-        for card_id in range(1, 26):
-            entries.extend(
-                (
-                    ReviewLogEntry(card_id, 1, datetime(2026, 6, 26, 8), "Deck", f"Card {card_id}"),
-                    ReviewLogEntry(card_id, 1, datetime(2026, 6, 26, 9), "Deck", f"Card {card_id}"),
-                )
-            )
-
-        missed_count = anki_entry._missed_card_count(
-            entries,
-            AnkiLensConfig(minimum_misses=2, result_limit=20),
-        )
-
-        self.assertEqual(missed_count, 25)
 
     def test_loader_appends_demo_entries_only_when_enabled(self) -> None:
         original_loader = anki_entry.load_review_entries
@@ -340,33 +318,6 @@ class AnkiEntryMessagesTest(unittest.TestCase):
             "Zanki Biochemistry / Metabolism",
         )
 
-    def test_debrief_details_can_use_same_short_window_as_debrief(self) -> None:
-        entries = [
-            ReviewLogEntry(1, 1, datetime(2026, 3, 26, 8), "Deck", "Stale"),
-            ReviewLogEntry(2, 1, datetime(2026, 6, 26, 8), "Deck", "Recent"),
-        ]
-
-        filtered = anki_entry._analytics_entries(
-            entries,
-            lookback_days=1,
-            now=datetime(2026, 6, 26, 12),
-        )
-
-        self.assertEqual([entry.card_label for entry in filtered], ["Recent"])
-
-    def test_debrief_loader_refreshes_dialog_dependencies_first(self) -> None:
-        self.assertEqual(
-            anki_entry._debrief_dialog_module_names("ankilens"),
-            (
-                "ankilens.debrief_dialog_copy",
-                "ankilens.copy_text",
-                "ankilens.session_context",
-                "ankilens.ui_helpers",
-                "ankilens.dialog_actions",
-                "ankilens.debrief_dialog",
-            ),
-        )
-
     def test_debrief_loader_refreshes_model_dependencies_first(self) -> None:
         self.assertEqual(
             anki_entry._debrief_model_module_names("ankilens"),
@@ -377,21 +328,6 @@ class AnkiEntryMessagesTest(unittest.TestCase):
                 "ankilens.debrief",
             ),
         )
-
-    def test_broad_analytics_can_still_use_configured_long_window(self) -> None:
-        entries = [
-            ReviewLogEntry(1, 1, datetime(2026, 4, 26, 8), "Deck", "Stale"),
-            ReviewLogEntry(2, 1, datetime(2026, 6, 26, 8), "Deck", "Recent"),
-        ]
-
-        filtered = anki_entry._analytics_entries(
-            entries,
-            lookback_days=90,
-            now=datetime(2026, 6, 26, 12),
-        )
-
-        self.assertEqual([entry.card_label for entry in filtered], ["Stale", "Recent"])
-
 
 if __name__ == "__main__":
     unittest.main()
