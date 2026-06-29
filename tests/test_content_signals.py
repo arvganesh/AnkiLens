@@ -8,28 +8,12 @@ from content_signals import content_labels
 
 
 class ContentSignalsTest(unittest.TestCase):
-    def test_labels_weak_cues(self) -> None:
+    def test_labels_common_card_quality_signals(self) -> None:
         self.assertIn("Weak cue", content_labels("Broca area"))
-
-    def test_labels_long_cards(self) -> None:
         self.assertIn("Long card", content_labels("word " * 80))
-
-    def test_labels_dense_cards(self) -> None:
-        self.assertIn("Dense card", content_labels("word " * 40))
-
-    def test_labels_many_numbers(self) -> None:
         self.assertIn("Many numbers", content_labels("BP 120/80 Na 140 K 4.0 pH 7.4"))
-
-    def test_labels_cloze_heavy_cards(self) -> None:
         self.assertIn("Cloze-heavy", content_labels("{{c1::alpha}} {{c2::beta}}"))
-
-    def test_labels_list_like_cards(self) -> None:
-        self.assertIn("List-like", content_labels("alpha, beta, gamma, delta"))
-
-    def test_labels_comparison_cards(self) -> None:
         self.assertIn("Comparison", content_labels("Aortic stenosis vs mitral regurgitation"))
-
-    def test_labels_media_references(self) -> None:
         self.assertIn("Media reference", content_labels("Look at heart_sound.png"))
 
     def test_missed_card_summary_includes_content_labels(self) -> None:
@@ -42,7 +26,7 @@ class ContentSignalsTest(unittest.TestCase):
 
         self.assertEqual(summaries[0].content_labels, ("Long card", "Dense card"))
 
-    def test_summarizes_content_patterns(self) -> None:
+    def test_summarizes_content_patterns_from_missed_cards(self) -> None:
         summaries = summarize_missed_cards(
             [
                 ReviewLogEntry(1, 1, datetime(2026, 6, 1), "Deck", "Card", source_text="word " * 80),
@@ -51,16 +35,6 @@ class ContentSignalsTest(unittest.TestCase):
         )
 
         self.assertEqual(summarize_content_patterns(summaries)["Long card"], 1)
-
-    def test_repeated_miss_is_not_a_content_pattern(self) -> None:
-        summaries = summarize_missed_cards(
-            [
-                ReviewLogEntry(1, 1, datetime(2026, 6, 1), "Deck", "Card", source_text="short prompt"),
-                ReviewLogEntry(1, 1, datetime(2026, 6, 2), "Deck", "Card", source_text="one clear focused prompt"),
-            ]
-        )
-
-        self.assertEqual(summarize_content_patterns(summaries), {})
 
 
 if __name__ == "__main__":

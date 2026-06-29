@@ -102,7 +102,7 @@
 
 - `addon/` - Anki add-on source.
 - `addon/anki_entry.py` - Anki hook/page entrypoint and webview message bridge.
-- `addon/debrief.py` - Pure insight/debrief data model and construction logic.
+- `addon/debrief.py` - Small evidence and LLM insight data models.
 - `addon/debrief_page.py` - Main Insights page HTML/CSS/JS rendering.
 - `addon/llm_summary.py` - LLM prompt, request, parsing, and cleanup logic.
 - `addon/demo_data.py` - Realistic demo card and review-log generation.

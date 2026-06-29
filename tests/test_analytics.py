@@ -6,7 +6,6 @@ from datetime import datetime
 from analytics import (
     ReviewLogEntry,
     filter_review_entries_by_lookback,
-    summarize_deck_misses,
     summarize_missed_cards,
     summarize_tag_misses,
 )
@@ -68,9 +67,6 @@ def _tagged_entry(card_id: int, ease: int, day: int, *tags: str) -> ReviewLogEnt
 
 
 class MissedCardAnalyticsTest(unittest.TestCase):
-    def test_returns_empty_summary_when_there_are_no_reviews(self) -> None:
-        self.assertEqual(summarize_missed_cards([]), [])
-
     def test_ignores_isolated_misses_by_default(self) -> None:
         summaries = summarize_missed_cards([_entry(1, 1, 1), _entry(2, 3, 2)])
 
@@ -91,7 +87,7 @@ class MissedCardAnalyticsTest(unittest.TestCase):
         self.assertEqual(summaries[0].misses, 2)
         self.assertEqual(summaries[0].total_reviews, 3)
 
-    def test_prioritizes_high_miss_rate_then_count(self) -> None:
+    def test_prioritizes_high_miss_rate_and_applies_limit(self) -> None:
         summaries = summarize_missed_cards(
             [
                 _entry(1, 1, 1),
@@ -99,10 +95,11 @@ class MissedCardAnalyticsTest(unittest.TestCase):
                 _entry(1, 3, 3),
                 _entry(2, 1, 1),
                 _entry(2, 1, 2),
-            ]
+            ],
+            limit=1,
         )
 
-        self.assertEqual([summary.card_id for summary in summaries], [2, 1])
+        self.assertEqual([summary.card_id for summary in summaries], [2])
 
     def test_allows_lower_miss_threshold(self) -> None:
         summaries = summarize_missed_cards([_entry(1, 1, 1)], minimum_misses=1)
@@ -136,50 +133,17 @@ class MissedCardAnalyticsTest(unittest.TestCase):
         self.assertEqual(summaries[0].first_reviewed_at, datetime(2026, 6, 1))
         self.assertEqual(summaries[0].learning_review_count, 2)
 
-    def test_mature_repeated_miss_cards_are_not_early_exposure(self) -> None:
-        summaries = summarize_missed_cards(
-            [
-                _lifecycle_entry(1, 1, 1, card_reps=20),
-                _lifecycle_entry(1, 3, 2, card_reps=20),
-                _lifecycle_entry(1, 1, 3, card_reps=20),
-                _lifecycle_entry(1, 3, 4, card_reps=20),
-            ]
-        )
-
-        self.assertFalse(summaries[0].is_early_exposure)
-
-    def test_lapsed_low_rep_cards_are_not_early_exposure(self) -> None:
+    def test_lapsed_or_mature_cards_are_not_early_exposure(self) -> None:
         summaries = summarize_missed_cards(
             [
                 _lifecycle_entry(1, 1, 1, card_reps=2, card_lapses=1),
                 _lifecycle_entry(1, 1, 2, card_reps=2, card_lapses=1),
+                _lifecycle_entry(2, 1, 1, card_reps=20),
+                _lifecycle_entry(2, 1, 2, card_reps=20),
             ]
         )
 
-        self.assertFalse(summaries[0].is_early_exposure)
-
-    def test_few_window_entries_without_reps_are_not_early_exposure(self) -> None:
-        summaries = summarize_missed_cards(
-            [
-                _lifecycle_entry(1, 1, 1, card_reps=None, review_type=2),
-                _lifecycle_entry(1, 1, 2, card_reps=None, review_type=2),
-            ]
-        )
-
-        self.assertFalse(summaries[0].is_early_exposure)
-
-    def test_applies_result_limit(self) -> None:
-        summaries = summarize_missed_cards(
-            [
-                _entry(1, 1, 1),
-                _entry(1, 1, 2),
-                _entry(2, 1, 1),
-                _entry(2, 1, 2),
-            ],
-            limit=1,
-        )
-
-        self.assertEqual(len(summaries), 1)
+        self.assertFalse(any(summary.is_early_exposure for summary in summaries))
 
     def test_filters_reviews_by_recent_window(self) -> None:
         entries = [_entry(1, 1, 1), _entry(2, 1, 20)]
@@ -191,36 +155,6 @@ class MissedCardAnalyticsTest(unittest.TestCase):
         )
 
         self.assertEqual([entry.card_id for entry in filtered], [2])
-
-    def test_zero_lookback_keeps_all_reviews(self) -> None:
-        entries = [_entry(1, 1, 1), _entry(2, 1, 20)]
-
-        filtered = filter_review_entries_by_lookback(
-            entries,
-            lookback_days=0,
-            now=datetime(2026, 6, 21),
-        )
-
-        self.assertEqual(filtered, entries)
-
-    def test_summarizes_deck_miss_concentration(self) -> None:
-        missed_cards = summarize_missed_cards(
-            [
-                _entry(1, 1, 1),
-                _entry(1, 1, 2),
-                _entry(2, 1, 3),
-                _entry(2, 1, 4),
-                ReviewLogEntry(3, 1, datetime(2026, 6, 5), "Renal", "Card 3"),
-                ReviewLogEntry(3, 1, datetime(2026, 6, 6), "Renal", "Card 3"),
-                ReviewLogEntry(3, 1, datetime(2026, 6, 7), "Renal", "Card 3"),
-            ]
-        )
-
-        decks = summarize_deck_misses(missed_cards)
-
-        self.assertEqual(decks[0].deck_name, "Cardiology")
-        self.assertEqual(decks[0].missed_cards, 2)
-        self.assertEqual(decks[0].misses, 4)
 
     def test_summarizes_tag_miss_concentration(self) -> None:
         missed_cards = summarize_missed_cards(

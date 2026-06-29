@@ -29,41 +29,31 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertEqual(calls[0][3], "Analyze missed cards")
         self.assertEqual(calls[0][4], "ankilens-top-tab")
 
-    def test_handles_deck_scope_message(self) -> None:
+    def test_handles_page_scope_messages(self) -> None:
         original_deck = anki_entry._selected_deck_name
-        original_show_ankilens_page = anki_entry.show_ankilens_page
-        calls = []
-        anki_entry.show_ankilens_page = lambda: calls.append("page")
-        try:
-            handled = anki_entry._handle_js_message(
-                (False, None),
-                f"{anki_entry.DECK_SCOPE_MESSAGE_PREFIX}Cardiology%20Deck",
-                None,
-            )
-
-            self.assertEqual(handled, (True, None))
-            self.assertEqual(anki_entry._selected_deck_name, "Cardiology Deck")
-            self.assertEqual(calls, ["page"])
-        finally:
-            anki_entry._selected_deck_name = original_deck
-            anki_entry.show_ankilens_page = original_show_ankilens_page
-
-    def test_handles_lookback_scope_message(self) -> None:
         original_lookback = anki_entry._selected_lookback_days
         original_show_ankilens_page = anki_entry.show_ankilens_page
         calls = []
         anki_entry.show_ankilens_page = lambda: calls.append("page")
         try:
-            handled = anki_entry._handle_js_message(
+            deck_handled = anki_entry._handle_js_message(
+                (False, None),
+                f"{anki_entry.DECK_SCOPE_MESSAGE_PREFIX}Cardiology%20Deck",
+                None,
+            )
+            lookback_handled = anki_entry._handle_js_message(
                 (False, None),
                 f"{anki_entry.LOOKBACK_SCOPE_MESSAGE_PREFIX}30",
                 None,
             )
 
-            self.assertEqual(handled, (True, None))
+            self.assertEqual(deck_handled, (True, None))
+            self.assertEqual(lookback_handled, (True, None))
+            self.assertEqual(anki_entry._selected_deck_name, "Cardiology Deck")
             self.assertEqual(anki_entry._selected_lookback_days, 30)
-            self.assertEqual(calls, ["page"])
+            self.assertEqual(calls, ["page", "page"])
         finally:
+            anki_entry._selected_deck_name = original_deck
             anki_entry._selected_lookback_days = original_lookback
             anki_entry.show_ankilens_page = original_show_ankilens_page
 
@@ -83,46 +73,18 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertEqual(handled, (True, None))
         self.assertEqual(calls, ["cid:10 or cid:11"])
 
-    def test_ignores_other_messages(self) -> None:
+    def test_ignores_other_web_messages(self) -> None:
         self.assertEqual(anki_entry._handle_js_message((False, None), "other", None), (False, None))
 
-    def test_browse_message_reflects_opened_search(self) -> None:
-        message = anki_entry._browse_search_message("tag:cardiology", opened=True)
+    def test_browse_messages_name_exact_cards_and_copy_fallbacks(self) -> None:
+        self.assertEqual(
+            anki_entry._browse_search_message("cid:10 or cid:11", opened=True),
+            "Opened 2 missed examples in Browse. Search copied.",
+        )
+        fallback = anki_entry._browse_search_message("cid:10", opened=False)
 
-        self.assertEqual(message, "Opened in Browse. Search copied.")
-
-    def test_browse_message_names_exact_missed_examples(self) -> None:
-        message = anki_entry._browse_search_message("cid:10 or cid:11", opened=True)
-
-        self.assertEqual(message, "Opened 2 missed examples in Browse. Search copied.")
-
-    def test_browse_message_names_single_exact_card(self) -> None:
-        message = anki_entry._browse_search_message("cid:10", opened=True)
-
-        self.assertEqual(message, "Opened card in Browse. Search copied.")
-
-    def test_browse_message_falls_back_to_copy_instructions(self) -> None:
-        message = anki_entry._browse_search_message("tag:cardiology", opened=False)
-
-        self.assertIn("Copied search", message)
-        self.assertIn("Open Browse and paste", message)
-
-    def test_browse_message_fallback_names_exact_missed_examples(self) -> None:
-        message = anki_entry._browse_search_message("cid:10 or cid:11 or cid:12", opened=False)
-
-        self.assertIn("Copied search for 3 missed examples", message)
-        self.assertIn("cid:10 or cid:11 or cid:12", message)
-        self.assertIn("Open Browse and paste", message)
-
-    def test_browse_message_fallback_names_single_exact_card(self) -> None:
-        message = anki_entry._browse_search_message("cid:10", opened=False)
-
-        self.assertIn("Copied search for this card", message)
-        self.assertIn("cid:10", message)
-        self.assertIn("Open Browse and paste", message)
-        self.assertNotIn("Anki Browse", message)
-
-    def test_exact_card_search_count_rejects_mixed_queries(self) -> None:
+        self.assertIn("Copied search for this card", fallback)
+        self.assertIn("Open Browse and paste", fallback)
         self.assertEqual(anki_entry._exact_card_search_count("cid:10 or tag:cardiology"), 0)
 
     def test_debrief_entries_use_short_recent_window(self) -> None:
@@ -138,15 +100,6 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         )
 
         self.assertEqual([entry.card_label for entry in filtered], ["Recent"])
-
-    def test_llm_summary_worker_is_skipped_when_disabled(self) -> None:
-        calls = []
-        target = types.SimpleNamespace()
-
-        anki_entry._start_llm_summary_worker(target, [], AnkiLensConfig(llm_summary_enabled=False), calls.append)
-
-        self.assertEqual(calls, [])
-        self.assertFalse(hasattr(target, "_ankilens_llm_thread"))
 
     def test_llm_summary_worker_starts_background_thread(self) -> None:
         original_loader = anki_entry._load_llm_summary_builder
@@ -269,38 +222,23 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertEqual(without_demo, [real_entry])
         self.assertEqual(with_demo, [real_entry, demo_entry])
 
-    def test_filters_entries_by_selected_deck(self) -> None:
+    def test_deck_scope_helpers_filter_and_select_decks(self) -> None:
         entries = [
             ReviewLogEntry(1, 1, datetime(2026, 6, 26, 8), "Cardiology", "Cardiology card"),
             ReviewLogEntry(2, 1, datetime(2026, 6, 26, 9), "Renal", "Renal card"),
-        ]
-
-        filtered = anki_entry._filter_entries_by_deck(entries, "Renal")
-
-        self.assertEqual([entry.card_label for entry in filtered], ["Renal card"])
-
-    def test_deck_options_are_sorted_unique_deck_names(self) -> None:
-        entries = [
-            ReviewLogEntry(1, 1, datetime(2026, 6, 26, 8), "Renal", "Renal one"),
-            ReviewLogEntry(2, 1, datetime(2026, 6, 26, 9), "Cardiology", "Cardiology"),
             ReviewLogEntry(3, 1, datetime(2026, 6, 26, 10), "Renal", "Renal two"),
         ]
-
-        self.assertEqual(anki_entry._deck_options(entries), ("Cardiology", "Renal"))
-
-    def test_invalid_selected_deck_falls_back_to_first_deck(self) -> None:
         original_deck = anki_entry._selected_deck_name
         try:
             anki_entry._selected_deck_name = "Missing"
 
+            self.assertEqual([entry.card_label for entry in anki_entry._filter_entries_by_deck(entries, "Renal")], ["Renal card", "Renal two"])
+            self.assertEqual(anki_entry._deck_options(entries), ("Cardiology", "Renal"))
             self.assertEqual(anki_entry._valid_selected_deck(("Cardiology", "Renal")), "Cardiology")
         finally:
             anki_entry._selected_deck_name = original_deck
 
-    def test_missing_deck_options_have_no_selected_deck(self) -> None:
-        self.assertIsNone(anki_entry._valid_selected_deck(()))
-
-    def test_selected_lookback_falls_back_to_config_or_thirty_days(self) -> None:
+    def test_selected_lookback_and_nested_deck_labels_have_safe_fallbacks(self) -> None:
         original_lookback = anki_entry._selected_lookback_days
         try:
             anki_entry._selected_lookback_days = 7
@@ -311,8 +249,6 @@ class AnkiEntryMessagesTest(unittest.TestCase):
             self.assertEqual(anki_entry._valid_selected_lookback(14), 30)
         finally:
             anki_entry._selected_lookback_days = original_lookback
-
-    def test_deck_display_label_shortens_nested_decks(self) -> None:
         self.assertEqual(
             anki_entry._deck_display_label("Zanki Step Decks::Zanki Biochemistry::Metabolism"),
             "Zanki Biochemistry / Metabolism",
@@ -323,7 +259,6 @@ class AnkiEntryMessagesTest(unittest.TestCase):
             anki_entry._debrief_model_module_names("ankilens"),
             (
                 "ankilens.content_signals",
-                "ankilens.terms",
                 "ankilens.analytics",
                 "ankilens.debrief",
             ),

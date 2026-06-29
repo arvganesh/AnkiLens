@@ -92,12 +92,11 @@ recent/today's reviews until session boundaries are modeled.
 
 ## Implementation Sequence
 
-1. Define a pure debrief model from existing missed-card summaries.
-   - Produce `study_next`, `cards_to_fix`, `early_learning`,
-     `same_note_cluster`, and `session_habits`.
-   - Start with today's/recent review window instead of true Anki session
-     boundaries.
-   - Cover semantics with unit tests before adding UI.
+1. Define a small evidence model from review logs.
+   - Produce visible counts such as reviewed cards, missed cards, reviews, and
+     misses.
+   - Start with recent review windows instead of true Anki session boundaries.
+   - Cover evidence counts with unit tests before adding UI.
 
 2. Keep the manual debrief as a page-based Insights flow.
    - Open it from the AnkiLens top toolbar or Tools menu.

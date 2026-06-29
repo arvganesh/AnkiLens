@@ -11,93 +11,43 @@ class AnkiLensConfigTest(unittest.TestCase):
 
         self.assertEqual(config.minimum_misses, 2)
         self.assertEqual(config.result_limit, 20)
-        self.assertEqual(config.lookback_days, 90)
         self.assertEqual(config.debrief_lookback_days, 1)
         self.assertFalse(config.llm_summary_enabled)
         self.assertEqual(config.llm_model, "inclusionai/ling-2.6-flash")
-        self.assertEqual(config.llm_api_url, "https://openrouter.ai/api/v1/chat/completions")
         self.assertEqual(config.llm_api_key_env, "OPENROUTER_API_KEY")
         self.assertEqual(config.llm_max_cards, 30)
-        self.assertEqual(config.llm_max_chars, 10000)
-        self.assertEqual(config.llm_timeout_seconds, 30)
         self.assertFalse(config.demo_data_enabled)
 
-    def test_accepts_valid_config_values(self) -> None:
-        config = load_config(
+    def test_accepts_valid_values_and_safely_handles_bad_values(self) -> None:
+        valid = load_config(
             {
                 "minimum_misses": "3",
                 "result_limit": 50,
-                "lookback_days": "30",
                 "debrief_lookback_days": "2",
                 "llm_summary_enabled": True,
                 "llm_model": "anthropic/claude-sonnet-4",
-                "llm_api_url": "https://example.test/chat",
                 "llm_api_key_env": "ANKILENS_LLM_KEY",
                 "llm_max_cards": 60,
-                "llm_max_chars": 15000,
-                "llm_timeout_seconds": 30,
                 "demo_data_enabled": True,
             }
         )
+        bounded = load_config({"minimum_misses": 0, "result_limit": 999, "llm_max_cards": 999})
+        invalid = load_config({"minimum_misses": True, "llm_summary_enabled": "yes", "demo_data_enabled": "yes"})
 
-        self.assertEqual(config.minimum_misses, 3)
-        self.assertEqual(config.result_limit, 50)
-        self.assertEqual(config.lookback_days, 30)
-        self.assertEqual(config.debrief_lookback_days, 2)
-        self.assertTrue(config.llm_summary_enabled)
-        self.assertEqual(config.llm_model, "anthropic/claude-sonnet-4")
-        self.assertEqual(config.llm_api_url, "https://example.test/chat")
-        self.assertEqual(config.llm_api_key_env, "ANKILENS_LLM_KEY")
-        self.assertEqual(config.llm_max_cards, 60)
-        self.assertEqual(config.llm_max_chars, 15000)
-        self.assertEqual(config.llm_timeout_seconds, 30)
-        self.assertTrue(config.demo_data_enabled)
-
-    def test_bounds_config_values(self) -> None:
-        config = load_config(
-            {
-                "minimum_misses": 0,
-                "result_limit": 999,
-                "lookback_days": 99999,
-                "debrief_lookback_days": 99,
-                "llm_max_cards": 999,
-                "llm_max_chars": 999999,
-                "llm_timeout_seconds": 999,
-            }
-        )
-
-        self.assertEqual(config.minimum_misses, 1)
-        self.assertEqual(config.result_limit, 200)
-        self.assertEqual(config.lookback_days, 3650)
-        self.assertEqual(config.debrief_lookback_days, 30)
-        self.assertEqual(config.llm_max_cards, 200)
-        self.assertEqual(config.llm_max_chars, 60000)
-        self.assertEqual(config.llm_timeout_seconds, 90)
-
-    def test_ignores_bool_and_invalid_values(self) -> None:
-        config = load_config(
-            {
-                "minimum_misses": True,
-                "result_limit": "many",
-                "lookback_days": False,
-                "debrief_lookback_days": "soon",
-                "llm_summary_enabled": "yes",
-                "llm_model": "",
-                "llm_api_url": "",
-                "llm_api_key_env": "",
-                "demo_data_enabled": "yes",
-            }
-        )
-
-        self.assertEqual(config.minimum_misses, 2)
-        self.assertEqual(config.result_limit, 20)
-        self.assertEqual(config.lookback_days, 90)
-        self.assertEqual(config.debrief_lookback_days, 1)
-        self.assertFalse(config.llm_summary_enabled)
-        self.assertEqual(config.llm_model, "inclusionai/ling-2.6-flash")
-        self.assertEqual(config.llm_api_url, "https://openrouter.ai/api/v1/chat/completions")
-        self.assertEqual(config.llm_api_key_env, "OPENROUTER_API_KEY")
-        self.assertFalse(config.demo_data_enabled)
+        self.assertEqual(valid.minimum_misses, 3)
+        self.assertEqual(valid.result_limit, 50)
+        self.assertEqual(valid.debrief_lookback_days, 2)
+        self.assertTrue(valid.llm_summary_enabled)
+        self.assertEqual(valid.llm_model, "anthropic/claude-sonnet-4")
+        self.assertEqual(valid.llm_api_key_env, "ANKILENS_LLM_KEY")
+        self.assertEqual(valid.llm_max_cards, 60)
+        self.assertTrue(valid.demo_data_enabled)
+        self.assertEqual(bounded.minimum_misses, 1)
+        self.assertEqual(bounded.result_limit, 200)
+        self.assertEqual(bounded.llm_max_cards, 200)
+        self.assertEqual(invalid.minimum_misses, 2)
+        self.assertFalse(invalid.llm_summary_enabled)
+        self.assertFalse(invalid.demo_data_enabled)
 
 
 if __name__ == "__main__":

@@ -2,18 +2,13 @@ from __future__ import annotations
 
 import unittest
 
-from debrief import CardsToFix, Debrief, DebriefEvidence, EarlyLearning, LlmDebriefSummary, LlmImprovement, SessionHabits
+from debrief import Debrief, DebriefEvidence, LlmDebriefSummary, LlmImprovement
 from debrief_page import debrief_page_html, llm_summary_html, llm_summary_status_update_js, llm_summary_update_js
 
 
 def _empty_debrief(*, llm_summary: LlmDebriefSummary | None = None) -> Debrief:
     return Debrief(
-        study_next=(),
-        cards_to_fix=CardsToFix(0, (), ()),
-        early_learning=EarlyLearning(0, ()),
-        session_habits=SessionHabits(0, 0, 0, "No reviews"),
         evidence=DebriefEvidence(12, 3, 20, 5),
-        missed_cards=(),
         llm_summary=llm_summary,
     )
 

@@ -4,7 +4,6 @@ import unittest
 from datetime import datetime, timedelta
 
 from analytics import AGAIN_EASE, filter_review_entries_by_lookback, summarize_missed_cards, summarize_tag_misses
-from debrief import build_debrief
 from demo_data import DEMO_DECK_NAME, DEMO_EXPECTED_INSIGHTS, build_demo_review_entries
 
 
@@ -52,7 +51,7 @@ class DemoDataTest(unittest.TestCase):
         self.assertIn("medication safety", drug_improvements.lower())
         self.assertIn("rhythm", rhythm_improvements.lower())
 
-    def test_demo_deck_produces_insights_for_each_window(self) -> None:
+    def test_demo_deck_has_missed_topic_groups_for_each_window(self) -> None:
         now = datetime(2026, 6, 28, 12)
         entries = build_demo_review_entries(now)
 
@@ -62,11 +61,11 @@ class DemoDataTest(unittest.TestCase):
                 for entry in filter_review_entries_by_lookback(entries, lookback_days=days, now=now)
                 if entry.deck_name == DEMO_DECK_NAME
             ]
-            debrief = build_debrief(scoped_entries)
+            summaries = summarize_missed_cards(scoped_entries, minimum_misses=1, limit=200)
+            tags = summarize_tag_misses(summaries, limit=10)
 
-            self.assertTrue(debrief.study_next, f"expected study target for {days} days")
-            self.assertEqual(debrief.study_next[0].kind, "tag")
-            self.assertTrue(debrief.study_next[0].label.startswith("cardio_"))
+            self.assertTrue(tags, f"expected missed topic group for {days} days")
+            self.assertTrue(tags[0].tag.startswith("cardio_"))
 
     def test_demo_data_spans_thirty_and_ninety_day_windows(self) -> None:
         now = datetime(2026, 6, 28, 12)

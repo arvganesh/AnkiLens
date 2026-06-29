@@ -122,7 +122,6 @@ def _load_debrief_builder():
 def _debrief_model_module_names(package: str) -> tuple[str, ...]:
     return (
         f"{package}.content_signals",
-        f"{package}.terms",
         f"{package}.analytics",
         f"{package}.debrief",
     )
