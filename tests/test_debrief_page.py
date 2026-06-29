@@ -96,7 +96,7 @@ class DebriefPageTest(unittest.TestCase):
         self.assertIn("12 missed valve cards", html)
         self.assertIn("Try: Search for murmur cards", html)
         self.assertIn("ankilens-action", html)
-        self.assertIn("Cards to inspect", html)
+        self.assertNotIn("Cards to inspect", html)
         self.assertIn("Open 2 missed cards in Browse", html)
         self.assertIn("data-ankilens-browse-query", html)
         self.assertIn("cid:20 or cid:10", html)

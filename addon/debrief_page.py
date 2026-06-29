@@ -141,21 +141,21 @@ def debrief_page_html(
     padding-bottom: 0;
   }}
   .ankilens-insight-section h3 {{
-    color: #202124;
+    border-radius: 4px;
+    display: inline-block;
     font-size: 13px;
     font-weight: 750;
     line-height: 1.25;
     margin: 0 0 9px;
+    padding: 2px 6px;
   }}
   .ankilens-insight-section.good h3 {{
-    color: #3f7a5c;
+    background: #e9f5ee;
+    color: #276749;
   }}
   .ankilens-insight-section.improve h3 {{
-    background: #fff4cc;
-    border-radius: 4px;
-    color: #5f4b00;
-    display: inline-block;
-    padding: 2px 6px;
+    background: #fff3bf;
+    color: #6b5200;
   }}
   .ankilens-recommendations {{
     color: #202124;
@@ -175,38 +175,29 @@ def debrief_page_html(
     margin-bottom: 0;
   }}
   .ankilens-action {{
-    border-left: 2px solid #dadce0;
     color: #5f6368;
-    display: block;
     font-size: 12px;
     line-height: 1.35;
-    margin-top: 5px;
-    padding-left: 8px;
   }}
   .ankilens-insight-actions {{
     border-top: 1px solid #e8eaed;
     margin-top: 17px;
     padding-top: 14px;
   }}
-  .ankilens-action-heading {{
-    color: #5f6368;
-    font-size: 12px;
-    font-weight: 650;
-    line-height: 1.25;
-    margin: 0 0 7px;
-  }}
   .ankilens-action-button {{
-    background: #f8f9fa;
-    border: 1px solid #dadce0;
-    border-radius: 4px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     color: #3c4043;
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;
-    padding: 5px 8px;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }}
   .ankilens-action-button:hover {{
-    background: #f1f3f4;
+    color: #202124;
   }}
   @media (prefers-color-scheme: dark) {{
     body {{
@@ -215,8 +206,6 @@ def debrief_page_html(
     }}
     .ankilens-filter label,
     .ankilens-insight-context,
-    .ankilens-insight-section h3,
-    .ankilens-action-heading,
     .ankilens-action {{
       color: #bdc1c6;
     }}
@@ -229,17 +218,20 @@ def debrief_page_html(
     }}
     .ankilens-insight-context,
     .ankilens-insight-section + .ankilens-insight-section,
-    .ankilens-insight-actions,
-    .ankilens-action {{
+    .ankilens-insight-actions {{
       border-color: #3c4043;
     }}
     .ankilens-card p,
-    .ankilens-recommendations,
-    .ankilens-insight-section h3 {{
+    .ankilens-recommendations {{
       color: #e8eaed;
     }}
-    .ankilens-action {{
-      border-left-color: #3c4043;
+    .ankilens-insight-section.good h3 {{
+      background: #1f3a2d;
+      color: #b9e3c8;
+    }}
+    .ankilens-insight-section.improve h3 {{
+      background: #3e341c;
+      color: #f2d982;
     }}
   }}
 </style>
@@ -375,7 +367,7 @@ def _bullet_section_html(title: str, items: tuple[str, ...]) -> str:
 
 def _improvement_section_html(title: str, items) -> str:
     item_html = "".join(
-        f"<li>{escape(item.insight)}<span class=\"ankilens-action\">Try: {escape(item.action)}</span></li>"
+        f"<li>{escape(item.insight)} <span class=\"ankilens-action\">Try: {escape(item.action)}</span></li>"
         for item in items
     )
     return f'<section class="ankilens-insight-section improve"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
@@ -388,7 +380,6 @@ def _insight_actions_html(summary: LlmDebriefSummary) -> str:
         return ""
     return (
         '<div class="ankilens-insight-actions">'
-        '<div class="ankilens-action-heading">Cards to inspect</div>'
         f'<button type="button" class="ankilens-action-button" data-ankilens-browse-query="{escape(query, quote=True)}">'
         f"Open {_count_label(len(card_ids), 'missed card', 'missed cards')} in Browse"
         "</button>"
