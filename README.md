@@ -39,7 +39,7 @@ Useful settings:
 - `llm_max_cards`: maximum missed cards sent for summarization.
 - `llm_max_chars`: maximum prompt size.
 - `demo_data_enabled`: adds local demo review data.
-- `count_hard_as_miss`: when true, treats both Again and Hard as misses.
+- `count_hard_as_miss`: treats both Again and Hard as misses by default. Set to `false` for Again-only.
 
 The default API key environment variable is:
 

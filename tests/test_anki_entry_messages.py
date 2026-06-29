@@ -212,8 +212,8 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertEqual(evals, ["summary:current result:current scope"])
 
     def test_miss_eases_expand_when_hard_counts_as_miss(self) -> None:
-        self.assertEqual(anki_entry._miss_eases(AnkiLensConfig()), (1,))
-        self.assertEqual(anki_entry._miss_eases(AnkiLensConfig(count_hard_as_miss=True)), (1, 2))
+        self.assertEqual(anki_entry._miss_eases(AnkiLensConfig()), (1, 2))
+        self.assertEqual(anki_entry._miss_eases(AnkiLensConfig(count_hard_as_miss=False)), (1,))
 
     def test_loader_appends_demo_entries_only_when_enabled(self) -> None:
         original_loader = anki_entry.load_review_entries
