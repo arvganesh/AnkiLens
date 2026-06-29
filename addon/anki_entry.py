@@ -7,14 +7,14 @@ from datetime import datetime
 from urllib.parse import unquote
 
 try:
-    from .analytics import filter_review_entries_by_lookback
+    from .analytics import AGAIN_EASE, HARD_EASE, filter_review_entries_by_lookback
     from .anki_browser import open_browser_search
     from .anki_gateway import load_review_entries
     from .config import load_config
     from .debrief import build_debrief
     from .demo_data import build_demo_review_entries
 except ImportError:
-    from analytics import filter_review_entries_by_lookback
+    from analytics import AGAIN_EASE, HARD_EASE, filter_review_entries_by_lookback
     from anki_browser import open_browser_search
     from anki_gateway import load_review_entries
     from config import load_config
@@ -77,7 +77,13 @@ def show_ankilens_page() -> None:
     deck_options = _deck_options(entries)
     selected_deck = _valid_selected_deck(deck_options)
     scoped_entries = _filter_entries_by_deck(entries, selected_deck)
-    debrief = current_build_debrief(scoped_entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit)
+    miss_eases = _miss_eases(config)
+    debrief = current_build_debrief(
+        scoped_entries,
+        minimum_misses=config.minimum_misses,
+        result_limit=config.result_limit,
+        miss_eases=miss_eases,
+    )
     mw.web.stdHtml(
         page.debrief_page_html(
             debrief,
@@ -95,6 +101,7 @@ def show_ankilens_page() -> None:
         config,
         debrief.evidence,
         grounding=page.grounding_text(_deck_display_label(selected_deck) if selected_deck else None, lookback_days),
+        miss_eases=miss_eases,
     )
 
 
@@ -142,7 +149,7 @@ def _load_debrief_page_module():
     return current_debrief_page
 
 
-def _attach_llm_summary_to_page(web, entries, config, evidence=None, *, grounding: str = "") -> None:
+def _attach_llm_summary_to_page(web, entries, config, evidence=None, *, grounding: str = "", miss_eases: tuple[int, ...] | None = None) -> None:
     page = _load_debrief_page_module()
     request_id = _next_llm_request_id()
     web._ankilens_llm_request_id = request_id
@@ -161,6 +168,7 @@ def _attach_llm_summary_to_page(web, entries, config, evidence=None, *, groundin
         entries,
         config,
         update_page,
+        miss_eases=miss_eases or _miss_eases(config),
     )
 
 
@@ -170,7 +178,7 @@ def _next_llm_request_id() -> int:
     return _llm_request_counter
 
 
-def _start_llm_summary_worker(parent, entries, config, callback) -> None:
+def _start_llm_summary_worker(parent, entries, config, callback, *, miss_eases: tuple[int, ...] | None = None) -> None:
     if not config.llm_summary_enabled:
         return
     from aqt.qt import QObject, pyqtSignal
@@ -182,13 +190,17 @@ def _start_llm_summary_worker(parent, entries, config, callback) -> None:
     notifier.summary_ready.connect(callback)
 
     def run() -> None:
-        summary = _load_llm_summary_builder()(entries, config)
+        summary = _load_llm_summary_builder()(entries, config, miss_eases=miss_eases or _miss_eases(config))
         notifier.summary_ready.emit(summary)
 
     thread = threading.Thread(target=run, daemon=True)
     parent._ankilens_llm_notifier = notifier
     parent._ankilens_llm_thread = thread
     thread.start()
+
+
+def _miss_eases(config) -> tuple[int, ...]:
+    return (AGAIN_EASE, HARD_EASE) if getattr(config, "count_hard_as_miss", False) else (AGAIN_EASE,)
 
 
 def _debrief_entries(entries, config=None, *, lookback_days: int | None = None, now: datetime):

@@ -17,6 +17,7 @@ class AnkiLensConfigTest(unittest.TestCase):
         self.assertEqual(config.llm_api_key_env, "OPENROUTER_API_KEY")
         self.assertEqual(config.llm_max_cards, 30)
         self.assertFalse(config.demo_data_enabled)
+        self.assertFalse(config.count_hard_as_miss)
 
     def test_accepts_valid_values_and_safely_handles_bad_values(self) -> None:
         valid = load_config(
@@ -29,6 +30,7 @@ class AnkiLensConfigTest(unittest.TestCase):
                 "llm_api_key_env": "ANKILENS_LLM_KEY",
                 "llm_max_cards": 60,
                 "demo_data_enabled": True,
+                "count_hard_as_miss": True,
             }
         )
         bounded = load_config({"minimum_misses": 0, "result_limit": 999, "llm_max_cards": 999})
@@ -42,12 +44,14 @@ class AnkiLensConfigTest(unittest.TestCase):
         self.assertEqual(valid.llm_api_key_env, "ANKILENS_LLM_KEY")
         self.assertEqual(valid.llm_max_cards, 60)
         self.assertTrue(valid.demo_data_enabled)
+        self.assertTrue(valid.count_hard_as_miss)
         self.assertEqual(bounded.minimum_misses, 1)
         self.assertEqual(bounded.result_limit, 200)
         self.assertEqual(bounded.llm_max_cards, 200)
         self.assertEqual(invalid.minimum_misses, 2)
         self.assertFalse(invalid.llm_summary_enabled)
         self.assertFalse(invalid.demo_data_enabled)
+        self.assertFalse(invalid.count_hard_as_miss)
 
 
 if __name__ == "__main__":

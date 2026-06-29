@@ -18,6 +18,7 @@ class AnkiLensConfig:
     llm_max_chars: int = 10000
     llm_timeout_seconds: int = 30
     demo_data_enabled: bool = False
+    count_hard_as_miss: bool = False
 
 
 def load_config(raw_config: dict[str, Any] | None) -> AnkiLensConfig:
@@ -39,6 +40,7 @@ def load_config(raw_config: dict[str, Any] | None) -> AnkiLensConfig:
         llm_max_chars=_bounded_int(raw.get("llm_max_chars"), default=10000, low=1000, high=60000),
         llm_timeout_seconds=_bounded_int(raw.get("llm_timeout_seconds"), default=30, low=3, high=90),
         demo_data_enabled=_bool(raw.get("demo_data_enabled"), default=False),
+        count_hard_as_miss=_bool(raw.get("count_hard_as_miss"), default=False),
     )
 
 

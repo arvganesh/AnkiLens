@@ -10,6 +10,8 @@ except ImportError:
 
 
 AGAIN_EASE = 1
+HARD_EASE = 2
+DEFAULT_MISS_EASES = (AGAIN_EASE,)
 
 
 @dataclass(frozen=True)
@@ -78,12 +80,13 @@ def summarize_missed_cards(
     *,
     minimum_misses: int = 2,
     limit: int = 20,
+    miss_eases: tuple[int, ...] = DEFAULT_MISS_EASES,
 ) -> list[MissedCardSummary]:
     grouped: dict[int, list[ReviewLogEntry]] = {}
     for entry in entries:
         grouped.setdefault(entry.card_id, []).append(entry)
 
-    summaries = [_summarize_card(card_entries) for card_entries in grouped.values()]
+    summaries = [_summarize_card(card_entries, miss_eases=miss_eases) for card_entries in grouped.values()]
     candidates = [summary for summary in summaries if summary.misses >= minimum_misses]
     candidates = _with_note_context(candidates)
     return sorted(candidates, key=_priority, reverse=True)[:limit]
@@ -134,9 +137,9 @@ def summarize_content_patterns(summaries: list[MissedCardSummary]) -> dict[str, 
     return dict(sorted(counts.items(), key=lambda item: item[1], reverse=True))
 
 
-def _summarize_card(entries: list[ReviewLogEntry]) -> MissedCardSummary:
+def _summarize_card(entries: list[ReviewLogEntry], *, miss_eases: tuple[int, ...]) -> MissedCardSummary:
     ordered = sorted(entries, key=lambda entry: entry.reviewed_at)
-    missed = [entry for entry in ordered if entry.ease == AGAIN_EASE]
+    missed = [entry for entry in ordered if entry.ease in miss_eases]
     latest = ordered[-1]
     learning_reviews = sum(1 for entry in ordered if entry.review_type in (0, 1, 3))
 

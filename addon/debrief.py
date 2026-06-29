@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 try:
-    from .analytics import AGAIN_EASE, ReviewLogEntry
+    from .analytics import DEFAULT_MISS_EASES, ReviewLogEntry
 except ImportError:
-    from analytics import AGAIN_EASE, ReviewLogEntry
+    from analytics import DEFAULT_MISS_EASES, ReviewLogEntry
 
 
 @dataclass(frozen=True)
@@ -46,14 +46,15 @@ def build_debrief(
     *,
     minimum_misses: int = 2,
     result_limit: int = 20,
+    miss_eases: tuple[int, ...] = DEFAULT_MISS_EASES,
 ) -> Debrief:
-    return Debrief(evidence=build_debrief_evidence(entries))
+    return Debrief(evidence=build_debrief_evidence(entries, miss_eases=miss_eases))
 
 
-def build_debrief_evidence(entries: list[ReviewLogEntry]) -> DebriefEvidence:
+def build_debrief_evidence(entries: list[ReviewLogEntry], *, miss_eases: tuple[int, ...] = DEFAULT_MISS_EASES) -> DebriefEvidence:
     return DebriefEvidence(
         reviewed_cards=len({entry.card_id for entry in entries}),
-        missed_cards=len({entry.card_id for entry in entries if entry.ease == AGAIN_EASE}),
+        missed_cards=len({entry.card_id for entry in entries if entry.ease in miss_eases}),
         reviews=len(entries),
-        misses=sum(1 for entry in entries if entry.ease == AGAIN_EASE),
+        misses=sum(1 for entry in entries if entry.ease in miss_eases),
     )

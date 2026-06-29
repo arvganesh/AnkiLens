@@ -9,5 +9,6 @@
   "llm_max_chars": 10000,
   "llm_timeout_seconds": 30,
   "llm_api_key_env": "OPENROUTER_API_KEY",
-  "demo_data_enabled": true
+  "demo_data_enabled": true,
+  "count_hard_as_miss": false
 }

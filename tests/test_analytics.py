@@ -4,6 +4,8 @@ import unittest
 from datetime import datetime
 
 from analytics import (
+    AGAIN_EASE,
+    HARD_EASE,
     ReviewLogEntry,
     filter_review_entries_by_lookback,
     summarize_missed_cards,
@@ -105,6 +107,17 @@ class MissedCardAnalyticsTest(unittest.TestCase):
         summaries = summarize_missed_cards([_entry(1, 1, 1)], minimum_misses=1)
 
         self.assertEqual(len(summaries), 1)
+
+    def test_can_count_hard_reviews_as_misses(self) -> None:
+        default_summaries = summarize_missed_cards([_entry(1, HARD_EASE, 1)], minimum_misses=1)
+        expanded_summaries = summarize_missed_cards(
+            [_entry(1, HARD_EASE, 1), _entry(1, AGAIN_EASE, 2)],
+            minimum_misses=1,
+            miss_eases=(AGAIN_EASE, HARD_EASE),
+        )
+
+        self.assertEqual(default_summaries, [])
+        self.assertEqual(expanded_summaries[0].misses, 2)
 
     def test_counts_repeated_miss_siblings_from_same_note(self) -> None:
         summaries = summarize_missed_cards(

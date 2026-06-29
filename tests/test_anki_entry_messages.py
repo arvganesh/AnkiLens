@@ -150,7 +150,7 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         sys.modules["aqt"] = types.ModuleType("aqt")
         sys.modules["aqt.qt"] = types.SimpleNamespace(QObject=FakeNotifier, pyqtSignal=lambda _type: FakeSignal())
-        anki_entry._load_llm_summary_builder = lambda: (lambda _entries, _config: "summary")
+        anki_entry._load_llm_summary_builder = lambda: (lambda _entries, _config, *, miss_eases=None: "summary")
         original_thread = anki_entry.threading.Thread
         anki_entry.threading.Thread = FakeThread
         target = types.SimpleNamespace()
@@ -189,7 +189,7 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         web = types.SimpleNamespace(eval=lambda js: evals.append(js))
 
-        def fake_worker(_web, _entries, _config, callback) -> None:
+        def fake_worker(_web, _entries, _config, callback, *, miss_eases=None) -> None:
             callbacks.append(callback)
 
         anki_entry._load_debrief_page_module = lambda: FakePage
@@ -210,6 +210,10 @@ class AnkiEntryMessagesTest(unittest.TestCase):
             anki_entry._start_llm_summary_worker = original_worker
 
         self.assertEqual(evals, ["summary:current result:current scope"])
+
+    def test_miss_eases_expand_when_hard_counts_as_miss(self) -> None:
+        self.assertEqual(anki_entry._miss_eases(AnkiLensConfig()), (1,))
+        self.assertEqual(anki_entry._miss_eases(AnkiLensConfig(count_hard_as_miss=True)), (1, 2))
 
     def test_loader_appends_demo_entries_only_when_enabled(self) -> None:
         original_loader = anki_entry.load_review_entries
