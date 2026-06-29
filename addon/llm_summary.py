@@ -23,6 +23,8 @@ Analyze the data through a memory-and-learning lens: look for cards with repeate
 Use only the supplied missed-card data. Do not infer medical, factual, or scheduling conclusions.
 Use a number in each bullet when the supplied stats support it, such as cards with misses, repeated misses, total misses, or reviewed cards without misses.
 Include positive or calibrating insights when supported by the stats, such as material that did not appear in the missed-card set or the share of reviewed cards without misses.
+Each positive bullet must make a distinct point. Do not write two positives that both mean "most reviews went well."
+If two stats support the same point, combine them into one bullet instead of making separate bullets.
 Do not say what the student understands, forgot, failed to process, retained, mastered, or should study for a specific duration.
 Do not address the student as "you".
 Avoid implementation terms like tag, cue wording, source text, prompt pattern, JSON, deck artifact, content_labels, early review flags, stability, retention, interference, pacing, and successful.
@@ -150,6 +152,7 @@ def _missed_card_prompt(entries, summaries, *, max_chars: int) -> str:
         "Focus on practical study moves, not implementation details.",
         "Include supported counts in the bullets.",
         "Include positives only when the stats support them.",
+        "Do not repeat the same positive in different words; combine overlapping stats into one bullet.",
         "Do not include example card labels in the final answer.",
         "",
         "Window stats:",
