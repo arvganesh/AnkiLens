@@ -130,9 +130,8 @@ def debrief_page_html(
     padding-bottom: 13px;
   }}
   .ankilens-insight-section {{
-    border-left: 3px solid transparent;
     margin: 0;
-    padding: 0 0 17px 12px;
+    padding: 0 0 17px;
   }}
   .ankilens-insight-section + .ankilens-insight-section {{
     border-top: 1px solid #e8eaed;
@@ -148,17 +147,11 @@ def debrief_page_html(
     line-height: 1.25;
     margin: 0 0 9px;
   }}
-  .ankilens-insight-section.good {{
-    border-left-color: #5f9f7d;
-  }}
-  .ankilens-insight-section.improve {{
-    border-left-color: #d0a342;
-  }}
   .ankilens-insight-section.good h3 {{
-    color: #2f6f50;
+    color: #3f7a5c;
   }}
   .ankilens-insight-section.improve h3 {{
-    color: #795800;
+    color: #7a6220;
   }}
   .ankilens-recommendations {{
     color: #202124;
@@ -174,17 +167,11 @@ def debrief_page_html(
   .ankilens-recommendations li::marker {{
     color: #5f6368;
   }}
-  .ankilens-insight-section.good li::marker {{
-    color: #5f9f7d;
-  }}
-  .ankilens-insight-section.improve li::marker {{
-    color: #d0a342;
-  }}
   .ankilens-recommendations li:last-child {{
     margin-bottom: 0;
   }}
   .ankilens-action {{
-    border-left: 2px solid #d0a342;
+    border-left: 2px solid #dadce0;
     color: #5f6368;
     display: block;
     font-size: 12px;
@@ -239,18 +226,8 @@ def debrief_page_html(
     .ankilens-insight-section h3 {{
       color: #e8eaed;
     }}
-    .ankilens-insight-section.good {{
-      border-left-color: #7fc7ae;
-    }}
-    .ankilens-insight-section.improve,
     .ankilens-action {{
-      border-left-color: #d8b96a;
-    }}
-    .ankilens-insight-section.good li::marker {{
-      color: #7fc7ae;
-    }}
-    .ankilens-insight-section.improve li::marker {{
-      color: #d8b96a;
+      border-left-color: #3c4043;
     }}
   }}
 </style>
