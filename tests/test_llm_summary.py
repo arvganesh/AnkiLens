@@ -102,7 +102,7 @@ class LlmSummaryTest(unittest.TestCase):
                 _entry(2, 1, 1, text="mitral murmur"),
                 _entry(3, 3, 2, text="stable valve card"),
             ],
-            AnkiLensConfig(llm_summary_enabled=True, llm_max_chars=1000, llm_timeout_seconds=7),
+            AnkiLensConfig(llm_summary_enabled=True, llm_max_chars=2000, llm_timeout_seconds=7),
             api_key_getter=lambda name: "test-key" if name == "OPENROUTER_API_KEY" else None,
             env_file_getter=lambda _name: None,
             opener=opener,
@@ -133,7 +133,10 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertIn("memory-and-learning lens", system_prompt)
         self.assertIn("cards with repeated misses", system_prompt)
         self.assertIn("content that appears often in errors", system_prompt)
+        self.assertIn("misses are concentrated early, middle, or late", system_prompt)
         self.assertIn("Use a number in each bullet", system_prompt)
+        self.assertIn("Use \"review events\" for total review counts", system_prompt)
+        self.assertIn("Never call a unique-card count a review count", system_prompt)
         self.assertIn("positive or calibrating insight", system_prompt)
         self.assertIn("Each positive bullet must make a distinct point", system_prompt)
         self.assertIn("combine them into one bullet", system_prompt)
@@ -157,11 +160,15 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertIn("do not recommend changing Anki scheduling", system_prompt)
         self.assertIn("Avoid implementation terms", system_prompt)
         self.assertIn("Window stats", body["messages"][1]["content"])
+        self.assertIn("Review-order stats", body["messages"][1]["content"])
+        self.assertIn("Use review events for total review counts", body["messages"][1]["content"])
         self.assertIn("Do not repeat the same positive in different words", body["messages"][1]["content"])
-        self.assertIn("- 3 cards reviewed.", body["messages"][1]["content"])
-        self.assertIn("- 2 cards had at least one miss.", body["messages"][1]["content"])
-        self.assertIn("- 1 reviewed card had no misses in this window.", body["messages"][1]["content"])
-        self.assertIn("- 2 misses across 3 reviews.", body["messages"][1]["content"])
+        self.assertIn("- Review events: 3.", body["messages"][1]["content"])
+        self.assertIn("- Unique cards reviewed: 3.", body["messages"][1]["content"])
+        self.assertIn("- Unique cards with at least one miss: 2.", body["messages"][1]["content"])
+        self.assertIn("- Unique cards with no misses: 1.", body["messages"][1]["content"])
+        self.assertIn("- Misses: 2 across 3 review events.", body["messages"][1]["content"])
+        self.assertIn("- First 15 review events: 2 misses across 3 review events and 3 unique cards.", body["messages"][1]["content"])
         self.assertIn("Card 1", body["messages"][1]["content"])
         self.assertIn("aortic stenosis murmur", body["messages"][1]["content"])
         self.assertIn("content_labels=", body["messages"][1]["content"])
@@ -283,6 +290,51 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertLessEqual(len(recommendation), 263)
         self.assertTrue(recommendation.endswith("..."))
         self.assertNotIn("overloa...", recommendation)
+
+    def test_prompt_includes_review_order_buckets(self) -> None:
+        requests = []
+        payload = {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "positives": [],
+                                "improvements": [
+                                    {
+                                        "insight": "3 misses appear later in the review events.",
+                                        "action": "Check the later missed cards before adding more kinetics cards.",
+                                    }
+                                ],
+                            }
+                        )
+                    }
+                }
+            ]
+        }
+
+        def opener(request, *, timeout):
+            requests.append(request)
+            return _FakeResponse(payload)
+
+        entries = [_entry(card_id=index, ease=3, minute=index) for index in range(1, 13)]
+        entries[0] = _entry(1, 1, 1)
+        entries[8] = _entry(9, 1, 9)
+        entries[9] = _entry(10, 1, 10)
+
+        build_llm_summary(
+            entries,
+            AnkiLensConfig(llm_summary_enabled=True, llm_max_chars=4000),
+            api_key_getter=lambda _name: "test-key",
+            env_file_getter=lambda _name: None,
+            opener=opener,
+        )
+
+        prompt = json.loads(requests[0].data.decode("utf-8"))["messages"][1]["content"]
+        self.assertIn("- First 15 review events: 3 misses across 12 review events and 12 unique cards.", prompt)
+        self.assertIn("- First third of review events: 1 miss across 4 review events and 4 unique cards.", prompt)
+        self.assertIn("- Middle third of review events: 0 misses across 4 review events and 4 unique cards.", prompt)
+        self.assertIn("- Last third of review events: 2 misses across 4 review events and 4 unique cards.", prompt)
 
 
 if __name__ == "__main__":
