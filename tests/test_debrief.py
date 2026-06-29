@@ -53,6 +53,21 @@ class DebriefTest(unittest.TestCase):
         self.assertEqual(debrief.session_habits.time_of_day, "No reviews")
         self.assertEqual(debrief.next_check_kind, "none")
 
+    def test_evidence_counts_unique_cards_with_any_miss(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0),
+                _entry(2, 1, 1),
+                _entry(3, 1, 2),
+                _entry(4, 3, 3),
+                _entry(5, 3, 4),
+            ]
+        )
+
+        self.assertEqual(debrief.missed_cards, ())
+        self.assertEqual(debrief.evidence.missed_cards, 3)
+        self.assertEqual(debrief.evidence.misses, 3)
+
     def test_study_next_ranks_terms_before_decks_when_counts_match(self) -> None:
         debrief = build_debrief(
             [
@@ -376,6 +391,25 @@ class DebriefTest(unittest.TestCase):
         by_kind_label = {(target.kind, target.label): target for target in debrief.study_next}
         self.assertNotIn(("deck", "AnKing"), by_kind_label)
         self.assertEqual(by_kind_label[("tag", "cardiology")].related_cards, ("Card 2", "Card 1"))
+
+    def test_study_targets_ignore_bookkeeping_tags(self) -> None:
+        debrief = build_debrief(
+            [
+                _entry(1, 1, 0, text="valve murmur", tags=("insights_demo", "cardiology_valves")),
+                _entry(1, 1, 1, text="valve murmur", tags=("insights_demo", "cardiology_valves")),
+                _entry(2, 1, 2, text="valve pressure", tags=("insights_demo", "cardiology_valves")),
+                _entry(2, 1, 3, text="valve pressure", tags=("insights_demo", "cardiology_valves")),
+                _entry(3, 3, 4, text="stable valve", tags=("insights_demo", "cardiology_valves")),
+                _entry(4, 3, 5, text="stable valve", tags=("insights_demo", "cardiology_valves")),
+                _entry(5, 3, 6, text="stable valve", tags=("insights_demo", "cardiology_valves")),
+            ],
+            study_limit=5,
+        )
+
+        labels = [target.label for target in debrief.study_next]
+
+        self.assertIn("cardiology_valves", labels)
+        self.assertNotIn("insights_demo", labels)
 
     def test_study_targets_fall_back_to_deck_when_no_content_pattern_exists(self) -> None:
         debrief = build_debrief(

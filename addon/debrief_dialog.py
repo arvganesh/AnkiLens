@@ -5,7 +5,7 @@ from collections.abc import Callable
 from aqt.qt import QDialog, QFrame, QScrollArea, QVBoxLayout, Qt, QWidget
 
 try:
-    from .debrief import CardsToFix, Debrief, LlmCheck, LlmDebriefSummary, SessionHabits, StudyTarget
+    from .debrief import CardsToFix, Debrief, LlmDebriefSummary, SessionHabits, StudyTarget
     from .debrief_dialog_copy import (
         card_search_button_text,
         debrief_title,
@@ -56,7 +56,7 @@ try:
         title_label,
     )
 except ImportError:
-    from debrief import CardsToFix, Debrief, LlmCheck, LlmDebriefSummary, SessionHabits, StudyTarget
+    from debrief import CardsToFix, Debrief, LlmDebriefSummary, SessionHabits, StudyTarget
     from debrief_dialog_copy import (
         card_search_button_text,
         debrief_title,
@@ -190,16 +190,17 @@ def _show_study_support(debrief: Debrief) -> bool:
 
 
 def _llm_summary_card(summary: LlmDebriefSummary):
-    rows = ()
-    if summary.check_first:
-        rows += (("Suggested check", _llm_check_text(summary.check_first)),)
-    rows += tuple(("Also consider", _llm_check_text(check)) for check in summary.other_checks[:2])
-    return panel_card("Bonsai summary", summary.summary, rows=rows, quiet=True)
-
-
-def _llm_check_text(check: LlmCheck) -> str:
-    examples = f" Examples: {', '.join(check.examples)}." if check.examples else ""
-    return f"{check.title}: {check.why}{examples}"
+    lines = []
+    if summary.positives:
+        lines.append("What you're doing well")
+        lines.extend(f"- {item}" for item in summary.positives)
+    lines.append("Areas for improvement")
+    lines.extend(f"- {item.insight}\n  Try: {item.action}" for item in summary.improvements)
+    return panel_card(
+        "Insights",
+        "\n".join(lines),
+        quiet=True,
+    )
 
 
 def _next_step_card(

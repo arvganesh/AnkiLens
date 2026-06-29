@@ -13,6 +13,7 @@ try:
     from .browser_search import browser_search_for_card, browser_search_for_study_target
     from .config import load_config
     from .debrief import StudyTarget, build_debrief
+    from .demo_data import build_demo_review_entries
 except ImportError:
     from analytics import filter_review_entries_by_lookback, summarize_missed_cards
     from anki_browser import open_browser_search
@@ -20,17 +21,23 @@ except ImportError:
     from browser_search import browser_search_for_card, browser_search_for_study_target
     from config import load_config
     from debrief import StudyTarget, build_debrief
+    from demo_data import build_demo_review_entries
 
 
 DECK_SCOPE_MESSAGE_PREFIX = "bonsai:deck:"
+LOOKBACK_SCOPE_MESSAGE_PREFIX = "bonsai:lookback:"
+BROWSE_SEARCH_MESSAGE_PREFIX = "bonsai:browse:"
+LOOKBACK_OPTIONS = (7, 30, 90)
 _selected_deck_name: str | None = None
+_selected_lookback_days: int | None = None
+_llm_request_counter = 0
 
 
 def register_menu() -> None:
     from aqt import mw
     from aqt.qt import QAction
 
-    action = QAction("Bonsai", mw)
+    action = QAction("Insights", mw)
     action.triggered.connect(show_missed_card_analytics)
     mw.form.menuTools.addAction(action)
     _register_deck_browser_button()
@@ -47,7 +54,7 @@ def _add_top_toolbar_link(links, toolbar) -> None:
     links.append(
         toolbar.create_link(
             "bonsai",
-            "Bonsai",
+            "Insights",
             show_bonsai_page,
             tip="Analyze missed cards",
             id="bonsai-top-tab",
@@ -69,6 +76,13 @@ def _handle_js_message(handled, message: str, _context):
         _set_selected_deck(unquote(message.removeprefix(DECK_SCOPE_MESSAGE_PREFIX)))
         show_bonsai_page()
         return (True, None)
+    if message.startswith(LOOKBACK_SCOPE_MESSAGE_PREFIX):
+        _set_selected_lookback_days(message.removeprefix(LOOKBACK_SCOPE_MESSAGE_PREFIX))
+        show_bonsai_page()
+        return (True, None)
+    if message.startswith(BROWSE_SEARCH_MESSAGE_PREFIX):
+        _open_search_from_debrief(unquote(message.removeprefix(BROWSE_SEARCH_MESSAGE_PREFIX)))
+        return (True, None)
     return handled
 
 
@@ -79,7 +93,8 @@ def show_session_debrief() -> None:
     DebriefDialog = _load_debrief_dialog_class()
 
     config = load_config(mw.addonManager.getConfig(__package__))
-    entries = _debrief_entries(load_review_entries(mw), config, now=datetime.now())
+    now = datetime.now()
+    entries = _debrief_entries(_load_review_entries(mw, config, now=now), config, now=now)
     entries = _filter_entries_by_deck(entries, _selected_deck_name)
     dialog = DebriefDialog(
         current_build_debrief(entries, minimum_misses=config.minimum_misses, result_limit=config.result_limit),
@@ -100,7 +115,9 @@ def show_bonsai_page() -> None:
     current_build_debrief = _load_debrief_builder()
     page = _load_debrief_page_module()
     config = load_config(mw.addonManager.getConfig(__package__))
-    entries = _debrief_entries(load_review_entries(mw), config, now=datetime.now())
+    lookback_days = _valid_selected_lookback(config.debrief_lookback_days)
+    now = datetime.now()
+    entries = _debrief_entries(_load_review_entries(mw, config, now=now), lookback_days=lookback_days, now=now)
     deck_options = _deck_options(entries)
     selected_deck = _valid_selected_deck(deck_options)
     scoped_entries = _filter_entries_by_deck(entries, selected_deck)
@@ -108,13 +125,21 @@ def show_bonsai_page() -> None:
     mw.web.stdHtml(
         page.debrief_page_html(
             debrief,
-            lookback_days=config.debrief_lookback_days,
+            lookback_days=lookback_days,
+            lookback_options=LOOKBACK_OPTIONS,
             deck_options=deck_options,
             selected_deck=selected_deck,
             deck_label=_deck_display_label(selected_deck) if selected_deck else None,
+            llm_enabled=config.llm_summary_enabled,
         )
     )
-    _attach_llm_summary_to_page(mw.web, scoped_entries, config)
+    _attach_llm_summary_to_page(
+        mw.web,
+        scoped_entries,
+        config,
+        debrief.evidence,
+        grounding=page.grounding_text(_deck_display_label(selected_deck) if selected_deck else None, lookback_days),
+    )
 
 
 def _load_debrief_builder():
@@ -166,9 +191,32 @@ def _attach_llm_summary(dialog, entries, config) -> None:
     _start_llm_summary_worker(dialog, entries, config, dialog.set_llm_summary)
 
 
-def _attach_llm_summary_to_page(web, entries, config) -> None:
+def _attach_llm_summary_to_page(web, entries, config, evidence=None, *, grounding: str = "") -> None:
     page = _load_debrief_page_module()
-    _start_llm_summary_worker(web, entries, config, lambda summary: web.eval(page.llm_summary_update_js(summary)))
+    request_id = _next_llm_request_id()
+    web._bonsai_llm_request_id = request_id
+
+    def update_page(summary) -> None:
+        if getattr(web, "_bonsai_llm_request_id", None) != request_id:
+            return
+        web.eval(
+            page.llm_summary_update_js(summary, evidence, grounding=grounding)
+            if summary
+            else page.llm_summary_status_update_js("No LLM insight returned for this deck/window.", evidence, grounding=grounding)
+        )
+
+    _start_llm_summary_worker(
+        web,
+        entries,
+        config,
+        update_page,
+    )
+
+
+def _next_llm_request_id() -> int:
+    global _llm_request_counter
+    _llm_request_counter += 1
+    return _llm_request_counter
 
 
 def _start_llm_summary_worker(parent, entries, config, callback) -> None:
@@ -184,8 +232,7 @@ def _start_llm_summary_worker(parent, entries, config, callback) -> None:
 
     def run() -> None:
         summary = _load_llm_summary_builder()(entries, config)
-        if summary:
-            notifier.summary_ready.emit(summary)
+        notifier.summary_ready.emit(summary)
 
     thread = threading.Thread(target=run, daemon=True)
     parent._bonsai_llm_notifier = notifier
@@ -216,12 +263,21 @@ def _debrief_dialog_module_names(package: str) -> tuple[str, ...]:
     )
 
 
-def _debrief_entries(entries, config, *, now: datetime):
+def _debrief_entries(entries, config=None, *, lookback_days: int | None = None, now: datetime):
+    if lookback_days is None:
+        lookback_days = config.debrief_lookback_days
     return filter_review_entries_by_lookback(
         entries,
-        lookback_days=config.debrief_lookback_days,
+        lookback_days=lookback_days,
         now=now,
     )
+
+
+def _load_review_entries(mw, config, *, now: datetime):
+    entries = load_review_entries(mw)
+    if config.demo_data_enabled:
+        return entries + build_demo_review_entries(now)
+    return entries
 
 
 def _deck_options(entries) -> tuple[str, ...]:
@@ -237,6 +293,24 @@ def _valid_selected_deck(deck_options: tuple[str, ...]) -> str | None:
 def _set_selected_deck(deck_name: str) -> None:
     global _selected_deck_name
     _selected_deck_name = deck_name
+
+
+def _valid_selected_lookback(default_lookback_days: int) -> int:
+    if _selected_lookback_days in LOOKBACK_OPTIONS:
+        return _selected_lookback_days
+    if default_lookback_days in LOOKBACK_OPTIONS:
+        return default_lookback_days
+    return 30
+
+
+def _set_selected_lookback_days(raw_days: str) -> None:
+    global _selected_lookback_days
+    try:
+        days = int(raw_days)
+    except ValueError:
+        return
+    if days in LOOKBACK_OPTIONS:
+        _selected_lookback_days = days
 
 
 def _filter_entries_by_deck(entries, deck_name: str | None):
@@ -341,7 +415,8 @@ def show_missed_card_analytics(*, lookback_days: int | None = None) -> None:
 
     config = load_config(mw.addonManager.getConfig(__package__))
     window_days = config.lookback_days if lookback_days is None else lookback_days
-    entries = _analytics_entries(load_review_entries(mw), lookback_days=window_days, now=datetime.now())
+    now = datetime.now()
+    entries = _analytics_entries(_load_review_entries(mw, config, now=now), lookback_days=window_days, now=now)
     summaries = summarize_missed_cards(
         entries,
         minimum_misses=config.minimum_misses,

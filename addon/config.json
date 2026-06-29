@@ -4,6 +4,10 @@
   "lookback_days": 90,
   "debrief_lookback_days": 90,
   "llm_summary_enabled": true,
-  "llm_model": "openrouter/free",
-  "llm_api_key_env": "OPENROUTER_API_KEY"
+  "llm_model": "inclusionai/ling-2.6-flash",
+  "llm_max_cards": 30,
+  "llm_max_chars": 10000,
+  "llm_timeout_seconds": 30,
+  "llm_api_key_env": "OPENROUTER_API_KEY",
+  "demo_data_enabled": true
 }

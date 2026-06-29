@@ -7,7 +7,7 @@ import unittest
 from datetime import datetime
 
 from analytics import MissedCardSummary
-from debrief import CardsToFix, Debrief, EarlyLearning, LlmCheck, LlmDebriefSummary, SessionHabits, StudyTarget
+from debrief import CardsToFix, Debrief, DebriefEvidence, EarlyLearning, LlmDebriefSummary, LlmImprovement, SessionHabits, StudyTarget
 
 
 class _QtBase:
@@ -71,18 +71,15 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         try:
             widget = debrief_dialog._llm_summary_card(
                 LlmDebriefSummary(
-                    summary="Several misses cluster around valve murmurs.",
-                    check_first=LlmCheck(
-                        title="Valve murmur examples",
-                        why="Multiple missed cards mention murmur prompts.",
-                        examples=("Murmur?", "Aortic stenosis murmur"),
-                    ),
-                    other_checks=(
-                        LlmCheck(
-                            title="Early exposure",
-                            why="Some misses may be first-pass learning.",
-                            examples=("Mitral regurgitation",),
-                            action="ignore_for_now",
+                    positives=("32 reviewed cards had no misses in this window.",),
+                    improvements=(
+                        LlmImprovement(
+                            insight="12 missed valve cards cluster around maneuver and physiology wording.",
+                            action="Search for murmur cards and review those before drug cards.",
+                        ),
+                        LlmImprovement(
+                            insight="Repeated valve misses may be easier to separate in a smaller set.",
+                            action="Put murmur changes first, then pressure-volume loop cards.",
                         ),
                     ),
                 )
@@ -91,11 +88,13 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             debrief_dialog.panel_card = original_panel_card
 
         self.assertEqual(widget, "panel")
-        self.assertEqual(calls[0][0][0], "Bonsai summary")
-        self.assertIn("Several misses cluster", calls[0][0][1])
-        self.assertEqual(calls[0][1]["rows"][0][0], "Suggested check")
-        self.assertIn("Valve murmur examples", calls[0][1]["rows"][0][1])
-        self.assertEqual(calls[0][1]["rows"][1][0], "Also consider")
+        self.assertEqual(calls[0][0][0], "Insights")
+        self.assertIn("What you're doing well", calls[0][0][1])
+        self.assertIn("Areas for improvement", calls[0][0][1])
+        self.assertIn("32 reviewed cards had no misses", calls[0][0][1])
+        self.assertIn("12 missed valve cards", calls[0][0][1])
+        self.assertIn("Try: Search for murmur cards", calls[0][0][1])
+        self.assertEqual(calls[0][1].get("rows", ()), ())
         self.assertTrue(calls[0][1]["quiet"])
 
     def test_cards_to_fix_card_returns_support_panel(self) -> None:
@@ -292,6 +291,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                         ),
                     ),
                     session_habits=SessionHabits(1, 1, 1.0, "Morning"),
+                    evidence=DebriefEvidence(1, 1, 1, 1),
                     missed_cards=(),
                 )
             )
@@ -333,6 +333,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                         ),
                     ),
                     session_habits=SessionHabits(2, 2, 1.0, "Morning"),
+                    evidence=DebriefEvidence(0, 0, 0, 0),
                     missed_cards=(),
                 )
             )
@@ -358,6 +359,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                     cards_to_fix=CardsToFix(0, (), ()),
                     early_learning=EarlyLearning(0, ()),
                     session_habits=SessionHabits(1, 0, 0.0, "Morning"),
+                    evidence=DebriefEvidence(0, 0, 0, 0),
                     missed_cards=(
                         MissedCardSummary(
                             1,
@@ -379,7 +381,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
         self.assertEqual(widget, "recommendation")
         self.assertEqual(calls[0][1]["confidence"], "Not enough signal")
         self.assertEqual(calls[0][1]["eyebrow"], "No action")
-        self.assertIn("intentionally staying quiet", calls[0][1]["check"])
+        self.assertIn("No stronger pattern", calls[0][1]["check"])
         self.assertNotIn("Weak evidence", calls[0][1]["confidence"])
 
     def test_same_note_cluster_becomes_inspection_recommendation(self) -> None:
@@ -410,6 +412,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                     cards_to_fix=CardsToFix(0, (), ()),
                     early_learning=EarlyLearning(0, ()),
                     session_habits=SessionHabits(4, 2, 0.5, "Morning"),
+                    evidence=DebriefEvidence(0, 0, 0, 0),
                     missed_cards=(cluster,),
                     same_note_cluster=cluster,
                 ),
@@ -474,6 +477,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                         ),
                     ),
                     session_habits=SessionHabits(5, 3, 0.6, "Morning"),
+                    evidence=DebriefEvidence(0, 0, 0, 0),
                     missed_cards=(),
                 ),
                 dialog=None,
@@ -542,6 +546,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                     ),
                     early_learning=EarlyLearning(0, ()),
                     session_habits=SessionHabits(5, 2, 0.4, "Morning"),
+                    evidence=DebriefEvidence(5, 2, 5, 2),
                     missed_cards=(),
                 )
             )
@@ -569,6 +574,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
             cards_to_fix=CardsToFix(0, (), ()),
             early_learning=EarlyLearning(0, ()),
             session_habits=SessionHabits(5, 2, 0.4, "Morning"),
+            evidence=DebriefEvidence(0, 0, 0, 0),
             missed_cards=(cluster,),
             same_note_cluster=cluster,
         )
@@ -819,6 +825,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                     cards_to_fix=CardsToFix(0, (), ()),
                     early_learning=EarlyLearning(0, ()),
                     session_habits=SessionHabits(8, 4, 0.5, "Evening"),
+                    evidence=DebriefEvidence(0, 0, 0, 0),
                     missed_cards=(),
                 ),
                 dialog=None,
@@ -865,6 +872,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                     cards_to_fix=CardsToFix(0, (), ()),
                     early_learning=EarlyLearning(0, ()),
                     session_habits=SessionHabits(380, 80, 0.21, "Evening"),
+                    evidence=DebriefEvidence(0, 0, 0, 0),
                     missed_cards=(),
                 ),
                 dialog=None,
@@ -901,6 +909,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                     cards_to_fix=CardsToFix(0, (), ()),
                     early_learning=EarlyLearning(0, ()),
                     session_habits=SessionHabits(5, 2, 0.4, "Evening"),
+                    evidence=DebriefEvidence(0, 0, 0, 0),
                     missed_cards=(),
                 ),
                 dialog=None,
@@ -940,6 +949,7 @@ class DebriefDialogWidgetTest(unittest.TestCase):
                     cards_to_fix=CardsToFix(0, (), ()),
                     early_learning=EarlyLearning(0, ()),
                     session_habits=SessionHabits(5, 2, 0.4, "Evening"),
+                    evidence=DebriefEvidence(0, 0, 0, 0),
                     missed_cards=(),
                 ),
                 dialog=None,

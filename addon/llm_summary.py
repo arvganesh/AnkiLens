@@ -8,49 +8,56 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from .analytics import ReviewLogEntry, summarize_missed_cards
+    from .analytics import AGAIN_EASE, ReviewLogEntry, summarize_missed_cards
     from .config import BonsaiConfig
-    from .debrief import LlmCheck, LlmDebriefSummary
+    from .debrief import LlmDebriefSummary, LlmImprovement
 except ImportError:
-    from analytics import ReviewLogEntry, summarize_missed_cards
+    from analytics import AGAIN_EASE, ReviewLogEntry, summarize_missed_cards
     from config import BonsaiConfig
-    from debrief import LlmCheck, LlmDebriefSummary
+    from debrief import LlmDebriefSummary, LlmImprovement
 
 
-_SYSTEM_PROMPT = """You are Bonsai, a concise missed-card analytics assistant.
-Find observable patterns in the supplied Anki missed-card labels and card text.
+_SYSTEM_PROMPT = """You are a concise missed-card analytics assistant.
+Write a short, useful insight card about the supplied Anki missed-card labels and card text.
+Analyze the data through a memory-and-learning lens: look for cards with repeated misses, content that appears often in errors, and review-method signals such as overload, very similar cards, or many early-review misses.
 Use only the supplied missed-card data. Do not infer medical, factual, or scheduling conclusions.
-Do not say what the student understands, forgot, failed to process, or should study for a specific duration.
+Use a number in each bullet when the supplied stats support it, such as cards with misses, repeated misses, total misses, or reviewed cards without misses.
+Include positive or calibrating insights when supported by the stats, such as material that did not appear in the missed-card set or the share of reviewed cards without misses.
+Do not say what the student understands, forgot, failed to process, retained, mastered, or should study for a specific duration.
 Do not address the student as "you".
-Recommend concrete checks the student can do, not diagnoses of why they missed cards.
-Write compact UI copy:
-- summary: 14 words or fewer.
-- title: 5 words or fewer.
-- why: 18 words or fewer.
-- examples: at most 2 short card labels.
-- other_checks: include only meaningfully different checks.
+Avoid implementation terms like tag, cue wording, source text, prompt pattern, JSON, deck artifact, content_labels, early review flags, stability, retention, interference, pacing, and successful.
+Never use the words "cue", "tag", "artifact", "source text", "retention", "interference", "stability", or "successful" in the output.
+Do not say the student is relying on phrases instead of understanding concepts.
+Do not claim the pattern caused the misses or created confusion.
+If the data suggests leech-like repeated trouble, mention the number of repeated misses and that the card may ask for too much at once; do not recommend changing Anki scheduling.
+If the data suggests too much similar material at once, name the similar cards and suggest reviewing one small group before another; do not prescribe a review duration.
+For content difficulty, name the specific relationship among the cards that is likely making the set hard to separate, without claiming the underlying facts are true.
+Do not list examples.
+Prefer plain study language over analytics language.
+Explain what the cluster means in practical terms.
+Write compact UI copy for a single card with two sections: what is going well and areas for improvement.
+Keep each bullet under 28 words.
+Each improvement must have an insight and a directly usable action.
+The insight should name one observation from the evidence.
+The action should be concrete enough to do immediately, such as "Search for murmur cards and review only those first" or "Open the repeated card and split the drug list if it has several facts."
+Use plain classroom language that a tired learner can act on quickly.
+Avoid vague phrases like "next pass", "subtopics", "dense overlap", "overload", "optimize pacing", "pacing concerns", "stabilize recognition", "retention", "interference", "stability", or "mental model".
+When suggesting bucketing, name the actual bucket examples, such as "murmur cards first, then drug side effects."
+When suggesting a card edit, say what to check, such as "one card asking for three toxicities."
+Avoid generic openings like "Review", "Compare", "Inspect", "Focus on", or "Group" unless there is no clearer wording.
+Use varied sentence structure so the bullets do not feel templated.
 Return only JSON with this shape:
 {
-  "summary": "short observable pattern",
-  "check_first": {
-    "title": "short label",
-    "why": "one compact sentence grounded in the supplied cards",
-    "examples": ["card label", "card label"],
-    "action": "inspect_examples"
-  },
-  "other_checks": [
+  "positives": [
+    "short grounded positive or calibrating insight"
+  ],
+  "improvements": [
     {
-      "title": "short label",
-      "why": "one sentence",
-      "examples": ["card label"],
-      "action": "review_material"
+      "insight": "short grounded improvement",
+      "action": "short concrete way to apply it"
     }
   ]
-}
-Valid actions: inspect_examples, inspect_card, review_material, ignore_for_now.
-Return at most two other_checks and at most two examples per check."""
-
-_VALID_ACTIONS = frozenset({"inspect_examples", "inspect_card", "review_material", "ignore_for_now"})
+}"""
 
 
 def build_llm_summary(
@@ -73,12 +80,12 @@ def build_llm_summary(
 
     request = urllib.request.Request(
         config.llm_api_url,
-        data=_request_body(config.llm_model, _missed_card_prompt(summaries, max_chars=config.llm_max_chars)),
+        data=_request_body(config.llm_model, _missed_card_prompt(entries, summaries, max_chars=config.llm_max_chars)),
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
             "HTTP-Referer": "https://github.com/openai/codex",
-            "X-Title": "Bonsai Missed Card Analytics",
+            "X-Title": "Missed Card Insights",
         },
         method="POST",
     )
@@ -87,7 +94,7 @@ def build_llm_summary(
             payload = json.loads(response.read().decode("utf-8"))
     except Exception:
         return None
-    return _parse_response(payload)
+    return _parse_response(payload, action_card_ids=tuple(summary.card_id for summary in summaries))
 
 
 def _request_body(model: str, user_prompt: str) -> bytes:
@@ -102,46 +109,34 @@ def _request_body(model: str, user_prompt: str) -> bytes:
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {
-                    "name": "missed_card_summary",
+                    "name": "missed_card_insight",
                     "strict": True,
                     "schema": {
                         "type": "object",
                         "properties": {
-                            "summary": {"type": "string"},
-                            "check_first": {"$ref": "#/$defs/check"},
-                            "other_checks": {
+                            "positives": {
                                 "type": "array",
-                                "items": {"$ref": "#/$defs/check"},
-                                "maxItems": 2,
+                                "items": {"type": "string"},
+                                "minItems": 0,
+                                "maxItems": 3,
+                            },
+                            "improvements": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "insight": {"type": "string"},
+                                        "action": {"type": "string"},
+                                    },
+                                    "required": ["insight", "action"],
+                                    "additionalProperties": False,
+                                },
+                                "minItems": 1,
+                                "maxItems": 4,
                             },
                         },
-                        "required": ["summary", "check_first", "other_checks"],
+                        "required": ["positives", "improvements"],
                         "additionalProperties": False,
-                        "$defs": {
-                            "check": {
-                                "type": "object",
-                                "properties": {
-                                    "title": {"type": "string"},
-                                    "why": {"type": "string"},
-                                    "examples": {
-                                        "type": "array",
-                                        "items": {"type": "string"},
-                                        "maxItems": 2,
-                                    },
-                                    "action": {
-                                        "type": "string",
-                                        "enum": [
-                                            "inspect_examples",
-                                            "inspect_card",
-                                            "review_material",
-                                            "ignore_for_now",
-                                        ],
-                                    },
-                                },
-                                "required": ["title", "why", "examples", "action"],
-                                "additionalProperties": False,
-                            }
-                        },
                     },
                 },
             },
@@ -149,12 +144,18 @@ def _request_body(model: str, user_prompt: str) -> bytes:
     ).encode("utf-8")
 
 
-def _missed_card_prompt(summaries, *, max_chars: int) -> str:
+def _missed_card_prompt(entries, summaries, *, max_chars: int) -> str:
     lines = [
-        "Summarize these missed Anki cards for a student.",
-        "Focus on repeated wording, concept, tag, format, or prompt patterns.",
-        "Keep the output concise enough to scan inside a small dialog.",
+        "Write student-facing insights about these missed Anki cards.",
+        "Focus on practical study moves, not implementation details.",
+        "Include supported counts in the bullets.",
+        "Include positives only when the stats support them.",
+        "Do not include example card labels in the final answer.",
         "",
+        "Window stats:",
+        *_review_stats_lines(entries, summaries),
+        "",
+        "Missed-card evidence:",
     ]
     used = sum(len(line) + 1 for line in lines)
     for index, summary in enumerate(summaries, start=1):
@@ -173,7 +174,31 @@ def _missed_card_prompt(summaries, *, max_chars: int) -> str:
     return "\n".join(lines)
 
 
-def _parse_response(payload: dict[str, Any]) -> LlmDebriefSummary | None:
+def _review_stats_lines(entries, summaries) -> list[str]:
+    reviewed_cards = len({entry.card_id for entry in entries})
+    cards_with_misses = len({entry.card_id for entry in entries if entry.ease == AGAIN_EASE})
+    missed_card_context = len({summary.card_id for summary in summaries})
+    misses = sum(1 for entry in entries if entry.ease == AGAIN_EASE)
+    reviews = len(entries)
+    cards_without_misses = max(reviewed_cards - cards_with_misses, 0)
+    return [
+        f"- {reviewed_cards} {_plural(reviewed_cards, 'card')} reviewed.",
+        f"- {cards_with_misses} {_plural(cards_with_misses, 'card')} had at least one miss.",
+        f"- {cards_without_misses} reviewed {_plural(cards_without_misses, 'card')} had no misses in this window.",
+        f"- {misses} {_plural(misses, 'miss')} across {reviews} {_plural(reviews, 'review')}.",
+        f"- {missed_card_context} missed {_plural(missed_card_context, 'card')} are included below for content analysis.",
+    ]
+
+
+def _plural(count: int, word: str) -> str:
+    if count == 1:
+        return word
+    if word == "miss":
+        return "misses"
+    return f"{word}s"
+
+
+def _parse_response(payload: dict[str, Any], *, action_card_ids: tuple[int, ...] = ()) -> LlmDebriefSummary | None:
     choices = payload.get("choices")
     if not isinstance(choices, list) or not choices:
         return None
@@ -184,38 +209,30 @@ def _parse_response(payload: dict[str, Any]) -> LlmDebriefSummary | None:
         data = json.loads(content)
     except json.JSONDecodeError:
         return None
-    summary = _clean_string(data.get("summary"), max_length=140)
-    if not summary:
-        return None
-    return LlmDebriefSummary(
-        summary=summary,
-        check_first=_parse_check(data.get("check_first")),
-        other_checks=tuple(
-            check
-            for check in (_parse_check(raw_check) for raw_check in _list(data.get("other_checks"))[:2])
-            if check is not None
-        ),
+    positives = tuple(
+        item
+        for item in (
+            _plain_language_string(item, max_length=260)
+            for item in _list(data.get("positives"))[:3]
+        )
+        if item
     )
+    improvements = tuple(_improvements(data.get("improvements")))
+    if not improvements:
+        return None
+    return LlmDebriefSummary(positives=positives, improvements=improvements, action_card_ids=action_card_ids)
 
 
-def _parse_check(value: Any) -> LlmCheck | None:
-    if not isinstance(value, dict):
-        return None
-    title = _clean_string(value.get("title"), max_length=60)
-    why = _clean_string(value.get("why"), max_length=180)
-    action = _clean_string(value.get("action"), max_length=40) or "inspect_examples"
-    if not title or not why or action not in _VALID_ACTIONS:
-        return None
-    return LlmCheck(
-        title=title,
-        why=why,
-        examples=tuple(
-            example
-            for example in (_clean_examples(_list(value.get("examples"))[:2]))
-            if example
-        ),
-        action=action,
-    )
+def _improvements(value: Any) -> list[LlmImprovement]:
+    improvements = []
+    for item in _list(value)[:4]:
+        if not isinstance(item, dict):
+            continue
+        insight = _plain_language_string(item.get("insight"), max_length=220)
+        action = _plain_language_string(item.get("action"), max_length=180)
+        if insight and action:
+            improvements.append(LlmImprovement(insight=insight, action=action))
+    return improvements
 
 
 def _list(value: Any) -> list[Any]:
@@ -225,18 +242,62 @@ def _list(value: Any) -> list[Any]:
 def _clean_string(value: Any, *, max_length: int) -> str:
     if not isinstance(value, str):
         return ""
-    return " ".join(value.split())[:max_length]
+    cleaned = " ".join(value.split())
+    if len(cleaned) <= max_length:
+        return cleaned
+    truncated = cleaned[:max_length].rsplit(" ", 1)[0].rstrip(".,;:")
+    return f"{truncated}..." if truncated else cleaned[:max_length]
 
 
-def _clean_examples(values: list[Any]) -> tuple[str, ...]:
-    examples = []
-    seen = set()
-    for raw in values:
-        example = _clean_string(raw, max_length=44).rstrip(" ,.;:")
-        if example and example not in seen:
-            examples.append(example)
-            seen.add(example)
-    return tuple(examples)
+def _plain_language_string(value: Any, *, max_length: int) -> str:
+    cleaned = _clean_string(value, max_length=max_length)
+    replacements = {
+        "cue wording": "wording",
+        "cue words": "wording",
+        "cue word": "wording",
+        "cue": "wording",
+        "content tag": "topic group",
+        "topic tag": "topic group",
+        "tag": "topic group",
+        "deck artifact": "deck pattern",
+        "artifact": "pattern",
+        "source text": "card text",
+        "rather than understanding concepts": "across related cards",
+        "instead of understanding concepts": "across related cards",
+        "wording phrasing": "phrasing",
+        "causing repeated misses": "with repeated misses",
+        "causing misses": "with misses",
+        "creating confusion between": "appearing across",
+        "so mixing up details is more likely during review": "which can make the cards feel similar during review",
+        "reinforce accurate mental models": "make the related cards easier to compare",
+        "accurate mental models": "the related ideas",
+        "solid retention": "many cards had no misses",
+        "retention": "cards with no misses",
+        "successful reviews": "reviews without misses",
+        "reviews are successful": "reviews had no misses",
+        "successful": "with no misses",
+        "overload or similarity issues": "too many similar facts on the same cards",
+        "overload": "too much at once",
+        "dense overlap": "many similar cards in the same area",
+        "dense and harder to separate": "hard to tell apart",
+        "set feel dense": "set feel crowded",
+        "reduce density and interference": "make the groups easier to tell apart",
+        "interference": "mix-ups",
+        "pacing concerns": "too many similar cards at once",
+        "pacing": "card volume",
+        "Early review flags": "Early missed cards",
+        "early review flags": "early missed cards",
+        "weak stability": "more misses",
+        "Weak stability": "More misses",
+        "Delay repeats until stability is seen": "Keep the next review to a smaller set of related cards",
+        "delay repeats until stability is seen": "keep the next review to a smaller set of related cards",
+        "stability": "fewer misses",
+        "distinct review sessions": "separate small review groups",
+        "distinct": "separate",
+    }
+    for old, new in replacements.items():
+        cleaned = cleaned.replace(old, new).replace(old.title(), new)
+    return cleaned
 
 
 def _compact_text(value: str, max_length: int) -> str:

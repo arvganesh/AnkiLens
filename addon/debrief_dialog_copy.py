@@ -2,20 +2,19 @@ from __future__ import annotations
 
 
 def debrief_window_title() -> str:
-    return "Bonsai Missed Cards"
+    return "Missed Card Insights"
 
 
 def debrief_title() -> str:
-    return "Missed card analytics"
+    return "Insights"
 
 
 def debrief_intro_text(lookback_days: int, *, deck_label: str | None = None) -> str:
-    scope = f"{deck_label} · " if deck_label else ""
     if lookback_days <= 0:
-        return f"{scope}Read-only patterns across available reviews. Bonsai does not change scheduling."
+        return "All available reviews"
     if lookback_days == 1:
-        return f"{scope}Last 24 hours · read-only · Bonsai does not change scheduling."
-    return f"{scope}Last {lookback_days} days · read-only · Bonsai does not change scheduling."
+        return "Last 24 hours"
+    return f"Last {lookback_days} days"
 
 
 def deck_debrief_button_text() -> str:
@@ -102,7 +101,7 @@ def target_detail_text(
     maturity = _maturity_text(early_count, mature_count, lapsed_count)
     if maturity:
         details.append(f"{maturity}.")
-    return " ".join(details) if details else "Bonsai saw this pattern in the current review window."
+    return " ".join(details) if details else "This pattern appeared in the current review window."
 
 
 def early_learning_title() -> str:
@@ -242,7 +241,7 @@ def no_pattern_evidence(*, has_repeated_misses: bool = True) -> str:
 
 def no_pattern_next_step(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
-        return "Keep reviewing normally. Bonsai will speak up when a stronger pattern appears."
+        return "Keep reviewing normally. Insights will appear when a stronger pattern is available."
     return "Do not edit or cram from this alone. If one card felt wrong, inspect that card from Browse; otherwise keep reviewing."
 
 
@@ -255,7 +254,7 @@ def no_pattern_confidence_text(*, has_repeated_misses: bool = True) -> str:
 def no_pattern_check_text(*, has_repeated_misses: bool = True) -> str:
     if not has_repeated_misses:
         return "No card needs attention from this window."
-    return "Bonsai is intentionally staying quiet until the pattern points to a useful action."
+    return "No stronger pattern is available yet."
 
 
 def early_learning_evidence(count: int) -> str:

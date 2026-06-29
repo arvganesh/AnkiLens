@@ -14,12 +14,13 @@ class BonsaiConfigTest(unittest.TestCase):
         self.assertEqual(config.lookback_days, 90)
         self.assertEqual(config.debrief_lookback_days, 1)
         self.assertFalse(config.llm_summary_enabled)
-        self.assertEqual(config.llm_model, "openrouter/free")
+        self.assertEqual(config.llm_model, "inclusionai/ling-2.6-flash")
         self.assertEqual(config.llm_api_url, "https://openrouter.ai/api/v1/chat/completions")
         self.assertEqual(config.llm_api_key_env, "OPENROUTER_API_KEY")
-        self.assertEqual(config.llm_max_cards, 40)
-        self.assertEqual(config.llm_max_chars, 12000)
-        self.assertEqual(config.llm_timeout_seconds, 20)
+        self.assertEqual(config.llm_max_cards, 30)
+        self.assertEqual(config.llm_max_chars, 10000)
+        self.assertEqual(config.llm_timeout_seconds, 30)
+        self.assertFalse(config.demo_data_enabled)
 
     def test_accepts_valid_config_values(self) -> None:
         config = load_config(
@@ -35,6 +36,7 @@ class BonsaiConfigTest(unittest.TestCase):
                 "llm_max_cards": 60,
                 "llm_max_chars": 15000,
                 "llm_timeout_seconds": 30,
+                "demo_data_enabled": True,
             }
         )
 
@@ -49,6 +51,7 @@ class BonsaiConfigTest(unittest.TestCase):
         self.assertEqual(config.llm_max_cards, 60)
         self.assertEqual(config.llm_max_chars, 15000)
         self.assertEqual(config.llm_timeout_seconds, 30)
+        self.assertTrue(config.demo_data_enabled)
 
     def test_bounds_config_values(self) -> None:
         config = load_config(
@@ -82,6 +85,7 @@ class BonsaiConfigTest(unittest.TestCase):
                 "llm_model": "",
                 "llm_api_url": "",
                 "llm_api_key_env": "",
+                "demo_data_enabled": "yes",
             }
         )
 
@@ -90,9 +94,10 @@ class BonsaiConfigTest(unittest.TestCase):
         self.assertEqual(config.lookback_days, 90)
         self.assertEqual(config.debrief_lookback_days, 1)
         self.assertFalse(config.llm_summary_enabled)
-        self.assertEqual(config.llm_model, "openrouter/free")
+        self.assertEqual(config.llm_model, "inclusionai/ling-2.6-flash")
         self.assertEqual(config.llm_api_url, "https://openrouter.ai/api/v1/chat/completions")
         self.assertEqual(config.llm_api_key_env, "OPENROUTER_API_KEY")
+        self.assertFalse(config.demo_data_enabled)
 
 
 if __name__ == "__main__":

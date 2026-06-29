@@ -131,19 +131,19 @@ class DebriefDialogTest(unittest.TestCase):
         )
         self.assertEqual(
             target_detail_text(),
-            "Bonsai saw this pattern in the current review window.",
+            "This pattern appeared in the current review window.",
         )
 
     def test_debrief_surface_copy_focuses_on_review_check(self) -> None:
-        self.assertEqual(debrief_window_title(), "Bonsai Missed Cards")
-        self.assertEqual(debrief_title(), "Missed card analytics")
+        self.assertEqual(debrief_window_title(), "Missed Card Insights")
+        self.assertEqual(debrief_title(), "Insights")
         self.assertEqual(deck_debrief_button_text(), "Analyze missed cards")
 
     def test_debrief_intro_names_short_recent_window(self) -> None:
-        self.assertEqual(debrief_intro_text(1), "Last 24 hours · read-only · Bonsai does not change scheduling.")
+        self.assertEqual(debrief_intro_text(1), "Last 24 hours")
         self.assertEqual(
             debrief_intro_text(1, deck_label="Bonsai E2E Large Review Window"),
-            "Bonsai E2E Large Review Window · Last 24 hours · read-only · Bonsai does not change scheduling.",
+            "Last 24 hours",
         )
         self.assertIn("Last 2 days", debrief_intro_text(2))
 
@@ -251,8 +251,7 @@ class DebriefDialogTest(unittest.TestCase):
         self.assertIn("broad study target", no_pattern_evidence())
         self.assertIn("Do not edit or cram from this alone", no_pattern_next_step())
         self.assertIn("inspect that card from Browse", no_pattern_next_step())
-        self.assertIn("intentionally staying quiet", no_pattern_check_text())
-        self.assertIn("pattern points", no_pattern_check_text())
+        self.assertIn("No stronger pattern", no_pattern_check_text())
         self.assertNotIn("review evidence cards", no_pattern_next_step())
         self.assertNotIn("details", no_pattern_next_step().lower())
         self.assertNotIn("weak", no_pattern_confidence_text().lower())

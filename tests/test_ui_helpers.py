@@ -123,7 +123,7 @@ class UiHelpersTest(unittest.TestCase):
 
         self.assertIn("Check first", _FakeWidget.labels)
         self.assertNotIn("Next", _FakeWidget.labels)
-        self.assertIn("What Bonsai noticed", _FakeWidget.labels)
+        self.assertIn("What stood out", _FakeWidget.labels)
         self.assertIn("Before studying more", _FakeWidget.labels)
         self.assertIn("Worth a quick check", _FakeWidget.labels)
         self.assertIn("2 of 5 cards from Cardiology Valves needed another pass.", _FakeWidget.labels)
@@ -131,11 +131,11 @@ class UiHelpersTest(unittest.TestCase):
         self.assertLess(_FakeWidget.labels.index("Worth a quick check"), _FakeWidget.labels.index("Look at the cards first."))
         self.assertLess(
             _FakeWidget.labels.index("Look at the cards first."),
-            _FakeWidget.labels.index("What Bonsai noticed"),
+            _FakeWidget.labels.index("What stood out"),
         )
         self.assertLess(
             _FakeWidget.labels.index("Show cards to check"),
-            _FakeWidget.labels.index("What Bonsai noticed"),
+            _FakeWidget.labels.index("What stood out"),
         )
         self.assertEqual(len(_FakeLayout.action_rows), 1)
         self.assertEqual(_FakeLayout.stretch_count, 1)

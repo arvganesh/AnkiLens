@@ -23,6 +23,16 @@ class TermsTest(unittest.TestCase):
 
         self.assertEqual(terms, [("ace", 2)])
 
+    def test_ignores_prompt_template_words(self) -> None:
+        terms = frequent_terms(
+            [
+                "Clinical stem compare board-style prompt mitral murmur",
+                "Clinical stem compare board-style prompt mitral valve",
+            ]
+        )
+
+        self.assertEqual(terms[:2], [("mitral", 2)])
+
     def test_summarizes_terms_from_missed_cards(self) -> None:
         summaries = summarize_missed_cards(
             [

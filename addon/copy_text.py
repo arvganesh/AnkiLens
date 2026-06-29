@@ -28,7 +28,7 @@ def analytics_caption(
 
 
 def evidence_window_title() -> str:
-    return "Bonsai Details"
+    return "Insight Details"
 
 
 def evidence_title() -> str:

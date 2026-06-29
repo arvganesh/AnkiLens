@@ -11,7 +11,7 @@ from config import BonsaiConfig
 
 
 class AnkiEntryMessagesTest(unittest.TestCase):
-    def test_adds_bonsai_top_toolbar_tab(self) -> None:
+    def test_adds_insights_top_toolbar_tab(self) -> None:
         links = []
         calls = []
 
@@ -22,9 +22,9 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         anki_entry._add_top_toolbar_link(links, FakeToolbar())
 
-        self.assertEqual(links, ["link:Bonsai"])
+        self.assertEqual(links, ["link:Insights"])
         self.assertEqual(calls[0][0], "bonsai")
-        self.assertEqual(calls[0][1], "Bonsai")
+        self.assertEqual(calls[0][1], "Insights")
         self.assertIs(calls[0][2], anki_entry.show_bonsai_page)
         self.assertEqual(calls[0][3], "Analyze missed cards")
         self.assertEqual(calls[0][4], "bonsai-top-tab")
@@ -47,6 +47,41 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         finally:
             anki_entry._selected_deck_name = original_deck
             anki_entry.show_bonsai_page = original_show_bonsai_page
+
+    def test_handles_lookback_scope_message(self) -> None:
+        original_lookback = anki_entry._selected_lookback_days
+        original_show_bonsai_page = anki_entry.show_bonsai_page
+        calls = []
+        anki_entry.show_bonsai_page = lambda: calls.append("page")
+        try:
+            handled = anki_entry._handle_js_message(
+                (False, None),
+                f"{anki_entry.LOOKBACK_SCOPE_MESSAGE_PREFIX}30",
+                None,
+            )
+
+            self.assertEqual(handled, (True, None))
+            self.assertEqual(anki_entry._selected_lookback_days, 30)
+            self.assertEqual(calls, ["page"])
+        finally:
+            anki_entry._selected_lookback_days = original_lookback
+            anki_entry.show_bonsai_page = original_show_bonsai_page
+
+    def test_handles_browse_search_message(self) -> None:
+        original_open_search = anki_entry._open_search_from_debrief
+        calls = []
+        anki_entry._open_search_from_debrief = lambda query: calls.append(query)
+        try:
+            handled = anki_entry._handle_js_message(
+                (False, None),
+                f"{anki_entry.BROWSE_SEARCH_MESSAGE_PREFIX}cid%3A10%20or%20cid%3A11",
+                None,
+            )
+        finally:
+            anki_entry._open_search_from_debrief = original_open_search
+
+        self.assertEqual(handled, (True, None))
+        self.assertEqual(calls, ["cid:10 or cid:11"])
 
     def test_ignores_other_messages(self) -> None:
         self.assertEqual(anki_entry._handle_js_message((False, None), "other", None), (False, None))
@@ -174,6 +209,45 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertEqual(len(threads), 1)
         self.assertTrue(threads[0].daemon)
 
+    def test_page_llm_summary_ignores_stale_worker_result(self) -> None:
+        original_page_loader = anki_entry._load_debrief_page_module
+        original_worker = anki_entry._start_llm_summary_worker
+        callbacks = []
+        evals = []
+
+        class FakePage:
+            @staticmethod
+            def llm_summary_update_js(summary, _evidence=None, *, grounding=""):
+                return f"summary:{summary}:{grounding}"
+
+            @staticmethod
+            def llm_summary_status_update_js(message, _evidence=None, *, grounding=""):
+                return f"status:{message}"
+
+        web = types.SimpleNamespace(eval=lambda js: evals.append(js))
+
+        def fake_worker(_web, _entries, _config, callback) -> None:
+            callbacks.append(callback)
+
+        anki_entry._load_debrief_page_module = lambda: FakePage
+        anki_entry._start_llm_summary_worker = fake_worker
+        try:
+            anki_entry._attach_llm_summary_to_page(web, ["old"], BonsaiConfig(llm_summary_enabled=True))
+            anki_entry._attach_llm_summary_to_page(
+                web,
+                ["current"],
+                BonsaiConfig(llm_summary_enabled=True),
+                grounding="current scope",
+            )
+
+            callbacks[0]("old result")
+            callbacks[1]("current result")
+        finally:
+            anki_entry._load_debrief_page_module = original_page_loader
+            anki_entry._start_llm_summary_worker = original_worker
+
+        self.assertEqual(evals, ["summary:current result:current scope"])
+
     def test_deck_panel_count_uses_all_repeated_misses_not_display_cap(self) -> None:
         entries = []
         for card_id in range(1, 26):
@@ -190,6 +264,32 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         )
 
         self.assertEqual(missed_count, 25)
+
+    def test_loader_appends_demo_entries_only_when_enabled(self) -> None:
+        original_loader = anki_entry.load_review_entries
+        original_demo_builder = anki_entry.build_demo_review_entries
+        real_entry = ReviewLogEntry(1, 3, datetime(2026, 6, 26, 8), "Real", "Real card")
+        demo_entry = ReviewLogEntry(2, 1, datetime(2026, 6, 26, 9), "Demo", "Demo card")
+        try:
+            anki_entry.load_review_entries = lambda _mw: [real_entry]
+            anki_entry.build_demo_review_entries = lambda _now: [demo_entry]
+
+            without_demo = anki_entry._load_review_entries(
+                object(),
+                BonsaiConfig(demo_data_enabled=False),
+                now=datetime(2026, 6, 26, 12),
+            )
+            with_demo = anki_entry._load_review_entries(
+                object(),
+                BonsaiConfig(demo_data_enabled=True),
+                now=datetime(2026, 6, 26, 12),
+            )
+        finally:
+            anki_entry.load_review_entries = original_loader
+            anki_entry.build_demo_review_entries = original_demo_builder
+
+        self.assertEqual(without_demo, [real_entry])
+        self.assertEqual(with_demo, [real_entry, demo_entry])
 
     def test_filters_entries_by_selected_deck(self) -> None:
         entries = [
@@ -221,6 +321,18 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
     def test_missing_deck_options_have_no_selected_deck(self) -> None:
         self.assertIsNone(anki_entry._valid_selected_deck(()))
+
+    def test_selected_lookback_falls_back_to_config_or_thirty_days(self) -> None:
+        original_lookback = anki_entry._selected_lookback_days
+        try:
+            anki_entry._selected_lookback_days = 7
+            self.assertEqual(anki_entry._valid_selected_lookback(90), 7)
+
+            anki_entry._selected_lookback_days = None
+            self.assertEqual(anki_entry._valid_selected_lookback(90), 90)
+            self.assertEqual(anki_entry._valid_selected_lookback(14), 30)
+        finally:
+            anki_entry._selected_lookback_days = original_lookback
 
     def test_deck_display_label_shortens_nested_decks(self) -> None:
         self.assertEqual(

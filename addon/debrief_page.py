@@ -4,7 +4,7 @@ import json
 from html import escape
 
 try:
-    from .debrief import Debrief, LlmCheck, LlmDebriefSummary, StudyTarget
+    from .debrief import Debrief, LlmDebriefSummary, StudyTarget
     from .debrief_dialog_copy import (
         debrief_intro_text,
         debrief_title,
@@ -36,7 +36,7 @@ try:
     )
     from .session_context import session_context_text
 except ImportError:
-    from debrief import Debrief, LlmCheck, LlmDebriefSummary, StudyTarget
+    from debrief import Debrief, LlmDebriefSummary, StudyTarget
     from debrief_dialog_copy import (
         debrief_intro_text,
         debrief_title,
@@ -70,30 +70,32 @@ except ImportError:
 
 
 DECK_SCOPE_MESSAGE_PREFIX = "bonsai:deck:"
+LOOKBACK_SCOPE_MESSAGE_PREFIX = "bonsai:lookback:"
+BROWSE_SEARCH_MESSAGE_PREFIX = "bonsai:browse:"
 
 
 def debrief_page_html(
     debrief: Debrief,
     *,
     lookback_days: int,
+    lookback_options: tuple[int, ...] = (7, 30, 90),
     deck_options: tuple[str, ...] = (),
     selected_deck: str | None = None,
     deck_label: str | None = None,
+    llm_enabled: bool = True,
 ) -> str:
-    llm_summary = llm_summary_html(debrief.llm_summary) if debrief.llm_summary else _llm_loading_html()
-    sections = [
-        _top_check_html(debrief),
-        f'<div id="bonsai-llm-summary">{llm_summary}</div>',
-        _supporting_sections_html(debrief),
-    ]
-    context = session_context_text(debrief.session_habits)
-    if context:
-        sections.append(_panel_html("Session note", _paragraph(context), quiet=True))
+    grounding = grounding_text(deck_label or selected_deck, lookback_days)
+    llm_summary = (
+        llm_summary_html(debrief.llm_summary, debrief.evidence, grounding=grounding)
+        if debrief.llm_summary
+        else _llm_loading_html(debrief.evidence, grounding=grounding) if llm_enabled else _llm_disabled_html(debrief.evidence, grounding=grounding)
+    )
+    sections = [f'<div id="bonsai-llm-summary">{llm_summary}</div>']
     return f"""
 <style>
   body {{
-    background: #f5f2ea;
-    color: #1f2a20;
+    background: #f5f6f8;
+    color: #202124;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     margin: 0;
   }}
@@ -109,7 +111,7 @@ def debrief_page_html(
     margin: 0 0 8px;
   }}
   .bonsai-intro {{
-    color: #4d554d;
+    color: #5f6368;
     font-size: 14px;
     margin-bottom: 0;
   }}
@@ -117,22 +119,27 @@ def debrief_page_html(
     align-items: end;
     display: grid;
     gap: 14px;
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 430px);
     margin-bottom: 18px;
   }}
+  .bonsai-filters {{
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(150px, 1fr) minmax(120px, 0.6fr);
+  }}
   .bonsai-filter label {{
-    color: #667064;
+    color: #5f6368;
     display: block;
     font-size: 12px;
     font-weight: 700;
     margin-bottom: 5px;
   }}
   .bonsai-filter select {{
-    background: #fffaf0;
-    border: 1px solid #d8d0c2;
+    background: #ffffff;
+    border: 1px solid #dadce0;
     border-radius: 9px;
     box-sizing: border-box;
-    color: #2f382f;
+    color: #202124;
     font-size: 13px;
     min-height: 36px;
     padding: 7px 9px;
@@ -143,25 +150,34 @@ def debrief_page_html(
       align-items: stretch;
       grid-template-columns: 1fr;
     }}
+    .bonsai-filters {{
+      grid-template-columns: 1fr;
+    }}
+    .bonsai-evidence {{
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }}
   }}
   .bonsai-stack {{
     display: grid;
     gap: 14px;
   }}
   .bonsai-card {{
-    background: #fbfdf7;
-    border: 1px solid #d8e8cc;
-    border-radius: 13px;
+    background: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 10px;
     box-sizing: border-box;
     padding: 18px 20px;
   }}
+  .bonsai-card.primary {{
+    padding: 22px 24px;
+  }}
   .bonsai-card.quiet {{
-    background: #f7f4ec;
-    border-color: #ebe4d8;
+    background: #ffffff;
+    border-color: #e5e7eb;
     padding: 13px 15px;
   }}
   .bonsai-eyebrow {{
-    color: #64705f;
+    color: #5f6368;
     font-size: 11px;
     font-weight: 700;
     margin-bottom: 5px;
@@ -171,15 +187,50 @@ def debrief_page_html(
     line-height: 1.2;
     margin: 0 0 9px;
   }}
+  .bonsai-card.primary h2 {{
+    font-size: 22px;
+  }}
+  .bonsai-evidence {{
+    border-bottom: 1px solid #e5e7eb;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0 0 10px;
+    padding: 0 0 15px;
+  }}
+  .bonsai-stat {{
+    min-width: 0;
+  }}
+  .bonsai-stat strong {{
+    color: #202124;
+    display: block;
+    font-size: 18px;
+    line-height: 1.1;
+  }}
+  .bonsai-stat span {{
+    color: #5f6368;
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 4px;
+  }}
+  .bonsai-grounding {{
+    border-bottom: 1px solid #e5e7eb;
+    color: #5f6368;
+    font-size: 12px;
+    line-height: 1.35;
+    margin: 0 0 17px;
+    padding: 0 0 14px;
+  }}
   .bonsai-card.quiet h2 {{
     font-size: 15px;
     margin-bottom: 6px;
   }}
   .bonsai-pill {{
-    background: #f1f5e8;
-    border: 1px solid #d8e8cc;
+    background: #eef3fe;
+    border: 1px solid #d3e3fd;
     border-radius: 8px;
-    color: #344232;
+    color: #174ea6;
     display: inline-block;
     font-size: 12px;
     font-weight: 700;
@@ -187,7 +238,7 @@ def debrief_page_html(
     padding: 6px 9px;
   }}
   .bonsai-main {{
-    color: #263726;
+    color: #202124;
     font-size: 14px;
     font-weight: 650;
     line-height: 1.35;
@@ -197,19 +248,115 @@ def debrief_page_html(
     margin-top: 9px;
   }}
   .bonsai-detail strong {{
-    color: #667064;
+    color: #5f6368;
     display: block;
     font-size: 12px;
     margin-bottom: 4px;
   }}
   .bonsai-detail span, .bonsai-card p {{
-    color: #2f382f;
+    color: #202124;
     font-size: 13px;
     line-height: 1.38;
   }}
   .bonsai-card.quiet p, .bonsai-card.quiet .bonsai-detail span {{
-    color: #4d554d;
+    color: #3c4043;
     font-size: 12px;
+  }}
+  .bonsai-insight-context {{
+    color: #5f6368;
+    font-size: 13px;
+    line-height: 1.35;
+    margin: 0 0 17px;
+  }}
+  .bonsai-insight-section {{
+    margin: 0 0 18px;
+  }}
+  .bonsai-insight-section:last-child {{
+    margin-bottom: 0;
+  }}
+  .bonsai-insight-section h3 {{
+    color: #5f6368;
+    font-size: 12px;
+    line-height: 1.25;
+    margin: 0 0 8px;
+  }}
+  .bonsai-recommendations {{
+    color: #202124;
+    font-size: 13px;
+    line-height: 1.42;
+    margin: 0;
+    padding-left: 20px;
+  }}
+  .bonsai-recommendations li {{
+    margin: 0 0 8px;
+  }}
+  .bonsai-recommendations li:last-child {{
+    margin-bottom: 0;
+  }}
+  .bonsai-action {{
+    color: #5f6368;
+    display: block;
+    font-size: 12px;
+    line-height: 1.35;
+    margin-top: 3px;
+  }}
+  .bonsai-insight-actions {{
+    margin-top: 16px;
+  }}
+  .bonsai-action-button {{
+    background: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    color: #202124;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 10px;
+  }}
+  .bonsai-action-button:hover {{
+    background: #f8f9fa;
+  }}
+  @media (prefers-color-scheme: dark) {{
+    body {{
+      background: #202124;
+      color: #e8eaed;
+    }}
+    .bonsai-intro,
+    .bonsai-filter label,
+    .bonsai-eyebrow,
+    .bonsai-stat span,
+    .bonsai-grounding,
+    .bonsai-insight-context,
+    .bonsai-insight-section h3,
+    .bonsai-action,
+    .bonsai-detail strong {{
+      color: #bdc1c6;
+    }}
+    .bonsai-grounding {{
+      border-color: #3c4043;
+    }}
+    .bonsai-filter select,
+    .bonsai-card,
+    .bonsai-card.quiet,
+    .bonsai-action-button {{
+      background: #2b2c2f;
+      border-color: #3c4043;
+      color: #e8eaed;
+    }}
+    .bonsai-pill {{
+      background: #243b67;
+      border-color: #3f5f99;
+      color: #d2e3fc;
+    }}
+    .bonsai-main,
+    .bonsai-stat strong,
+    .bonsai-detail span,
+    .bonsai-card p,
+    .bonsai-recommendations,
+    .bonsai-card.quiet p,
+    .bonsai-card.quiet .bonsai-detail span {{
+      color: #e8eaed;
+    }}
   }}
 </style>
 <script>
@@ -219,14 +366,21 @@ def debrief_page_html(
       target.innerHTML = html;
     }}
   }};
+  document.addEventListener("click", function(event) {{
+    const button = event.target.closest("[data-bonsai-browse-query]");
+    if (!button) {{
+      return;
+    }}
+    pycmd("{BROWSE_SEARCH_MESSAGE_PREFIX}" + encodeURIComponent(button.dataset.bonsaiBrowseQuery));
+  }});
 </script>
 <main class="bonsai-page">
   <header class="bonsai-header">
     <div>
       <h1>{escape(debrief_title())}</h1>
-      <div class="bonsai-intro">{escape(debrief_intro_text(lookback_days, deck_label=deck_label))}</div>
+      <div class="bonsai-intro">{escape(debrief_intro_text(lookback_days))}</div>
     </div>
-    {_deck_selector_html(deck_options, selected_deck)}
+    {_filters_html(deck_options, selected_deck, lookback_options, lookback_days)}
   </header>
   <section class="bonsai-stack">
     {"".join(sections)}
@@ -235,16 +389,33 @@ def debrief_page_html(
 """
 
 
-def llm_summary_html(summary: LlmDebriefSummary) -> str:
-    rows = []
-    if summary.check_first:
-        rows.append(_detail_html("Suggested check", _llm_check_text(summary.check_first)))
-    rows.extend(_detail_html("Also consider", _llm_check_text(check)) for check in summary.other_checks[:2])
-    return _panel_html("Bonsai summary", _paragraph(summary.summary) + "".join(rows), quiet=True)
+def llm_summary_html(summary: LlmDebriefSummary, evidence=None, *, grounding: str = "") -> str:
+    return _panel_html(
+        "",
+        _insight_context_html(evidence) + _insight_rows_html(summary) + _insight_actions_html(summary),
+        primary=True,
+    )
 
 
-def llm_summary_update_js(summary: LlmDebriefSummary) -> str:
-    return f"window.bonsaiSetLlmSummary({json.dumps(llm_summary_html(summary))});"
+def llm_summary_update_js(summary: LlmDebriefSummary, evidence=None, *, grounding: str = "") -> str:
+    return f"window.bonsaiSetLlmSummary({json.dumps(llm_summary_html(summary, evidence, grounding=grounding))});"
+
+
+def llm_summary_status_update_js(message: str, evidence=None, *, grounding: str = "") -> str:
+    return f"window.bonsaiSetLlmSummary({json.dumps(_llm_status_html(message, evidence, grounding=grounding))});"
+
+
+def _filters_html(
+    deck_options: tuple[str, ...],
+    selected_deck: str | None,
+    lookback_options: tuple[int, ...],
+    selected_lookback_days: int,
+) -> str:
+    deck_selector = _deck_selector_html(deck_options, selected_deck)
+    lookback_selector = _lookback_selector_html(lookback_options, selected_lookback_days)
+    if not deck_selector and not lookback_selector:
+        return ""
+    return f'<div class="bonsai-filters">{deck_selector}{lookback_selector}</div>'
 
 
 def _deck_selector_html(deck_options: tuple[str, ...], selected_deck: str | None) -> str:
@@ -263,6 +434,25 @@ def _deck_selector_html(deck_options: tuple[str, ...], selected_deck: str | None
   <select
     id="bonsai-deck-select"
     onchange="pycmd('{DECK_SCOPE_MESSAGE_PREFIX}' + encodeURIComponent(this.value))"
+  >
+    {"".join(options)}
+  </select>
+</div>
+"""
+
+
+def _lookback_selector_html(lookback_options: tuple[int, ...], selected_lookback_days: int) -> str:
+    options = []
+    for days in lookback_options:
+        selected = " selected" if days == selected_lookback_days else ""
+        label = f"{days} days"
+        options.append(f'<option value="{days}"{selected}>{escape(label)}</option>')
+    return f"""
+<div class="bonsai-filter">
+  <label for="bonsai-lookback-select">Time window</label>
+  <select
+    id="bonsai-lookback-select"
+    onchange="pycmd('{LOOKBACK_SCOPE_MESSAGE_PREFIX}' + encodeURIComponent(this.value))"
   >
     {"".join(options)}
   </select>
@@ -377,28 +567,107 @@ def _recommendation_html(
   <h2>{escape(title)}</h2>
   <div class="bonsai-pill">{escape(confidence)}</div>
   <p class="bonsai-main">{escape(next_step)}</p>
-  {_detail_html("What Bonsai noticed", evidence)}
+  {_detail_html("What stood out", evidence)}
   {check_html}
 </article>
 """
 
 
-def _panel_html(title: str, body: str, *, quiet: bool = False) -> str:
+def _panel_html(title: str, body: str, *, quiet: bool = False, primary: bool = False) -> str:
     quiet_class = " quiet" if quiet else ""
-    return f'<article class="bonsai-card{quiet_class}"><h2>{escape(title)}</h2>{body}</article>'
+    primary_class = " primary" if primary else ""
+    title_html = f"<h2>{escape(title)}</h2>" if title else ""
+    return f'<article class="bonsai-card{quiet_class}{primary_class}">{title_html}{body}</article>'
 
 
 def _paragraph(text: str) -> str:
     return f"<p>{escape(text)}</p>"
 
 
+def _insight_context_html(evidence) -> str:
+    if evidence is None:
+        return ""
+    label = "review" if evidence.reviews == 1 else "reviews"
+    return f'<p class="bonsai-insight-context">Based on analysis of the last {evidence.reviews} {label}:</p>'
+
+
+def _insight_rows_html(summary: LlmDebriefSummary) -> str:
+    sections = []
+    if summary.positives:
+        sections.append(_bullet_section_html("What you're doing well", summary.positives))
+    sections.append(_improvement_section_html("Areas for improvement", summary.improvements))
+    return "".join(sections)
+
+
+def _bullet_section_html(title: str, items: tuple[str, ...]) -> str:
+    item_html = "".join(f"<li>{escape(item)}</li>" for item in items)
+    return f'<section class="bonsai-insight-section"><h3>{escape(title)}</h3><ul class="bonsai-recommendations">{item_html}</ul></section>'
+
+
+def _improvement_section_html(title: str, items) -> str:
+    item_html = "".join(
+        f"<li>{escape(item.insight)}<span class=\"bonsai-action\">Try: {escape(item.action)}</span></li>"
+        for item in items
+    )
+    return f'<section class="bonsai-insight-section"><h3>{escape(title)}</h3><ul class="bonsai-recommendations">{item_html}</ul></section>'
+
+
+def _insight_actions_html(summary: LlmDebriefSummary) -> str:
+    card_ids = _unique_card_ids(summary.action_card_ids)
+    query = _card_search_query(card_ids)
+    if not query:
+        return ""
+    return (
+        '<div class="bonsai-insight-actions">'
+        f'<button type="button" class="bonsai-action-button" data-bonsai-browse-query="{escape(query, quote=True)}">'
+        f"Open {_count_label(len(card_ids), 'missed card', 'missed cards')} in Browse"
+        "</button>"
+        "</div>"
+    )
+
+
+def _card_search_query(card_ids: tuple[int, ...]) -> str:
+    return " or ".join(f"cid:{card_id}" for card_id in _unique_card_ids(card_ids))
+
+
+def _unique_card_ids(card_ids: tuple[int, ...]) -> tuple[int, ...]:
+    return tuple(dict.fromkeys(card_id for card_id in card_ids if card_id))
+
+
+def _count_label(count: int, singular: str, plural: str) -> str:
+    return f"{count} {singular if count == 1 else plural}"
+
+
+def _evidence_html(evidence) -> str:
+    if evidence is None:
+        return ""
+    return f"""
+<div class="bonsai-evidence">
+  {_stat_html(str(evidence.missed_cards), "cards with misses")}
+  {_stat_html(str(evidence.reviewed_cards), "cards reviewed")}
+  {_stat_html(str(evidence.misses), "misses")}
+  {_stat_html(_percent(evidence.again_rate), "again rate")}
+</div>
+"""
+
+
+def _grounding_html(text: str) -> str:
+    if not text:
+        return ""
+    return f'<div class="bonsai-grounding">{escape(text)}</div>'
+
+
+def grounding_text(deck_label: str | None, lookback_days: int) -> str:
+    deck = deck_label or "selected deck"
+    return f"Based on {deck}, last {lookback_days} days. Uses review logs and missed-card text only."
+
+
+def _stat_html(value: str, label: str) -> str:
+    return f'<div class="bonsai-stat"><strong>{escape(value)}</strong><span>{escape(label)}</span></div>'
+
+
 def _detail_html(label: str, value: str) -> str:
     return f'<div class="bonsai-detail"><strong>{escape(label)}</strong><span>{escape(value)}</span></div>'
-
-
-def _llm_check_text(check: LlmCheck) -> str:
-    examples = f" Examples: {', '.join(check.examples)}." if check.examples else ""
-    return f"{check.title}: {check.why}{examples}"
 
 
 def _target_label(target: StudyTarget | None) -> str:
@@ -425,8 +694,28 @@ def _early_learning_count(debrief: Debrief) -> int:
     return getattr(debrief.early_learning, "count", 0)
 
 
-def _llm_loading_html() -> str:
-    return _panel_html("Bonsai summary", _paragraph("Looking for patterns in the missed cards..."), quiet=True)
+def _llm_loading_html(evidence=None, *, grounding: str = "") -> str:
+    return _panel_html(
+        "",
+        _paragraph("Looking for patterns in the missed cards..."),
+        primary=True,
+    )
+
+
+def _llm_disabled_html(evidence=None, *, grounding: str = "") -> str:
+    return _llm_status_html("LLM insights are not enabled for this add-on configuration.", evidence, grounding=grounding)
+
+
+def _llm_status_html(message: str, evidence=None, *, grounding: str = "") -> str:
+    return _panel_html(
+        "",
+        _paragraph(message),
+        primary=True,
+    )
+
+
+def _percent(value: float) -> str:
+    return f"{round(value * 100)}%"
 
 
 def _plural(count: int) -> str:

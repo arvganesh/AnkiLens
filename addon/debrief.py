@@ -76,18 +76,30 @@ class SessionHabits:
 
 
 @dataclass(frozen=True)
-class LlmCheck:
-    title: str
-    why: str
-    examples: tuple[str, ...] = ()
-    action: str = "inspect_examples"
+class LlmImprovement:
+    insight: str
+    action: str
 
 
 @dataclass(frozen=True)
 class LlmDebriefSummary:
-    summary: str
-    check_first: LlmCheck | None = None
-    other_checks: tuple[LlmCheck, ...] = ()
+    positives: tuple[str, ...]
+    improvements: tuple[LlmImprovement, ...]
+    action_card_ids: tuple[int, ...] = ()
+
+
+@dataclass(frozen=True)
+class DebriefEvidence:
+    reviewed_cards: int
+    missed_cards: int
+    reviews: int
+    misses: int
+
+    @property
+    def again_rate(self) -> float:
+        if self.reviews == 0:
+            return 0
+        return self.misses / self.reviews
 
 
 @dataclass(frozen=True)
@@ -96,6 +108,7 @@ class Debrief:
     cards_to_fix: CardsToFix
     early_learning: EarlyLearning
     session_habits: SessionHabits
+    evidence: DebriefEvidence
     missed_cards: tuple[MissedCardSummary, ...]
     same_note_cluster: MissedCardSummary | None = None
     llm_summary: LlmDebriefSummary | None = None
@@ -171,6 +184,7 @@ def build_debrief(
         cards_to_fix=_cards_to_fix(all_missed_cards),
         early_learning=early_learning,
         session_habits=_session_habits(entries),
+        evidence=_debrief_evidence(entries),
         missed_cards=tuple(missed_cards),
         same_note_cluster=_same_note_cluster(all_missed_cards),
     )
@@ -334,9 +348,12 @@ def _support_priority(target: StudyTarget) -> int:
 
 
 _BROAD_TAG_PARTS = frozenset({"ak", "anking", "deck", "decks", "step", "step1", "step2", "v11", "v12"})
+_IGNORED_STUDY_TAGS = frozenset({"insights_demo", "bonsai_demo"})
 
 
 def _useful_study_tag(tag: str) -> bool:
+    if tag.lower() in _IGNORED_STUDY_TAGS:
+        return False
     parts = _tag_parts(tag)
     if not parts:
         return False
@@ -351,7 +368,7 @@ def _tag_specificity(target: StudyTarget) -> int:
 
 def _specific_topic_priority(target: StudyTarget) -> int:
     parts = _tag_parts(target.label) if target.kind == "tag" else []
-    if target.kind == "tag" and "anking" in parts and _tag_specificity(target) >= 2:
+    if target.kind == "tag" and _tag_specificity(target) >= 2 and target.count >= 4:
         return 0
     return 1
 
@@ -441,6 +458,15 @@ def _session_habits(entries: list[ReviewLogEntry]) -> SessionHabits:
         timed_review_count=len(durations),
         recorded_answer_seconds=total_seconds,
         seconds_per_timed_card=(total_seconds / len(durations)) if total_seconds is not None else None,
+    )
+
+
+def _debrief_evidence(entries: list[ReviewLogEntry]) -> DebriefEvidence:
+    return DebriefEvidence(
+        reviewed_cards=len({entry.card_id for entry in entries}),
+        missed_cards=len({entry.card_id for entry in entries if entry.ease == AGAIN_EASE}),
+        reviews=len(entries),
+        misses=sum(1 for entry in entries if entry.ease == AGAIN_EASE),
     )
 
 

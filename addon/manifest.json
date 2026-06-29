@@ -1,8 +1,8 @@
 {
   "package": "bonsai",
-  "name": "Bonsai",
+  "name": "Missed Card Insights",
   "mod": 0,
-  "author": "Bonsai",
+  "author": "Arvgan",
   "description": "Read-only analytics for cards that often need attention.",
   "homepage": "https://example.invalid"
 }

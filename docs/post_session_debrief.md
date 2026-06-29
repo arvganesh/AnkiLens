@@ -124,3 +124,64 @@ recent/today's reviews until session boundaries are modeled.
 - Keep Anki UI code thin and manually verify it in the actual Anki app before
   committing UI slices.
 - Use adversarial review for product semantics before adding auto hooks.
+
+## Future Direction: Med-School Scale Windows
+
+For heavy med-school users, a 30-day window can contain thousands of review
+events and hundreds of unique missed cards. The LLM should not rely only on a
+small sample of card text in that scenario.
+
+A future version should build a deterministic review-window profile before the
+LLM call. That profile should summarize the full selected deck/window, then
+send representative missed-card examples only after the aggregate facts.
+
+Useful full-window stats may include:
+
+- total review events
+- unique cards reviewed
+- cards with at least one miss
+- total misses
+- repeated-miss cards, such as cards with 2+ or 3+ misses
+- top decks, tags, topics, or repeated terms by miss count
+- early/new cards versus mature or lapsed missed cards
+- card-surface signals such as long, list-like, or many-number cards
+
+The goal is to help the LLM rank what matters at scale. Raw examples help it
+read the card content; aggregate stats help it understand whether a pattern is
+large enough to act on. The UI should continue to show only concise,
+student-facing insights and concrete read-only actions such as opening the
+relevant missed cards in Browse.
+
+Some review-event stats should also become visible product evidence, not only
+hidden LLM context. For example, med-school users may want a compact
+read-only view of total review events, cards reviewed, cards with misses,
+Again rate, repeated-miss cards, and top missed topics. Keep this separate
+from the prose insight card so the first screen stays calm, but make the
+evidence available for users who want to inspect the numbers behind the
+recommendations.
+
+### Cloze Normalization
+
+For cloze-heavy decks, especially AnKing-style medical decks, the LLM should
+not treat every missed cloze sibling as an independent raw card. Multiple
+missed siblings from one note may indicate one crowded note or one cloze family
+to inspect, not a broad weakness across the whole topic.
+
+A future prompt builder should group missed cloze siblings by note when
+`note_id` is available. Instead of sending repeated raw card text for each
+sibling, send one normalized note-level entry with sibling stats:
+
+- note/card family id
+- deck
+- total sibling cards when available
+- missed sibling count
+- total misses and reviews across the sibling cards
+- hardest cloze siblings, such as `c2 missed 3/4`
+- shared note text or a compact normalized card text
+- content labels such as long, list-like, or many-number card
+- exact card ids to open in Browse
+
+Single-card misses can still be sent as normal card entries. The goal is to
+help the LLM distinguish "this one cloze note may ask too much" from "this
+whole topic needs attention," while preserving concrete Browse actions for the
+missed sibling cards.

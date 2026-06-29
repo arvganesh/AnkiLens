@@ -63,7 +63,7 @@ class AnalyticsCopyTest(unittest.TestCase):
         self.assertNotIn("last 1 days", caption)
 
     def test_evidence_dialog_title_matches_debrief_button_language(self) -> None:
-        self.assertEqual(evidence_window_title(), "Bonsai Details")
+        self.assertEqual(evidence_window_title(), "Insight Details")
         self.assertEqual(evidence_title(), "Supporting cards behind this check")
 
     def test_evidence_window_metric_handles_one_day_window_cleanly(self) -> None:
