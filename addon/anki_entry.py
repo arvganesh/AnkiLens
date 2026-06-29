@@ -31,17 +31,7 @@ _selected_lookback_days: int | None = None
 _llm_request_counter = 0
 
 
-def register_menu() -> None:
-    from aqt import mw
-    from aqt.qt import QAction
-
-    action = QAction("Insights", mw)
-    action.triggered.connect(show_ankilens_page)
-    mw.form.menuTools.addAction(action)
-    _register_deck_browser_button()
-
-
-def _register_deck_browser_button() -> None:
+def register_toolbar() -> None:
     from aqt import gui_hooks
 
     gui_hooks.top_toolbar_did_init_links.append(_add_top_toolbar_link)

@@ -11,6 +11,21 @@ from config import AnkiLensConfig
 
 
 class AnkiEntryMessagesTest(unittest.TestCase):
+    def test_registers_toolbar_link_without_tools_menu_action(self) -> None:
+        original_aqt = sys.modules.get("aqt")
+        hooks = types.SimpleNamespace(top_toolbar_did_init_links=[], webview_did_receive_js_message=[])
+        sys.modules["aqt"] = types.SimpleNamespace(gui_hooks=hooks)
+        try:
+            anki_entry.register_toolbar()
+        finally:
+            if original_aqt is None:
+                sys.modules.pop("aqt", None)
+            else:
+                sys.modules["aqt"] = original_aqt
+
+        self.assertEqual(hooks.top_toolbar_did_init_links, [anki_entry._add_top_toolbar_link])
+        self.assertEqual(hooks.webview_did_receive_js_message, [anki_entry._handle_js_message])
+
     def test_adds_insights_top_toolbar_tab(self) -> None:
         links = []
         calls = []
