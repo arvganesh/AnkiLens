@@ -439,4 +439,4 @@ def _deck_display_label(deck_name: str) -> str:
 
 
 def debrief_title() -> str:
-    return "Insights"
+    return "AnkiLens"
