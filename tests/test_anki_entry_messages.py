@@ -26,7 +26,7 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertEqual(hooks.top_toolbar_did_init_links, [anki_entry._add_top_toolbar_link])
         self.assertEqual(hooks.webview_did_receive_js_message, [anki_entry._handle_js_message])
 
-    def test_adds_insights_top_toolbar_tab(self) -> None:
+    def test_adds_ankilens_top_toolbar_tab(self) -> None:
         links = []
         calls = []
 
@@ -37,9 +37,9 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         anki_entry._add_top_toolbar_link(links, FakeToolbar())
 
-        self.assertEqual(links, ["link:Insights"])
+        self.assertEqual(links, ["link:AnkiLens"])
         self.assertEqual(calls[0][0], "ankilens")
-        self.assertEqual(calls[0][1], "Insights")
+        self.assertEqual(calls[0][1], "AnkiLens")
         self.assertIs(calls[0][2], anki_entry.show_ankilens_page)
         self.assertEqual(calls[0][3], "Analyze missed cards")
         self.assertEqual(calls[0][4], "ankilens-top-tab")

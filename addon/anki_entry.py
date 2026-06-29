@@ -42,7 +42,7 @@ def _add_top_toolbar_link(links, toolbar) -> None:
     links.append(
         toolbar.create_link(
             "ankilens",
-            "Insights",
+            "AnkiLens",
             show_ankilens_page,
             tip="Analyze missed cards",
             id="ankilens-top-tab",
