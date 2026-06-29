@@ -2,8 +2,8 @@
 
 ## Product Direction
 
-- This is a fresh product direction: an Anki insights add-on, not the Bonsai
-  Flutter app and not a generic "missed card checker."
+- This is an AnkiLens product direction: an Anki insights add-on, not a generic
+  "missed card checker."
 - The working product idea is: turn recent missed-card review history for one
   selected deck into trustworthy, readable study insights.
 - The main user loop should be:
@@ -20,10 +20,9 @@
 
 ## Product Naming
 
-- User-facing product copy should use "Insights" or "Missed Card Insights."
-- Do not introduce new Bonsai branding unless explicitly requested.
-- Internal Python names may still contain `bonsai` during migration, but avoid
-  expanding that naming in new user-facing UI.
+- Use "AnkiLens" for repository, package, and product naming.
+- User-facing interface copy can use "Insights" or "Missed Card Insights" where
+  that is clearer or shorter than repeating the product name.
 
 ## Scope And Safety
 
@@ -45,11 +44,10 @@
 - Always ground LLM output with visible data: counts, miss rate, deck, and time
   window.
 - Prefer structured-but-readable output. Current preferred shape:
-  - `Insights`
-  - evidence stats strip
-  - `Pattern`
-  - `Focus`
-  - `Why this came up`
+  - `Based on analysis of the last X reviews:`
+  - `What you're doing well`
+  - `Areas for improvement`
+  - concrete `Try:` actions
 - Avoid examples lists unless the user asks for them. Long example lists make
   the UI unreadable as card volume grows.
 - Avoid implementation jargon in UI and LLM output, including "cue wording,"
@@ -120,13 +118,13 @@
 - The add-on can be symlinked into Anki:
 
 ```sh
-ln -s "$(pwd)/addon" "$HOME/Library/Application Support/Anki2/addons21/bonsai"
+ln -s "$(pwd)/addon" "$HOME/Library/Application Support/Anki2/addons21/ankilens"
 ```
 
 - Existing local symlink expected during development:
 
 ```text
-~/Library/Application Support/Anki2/addons21/bonsai -> /Users/arvgan/Documents/Projects/anki-missed-card-analytics/addon
+~/Library/Application Support/Anki2/addons21/ankilens -> /Users/arvgan/Documents/Projects/anki-missed-card-analytics/addon
 ```
 
 - Anki usually needs to be restarted after Python hook/callback changes.
@@ -160,4 +158,3 @@ git diff --check
 - Do not commit `.env`, API keys, generated caches, or local Anki profile data.
 - If making many changes, prefer small, legible commits that preserve the story
   of the product iteration.
-

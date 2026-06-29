@@ -1,8 +1,8 @@
-# Bonsai Anki Extension Handoff
+# AnkiLens Anki Extension Handoff
 
 ## Goal For The Next Agent
 
-Continue iterating on the Bonsai Anki add-on as a calm, trustworthy post-study
+Continue iterating on the AnkiLens Anki add-on as a calm, trustworthy post-study
 assistant. Optimize for a small ranked set of genuinely useful actions after
 missed cards, not for a broad analytics dashboard.
 
@@ -18,7 +18,7 @@ Product bar:
 - Minimal cognitive load.
 - No generic stats unless they directly change what the user should do next.
 - Prefer removing distracting UI over adding explanatory UI.
-- Keep copy cautious: Bonsai suggests checks; it should not overclaim causality.
+- Keep copy cautious: AnkiLens suggests checks; it should not overclaim causality.
 
 ## Useful Skills And Process
 
@@ -46,17 +46,17 @@ small change, test it, and commit.
 - Add or update unit tests for insight semantics and copy behavior.
 - Do not add advanced Anki features unless they directly support the core next action.
 - Prefer exact missed-card examples over broad deck/tag searches.
-- Treat `Bonsai Details` as a low-priority fallback until redesigned.
+- Treat `AnkiLens Details` as a low-priority fallback until redesigned.
 - Be careful with Anki module caching: the running app may need restart after
   dataclass, loader, or entrypoint changes.
 - Do not trust terminal screenshots for visual QA. Use Computer Use.
 
 ## Current Product Direction
 
-Bonsai is being shaped into a calm post-study assistant, not a stats dashboard.
+AnkiLens is being shaped into a calm post-study assistant, not a stats dashboard.
 The main flow is:
 
-1. The Anki deck page shows one primary Bonsai action: `Analyze missed cards`.
+1. The Anki deck page shows one primary AnkiLens action: `Analyze missed cards`.
 2. The debrief leads with the most useful check and may show a few secondary checks.
 3. The recommendation distinguishes likely causes where possible:
    - problematic card format,
@@ -69,7 +69,7 @@ The main flow is:
 The Missed Cards debrief currently leads with a single card:
 
 - Window heading: `Missed card analytics`.
-- The deck-browser Bonsai panel includes a `Deck` dropdown with `All decks` plus decks seen in recent reviews.
+- The deck-browser AnkiLens panel includes a `Deck` dropdown with `All decks` plus decks seen in recent reviews.
 - Selecting a deck scopes the panel count and the debrief to that deck for the current Anki session.
 - Long nested deck names display as the last two path parts, for example `Zanki Biochemistry / Metabolism`.
 - Title example: `Check missed examples from Cardiology Valves`.
@@ -77,7 +77,7 @@ The Missed Cards debrief currently leads with a single card:
 - Primary action example: `Show 2 missed examples`.
 - Lapsed-material next steps say `Check the missed examples first...` and explain when to inspect cards
   before studying more.
-- Evidence appears below the action under `What Bonsai noticed`, with examples before the maturity breakdown.
+- Evidence appears below the action under `What AnkiLens noticed`, with examples before the maturity breakdown.
 - Safety copy appears under `Before studying more`.
 - Secondary cards use ranked language such as `Also check...` or `Ignore for now...`.
 
@@ -88,19 +88,19 @@ Recent UI simplifications:
 - Kept the debrief action button compact and left-aligned.
 - Removed the high-Again-rate session note because it duplicated the main signal.
 - Changed material actions to open exact missed examples when possible.
-- Let secondary related-material panels open exact missed examples when Bonsai has those card IDs.
+- Let secondary related-material panels open exact missed examples when AnkiLens has those card IDs.
 - Softened remaining `related cards` copy in the primary study path to `cards`, `examples`, or `missed examples`.
 - Softened the secondary study support heading to `Also check cards`.
 - Debrief action callbacks now close the dialog, then schedule Browse/open callbacks on the next Qt tick.
 - Evidence examples are capped to two shortened labels plus `+N more missed cards` when the full missed
   set is larger than the visible examples.
 - A repeatable E2E seeder now exists at `scripts/seed_e2e_deck.py`. It creates a named
-  `Bonsai E2E Large Review Window` deck with 300 cards and 380 review-log rows.
+  `AnkiLens E2E Large Review Window` deck with 300 cards and 380 review-log rows.
 - The main heading changed from `Missed cards` to `Missed card analytics`.
 - Exact-card recommendation titles now say `Check missed examples from...`.
 - The signal badge no longer says `consistent enough to check`; larger supported patterns still show the
   concrete count, but avoid sounding like a diagnosis.
-- The evidence label changed from `Why this came up` to `What Bonsai noticed`.
+- The evidence label changed from `Why this came up` to `What AnkiLens noticed`.
 - Live Anki visual QA against the 380-review fixture showed the debrief rendering the new copy cleanly.
 - Clicking `Show 3 missed examples` still cannot be visually verified through Computer Use because the tool
   returns `noWindowsAvailable` after the dialog closes.
@@ -108,15 +108,15 @@ Recent UI simplifications:
 
 ## Latest Completed Slice
 
-The latest working slice adds an in-session deck-scope dropdown to the Bonsai deck panel.
+The latest working slice adds an in-session deck-scope dropdown to the AnkiLens deck panel.
 
 Behavior:
 
-- The panel dropdown sends `bonsai:deck:<encoded deck name>` and refreshes the deck browser.
+- The panel dropdown sends `ankilens:deck:<encoded deck name>` and refreshes the deck browser.
 - The panel count uses the selected deck when one is chosen; otherwise it uses all decks.
 - The debrief uses the same selected deck scope and names it in the intro line.
 - Long nested deck names are shortened in visible panel copy while retaining the full deck value internally.
-- Live Anki visual QA verified `All decks` at 82 repeated misses, `Bonsai E2E Large Review Window` at 80,
+- Live Anki visual QA verified `All decks` at 82 repeated misses, `AnkiLens E2E Large Review Window` at 80,
   and `Zanki Biochemistry / Metabolism` with no repeated misses.
 - No-signal debriefs now say `No action` above `No action needed yet`.
 - Study-target evidence says `2 of 5 cards from Cardiology Valves...` instead of `related cards`.
@@ -145,8 +145,8 @@ Why:
 - Secondary check headings should stay concrete and scan-friendly.
 - Fallback Browse messages should name exact-card actions clearly when opening Browse fails.
 - Browse actions should run after the debrief modal has started closing, not inside the same click stack.
-- Long AnKing-style labels should not make `What Bonsai noticed` unreadable as study volume grows.
-- If Bonsai shows only a few exact examples from a large cluster, the evidence should still acknowledge
+- Long AnKing-style labels should not make `What AnkiLens noticed` unreadable as study volume grows.
+- If AnkiLens shows only a few exact examples from a large cluster, the evidence should still acknowledge
   the full cluster size instead of implying only one hidden example exists.
 - Real review windows should not let a tiny, high-rate cluster outrank a much better-supported pattern.
 - The deck-browser panel should summarize the actual repeated-miss count, not the capped number of detail rows.
@@ -182,16 +182,16 @@ Visual verification:
 - Use Computer Use `get_app_state("Anki")`.
 - Do not rely on terminal `screencapture`; it captures the Codex desktop/wallpaper in this environment.
 - The documented workflow is in `docs/anki_ui_verification.md`.
-- On June 27, 2026, a temporary `/tmp/bonsai_large_debrief_preview` hook was used and then removed to
+- On June 27, 2026, a temporary `/tmp/ankilens_large_debrief_preview` hook was used and then removed to
   preview a 380-review / 80-miss workflow in the actual Anki dialog. The screen stayed readable with:
   `80 of 300 cards...`, `Show 3 missed examples`, and
   `Examples: Valve physiology missed example 239...; Valve physiology missed example 240...; +78 more missed cards.`
   After removing the hook and sentinel, the real profile dialog returned to the normal 2-card fixture.
 - On June 27, 2026, `scripts/seed_e2e_deck.py` seeded a real Anki deck named
-  `Bonsai E2E Large Review Window`. The script created backups at:
-  `~/Library/Application Support/Anki2/User 1/collection.anki2.bonsai-e2e-backup-20260627-125139`
-  and `~/Library/Application Support/Anki2/User 1/collection.anki2.bonsai-e2e-backup-20260627-125350`.
-  Computer Use verified the deck browser showed `Studied 380 cards...`, the Bonsai panel showed
+  `AnkiLens E2E Large Review Window`. The script created backups at:
+  `~/Library/Application Support/Anki2/User 1/collection.anki2.ankilens-e2e-backup-20260627-125139`
+  and `~/Library/Application Support/Anki2/User 1/collection.anki2.ankilens-e2e-backup-20260627-125350`.
+  Computer Use verified the deck browser showed `Studied 380 cards...`, the AnkiLens panel showed
   `82 cards needed another pass...`, and the debrief led with `80 of 300 cards...` plus
   `Show 3 missed examples`.
 - After the same-label duplicate suppression, Computer Use verified the real E2E debrief no longer showed the
@@ -207,7 +207,7 @@ Visual verification:
   clicking `Show 3 missed examples` in the real E2E deck; the clipboard was empty.
   Scheduling the callback after dialog close did not make Computer Use able to verify the transition in this session.
   Treat exact Browse visual proof as incomplete if this recurs.
-- The dense `Bonsai Details` / missed-card table still exists via the Tools menu, but it is not part of the primary debrief flow.
+- The dense `AnkiLens Details` / missed-card table still exists via the Tools menu, but it is not part of the primary debrief flow.
 
 ## Recent Commits
 
@@ -229,7 +229,7 @@ Visual verification:
 2. Confirm the primary action says `Show 2 missed examples` when exact card IDs exist.
 3. Click it and confirm Browse opens the exact missed cards, not the whole tag.
 4. If Browse cannot be verified through Computer Use, note the `noWindowsAvailable` limitation instead of claiming proof.
-5. Next product slice: decide whether `Bonsai Details` should be redesigned as a focused card-inspection sheet or left as a low-priority Tools-menu fallback.
+5. Next product slice: decide whether `AnkiLens Details` should be redesigned as a focused card-inspection sheet or left as a low-priority Tools-menu fallback.
 
 ## Files To Read First
 

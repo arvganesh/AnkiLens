@@ -5,7 +5,7 @@ import unittest
 from config import load_config
 
 
-class BonsaiConfigTest(unittest.TestCase):
+class AnkiLensConfigTest(unittest.TestCase):
     def test_uses_safe_defaults_without_config(self) -> None:
         config = load_config(None)
 
@@ -32,7 +32,7 @@ class BonsaiConfigTest(unittest.TestCase):
                 "llm_summary_enabled": True,
                 "llm_model": "anthropic/claude-sonnet-4",
                 "llm_api_url": "https://example.test/chat",
-                "llm_api_key_env": "BONSAI_LLM_KEY",
+                "llm_api_key_env": "ANKILENS_LLM_KEY",
                 "llm_max_cards": 60,
                 "llm_max_chars": 15000,
                 "llm_timeout_seconds": 30,
@@ -47,7 +47,7 @@ class BonsaiConfigTest(unittest.TestCase):
         self.assertTrue(config.llm_summary_enabled)
         self.assertEqual(config.llm_model, "anthropic/claude-sonnet-4")
         self.assertEqual(config.llm_api_url, "https://example.test/chat")
-        self.assertEqual(config.llm_api_key_env, "BONSAI_LLM_KEY")
+        self.assertEqual(config.llm_api_key_env, "ANKILENS_LLM_KEY")
         self.assertEqual(config.llm_max_cards, 60)
         self.assertEqual(config.llm_max_chars, 15000)
         self.assertEqual(config.llm_timeout_seconds, 30)

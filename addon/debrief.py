@@ -348,7 +348,7 @@ def _support_priority(target: StudyTarget) -> int:
 
 
 _BROAD_TAG_PARTS = frozenset({"ak", "anking", "deck", "decks", "step", "step1", "step2", "v11", "v12"})
-_IGNORED_STUDY_TAGS = frozenset({"insights_demo", "bonsai_demo"})
+_IGNORED_STUDY_TAGS = frozenset({"insights_demo", "ankilens_demo"})
 
 
 def _useful_study_tag(tag: str) -> bool:

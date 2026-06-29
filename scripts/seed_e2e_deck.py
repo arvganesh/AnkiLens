@@ -16,13 +16,13 @@ PROFILE_COLLECTION = (
     / "collection.anki2"
 )
 
-DECK_NAME = "Bonsai E2E Large Review Window"
+DECK_NAME = "AnkiLens E2E Large Review Window"
 NOTE_TYPE_ID = 1674685976679
-TAGS = " AnKing::Cardiology::Valves BonsaiE2E "
+TAGS = " AnKing::Cardiology::Valves AnkiLensE2E "
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Seed a real Anki deck for Bonsai end-to-end debrief testing.")
+    parser = argparse.ArgumentParser(description="Seed a real Anki deck for AnkiLens end-to-end debrief testing.")
     parser.add_argument("--collection", type=Path, default=PROFILE_COLLECTION)
     parser.add_argument("--no-backup", action="store_true", help="Skip the timestamped collection backup.")
     args = parser.parse_args()
@@ -32,7 +32,7 @@ def main() -> None:
         raise SystemExit(f"collection not found: {collection}")
 
     if not args.no_backup:
-        backup = collection.with_name(f"{collection.name}.bonsai-e2e-backup-{time.strftime('%Y%m%d-%H%M%S')}")
+        backup = collection.with_name(f"{collection.name}.ankilens-e2e-backup-{time.strftime('%Y%m%d-%H%M%S')}")
         shutil.copy2(collection, backup)
         print(f"backup: {backup}")
 
@@ -112,7 +112,7 @@ def seed(db: sqlite3.Connection) -> None:
 
 def _delete_existing(db: sqlite3.Connection, deck_id: int) -> None:
     card_ids = [row[0] for row in db.execute("select id from cards where did = ?", (deck_id,))]
-    note_ids = [row[0] for row in db.execute("select id from notes where tags like '%BonsaiE2E%'")]
+    note_ids = [row[0] for row in db.execute("select id from notes where tags like '%AnkiLensE2E%'")]
     if card_ids:
         db.executemany("delete from revlog where cid = ?", [(card_id,) for card_id in card_ids])
     if note_ids:
@@ -134,7 +134,7 @@ def _note_row(note_id: int, front: str, back: str, now_secs: int) -> tuple:
     fields = f"{front}\x1f{back}"
     return (
         note_id,
-        f"bonsai-e2e-{note_id}",
+        f"ankilens-e2e-{note_id}",
         NOTE_TYPE_ID,
         now_secs,
         -1,

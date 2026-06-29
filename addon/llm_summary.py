@@ -9,11 +9,11 @@ from typing import Any
 
 try:
     from .analytics import AGAIN_EASE, ReviewLogEntry, summarize_missed_cards
-    from .config import BonsaiConfig
+    from .config import AnkiLensConfig
     from .debrief import LlmDebriefSummary, LlmImprovement
 except ImportError:
     from analytics import AGAIN_EASE, ReviewLogEntry, summarize_missed_cards
-    from config import BonsaiConfig
+    from config import AnkiLensConfig
     from debrief import LlmDebriefSummary, LlmImprovement
 
 
@@ -62,7 +62,7 @@ Return only JSON with this shape:
 
 def build_llm_summary(
     entries: list[ReviewLogEntry],
-    config: BonsaiConfig,
+    config: AnkiLensConfig,
     *,
     api_key_getter: Callable[[str], str | None] = os.environ.get,
     env_file_getter: Callable[[str], str | None] | None = None,

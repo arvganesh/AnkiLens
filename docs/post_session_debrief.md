@@ -1,13 +1,13 @@
 # Post-Session Debrief Plan
 
-Bonsai should become most useful immediately after study, when the user is
+AnkiLens should become most useful immediately after study, when the user is
 already thinking about what went wrong. The debrief should stay read-only,
 calm, and lightweight: it should explain patterns without changing scheduling,
 notes, cards, decks, or review history.
 
 ## Product Shape
 
-Bonsai should lead with the most useful check and may show a small ranked set of
+AnkiLens should lead with the most useful check and may show a small ranked set of
 secondary checks. Supporting facts can appear below each action, but the first
 screen should not feel like a dashboard. Every visible fact should help answer
 "what should I inspect or ignore next?"
@@ -60,12 +60,12 @@ Session habits are supporting context only.
 The debrief should make one relationship explicit:
 
 Repeated misses can mean the card needs editing, the content needs more study,
-or both. Bonsai should help the user check card quality before concluding that
+or both. AnkiLens should help the user check card quality before concluding that
 they simply need to study harder.
 
 For tag-driven decks such as AnKing, repeated misses can also mean the user
 unsuspended material that matches class tags but has not actually learned the
-underlying lecture/topic yet. Bonsai should frame the debrief as a decision:
+underlying lecture/topic yet. AnkiLens should frame the debrief as a decision:
 
 - If mature construction clues are present, check the specific card first.
 - If misses cluster around one note, inspect that note before deciding to study
@@ -79,7 +79,7 @@ underlying lecture/topic yet. Bonsai should frame the debrief as a decision:
 ## Initial Semantics
 
 For the first implementation, "post-session" means a recent review window, not a
-true Anki session boundary. Bonsai should label this clearly as a debrief for
+true Anki session boundary. AnkiLens should label this clearly as a debrief for
 recent/today's reviews until session boundaries are modeled.
 
 - Study material means "content areas worth checking if the cards look okay,"
@@ -100,7 +100,7 @@ recent/today's reviews until session boundaries are modeled.
    - Cover semantics with unit tests before adding UI.
 
 2. Add a manual Session Debrief dialog.
-   - Open it from the Bonsai front-page panel and/or Bonsai dialog.
+   - Open it from the AnkiLens front-page panel and/or AnkiLens dialog.
    - Lead with the most useful check.
    - Use ranked language for secondary checks, such as "Also check" and
      "Ignore for now."
@@ -117,7 +117,7 @@ recent/today's reviews until session boundaries are modeled.
 ## Testing Requirements
 
 - Unit-test the debrief model outside Anki.
-- Include empty/small-window tests so Bonsai does not overclaim from thin data.
+- Include empty/small-window tests so AnkiLens does not overclaim from thin data.
 - Keep ranking deterministic for supported study targets.
 - Include cloze-heavy AnKing scenarios where sibling cards from one note should
   not become broad study support.

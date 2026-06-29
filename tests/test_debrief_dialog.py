@@ -142,7 +142,7 @@ class DebriefDialogTest(unittest.TestCase):
     def test_debrief_intro_names_short_recent_window(self) -> None:
         self.assertEqual(debrief_intro_text(1), "Last 24 hours")
         self.assertEqual(
-            debrief_intro_text(1, deck_label="Bonsai E2E Large Review Window"),
+            debrief_intro_text(1, deck_label="AnkiLens E2E Large Review Window"),
             "Last 24 hours",
         )
         self.assertIn("Last 2 days", debrief_intro_text(2))

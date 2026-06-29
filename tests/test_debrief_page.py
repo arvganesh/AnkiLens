@@ -28,15 +28,15 @@ class DebriefPageTest(unittest.TestCase):
             deck_label="Renal::Tubules",
         )
 
-        self.assertIn("<main class=\"bonsai-page\">", html)
+        self.assertIn("<main class=\"ankilens-page\">", html)
         self.assertIn("<h1>Insights</h1>", html)
         self.assertIn("Last 90 days", html)
         self.assertNotIn("Renal::Tubules · Last 90 days", html)
         self.assertNotIn("read-only", html)
         self.assertNotIn("scheduling is unchanged", html)
         self.assertIn("<select", html)
-        self.assertIn("bonsai:deck:", html)
-        self.assertIn("bonsai:lookback:", html)
+        self.assertIn("ankilens:deck:", html)
+        self.assertIn("ankilens:lookback:", html)
         self.assertNotIn("All decks", html)
         self.assertNotIn('value=""', html)
         self.assertIn('<option value="Renal::Tubules" selected title="Renal::Tubules">Renal::Tubules</option>', html)
@@ -49,9 +49,9 @@ class DebriefPageTest(unittest.TestCase):
         self.assertNotIn("again rate", html)
         self.assertNotIn("Based on Renal::Tubules, last 90 days.", html)
         self.assertIn("Looking for patterns", html)
-        self.assertIn("window.bonsaiSetLlmSummary", html)
-        self.assertIn("data-bonsai-browse-query", html)
-        self.assertIn("bonsai:browse:", html)
+        self.assertIn("window.ankilensSetLlmSummary", html)
+        self.assertIn("data-ankilens-browse-query", html)
+        self.assertIn("ankilens:browse:", html)
         self.assertNotIn("Check first", html)
         self.assertNotIn("No action needed yet", html)
 
@@ -94,13 +94,13 @@ class DebriefPageTest(unittest.TestCase):
         self.assertIn("Based on analysis of the last 20 reviews:", html)
         self.assertIn("What you&#x27;re doing well", html)
         self.assertIn("Areas for improvement", html)
-        self.assertIn("bonsai-recommendations", html)
+        self.assertIn("ankilens-recommendations", html)
         self.assertIn("32 reviewed cards had no misses", html)
         self.assertIn("12 missed valve cards", html)
         self.assertIn("Try: Search for murmur cards", html)
-        self.assertIn("bonsai-action", html)
+        self.assertIn("ankilens-action", html)
         self.assertIn("Open 2 missed cards in Browse", html)
-        self.assertIn("data-bonsai-browse-query", html)
+        self.assertIn("data-ankilens-browse-query", html)
         self.assertIn("cid:20 or cid:10", html)
         self.assertNotIn("25%", html)
         self.assertNotIn("Based on Cardiology, last 30 days.", html)
@@ -117,14 +117,14 @@ class DebriefPageTest(unittest.TestCase):
 
         js = llm_summary_update_js(summary)
 
-        self.assertIn("window.bonsaiSetLlmSummary", js)
+        self.assertIn("window.ankilensSetLlmSummary", js)
         self.assertIn("&lt;unsafe&gt;", js)
         self.assertNotIn("<unsafe>", js)
 
     def test_llm_status_update_js_escapes_message(self) -> None:
         js = llm_summary_status_update_js("<missing key>")
 
-        self.assertIn("window.bonsaiSetLlmSummary", js)
+        self.assertIn("window.ankilensSetLlmSummary", js)
         self.assertIn("&lt;missing key&gt;", js)
         self.assertNotIn("<missing key>", js)
 

@@ -7,7 +7,7 @@ from datetime import datetime
 
 import anki_entry
 from analytics import ReviewLogEntry
-from config import BonsaiConfig
+from config import AnkiLensConfig
 
 
 class AnkiEntryMessagesTest(unittest.TestCase):
@@ -23,17 +23,17 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         anki_entry._add_top_toolbar_link(links, FakeToolbar())
 
         self.assertEqual(links, ["link:Insights"])
-        self.assertEqual(calls[0][0], "bonsai")
+        self.assertEqual(calls[0][0], "ankilens")
         self.assertEqual(calls[0][1], "Insights")
-        self.assertIs(calls[0][2], anki_entry.show_bonsai_page)
+        self.assertIs(calls[0][2], anki_entry.show_ankilens_page)
         self.assertEqual(calls[0][3], "Analyze missed cards")
-        self.assertEqual(calls[0][4], "bonsai-top-tab")
+        self.assertEqual(calls[0][4], "ankilens-top-tab")
 
     def test_handles_deck_scope_message(self) -> None:
         original_deck = anki_entry._selected_deck_name
-        original_show_bonsai_page = anki_entry.show_bonsai_page
+        original_show_ankilens_page = anki_entry.show_ankilens_page
         calls = []
-        anki_entry.show_bonsai_page = lambda: calls.append("page")
+        anki_entry.show_ankilens_page = lambda: calls.append("page")
         try:
             handled = anki_entry._handle_js_message(
                 (False, None),
@@ -46,13 +46,13 @@ class AnkiEntryMessagesTest(unittest.TestCase):
             self.assertEqual(calls, ["page"])
         finally:
             anki_entry._selected_deck_name = original_deck
-            anki_entry.show_bonsai_page = original_show_bonsai_page
+            anki_entry.show_ankilens_page = original_show_ankilens_page
 
     def test_handles_lookback_scope_message(self) -> None:
         original_lookback = anki_entry._selected_lookback_days
-        original_show_bonsai_page = anki_entry.show_bonsai_page
+        original_show_ankilens_page = anki_entry.show_ankilens_page
         calls = []
-        anki_entry.show_bonsai_page = lambda: calls.append("page")
+        anki_entry.show_ankilens_page = lambda: calls.append("page")
         try:
             handled = anki_entry._handle_js_message(
                 (False, None),
@@ -65,7 +65,7 @@ class AnkiEntryMessagesTest(unittest.TestCase):
             self.assertEqual(calls, ["page"])
         finally:
             anki_entry._selected_lookback_days = original_lookback
-            anki_entry.show_bonsai_page = original_show_bonsai_page
+            anki_entry.show_ankilens_page = original_show_ankilens_page
 
     def test_handles_browse_search_message(self) -> None:
         original_open_search = anki_entry._open_search_from_debrief
@@ -138,7 +138,7 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         filtered = anki_entry._debrief_entries(
             entries,
-            BonsaiConfig(lookback_days=90, debrief_lookback_days=1),
+            AnkiLensConfig(lookback_days=90, debrief_lookback_days=1),
             now=datetime(2026, 6, 26, 12),
         )
 
@@ -148,10 +148,10 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         calls = []
         dialog = types.SimpleNamespace(set_llm_summary=lambda summary: calls.append(summary))
 
-        anki_entry._attach_llm_summary(dialog, [], BonsaiConfig(llm_summary_enabled=False))
+        anki_entry._attach_llm_summary(dialog, [], AnkiLensConfig(llm_summary_enabled=False))
 
         self.assertEqual(calls, [])
-        self.assertFalse(hasattr(dialog, "_bonsai_llm_thread"))
+        self.assertFalse(hasattr(dialog, "_ankilens_llm_thread"))
 
     def test_llm_summary_attach_starts_background_worker(self) -> None:
         original_loader = anki_entry._load_llm_summary_builder
@@ -192,7 +192,7 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         anki_entry.threading.Thread = FakeThread
         dialog = types.SimpleNamespace(set_llm_summary=lambda summary: calls.append(summary))
         try:
-            anki_entry._attach_llm_summary(dialog, [], BonsaiConfig(llm_summary_enabled=True))
+            anki_entry._attach_llm_summary(dialog, [], AnkiLensConfig(llm_summary_enabled=True))
         finally:
             anki_entry._load_llm_summary_builder = original_loader
             anki_entry.threading.Thread = original_thread
@@ -232,11 +232,11 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         anki_entry._load_debrief_page_module = lambda: FakePage
         anki_entry._start_llm_summary_worker = fake_worker
         try:
-            anki_entry._attach_llm_summary_to_page(web, ["old"], BonsaiConfig(llm_summary_enabled=True))
+            anki_entry._attach_llm_summary_to_page(web, ["old"], AnkiLensConfig(llm_summary_enabled=True))
             anki_entry._attach_llm_summary_to_page(
                 web,
                 ["current"],
-                BonsaiConfig(llm_summary_enabled=True),
+                AnkiLensConfig(llm_summary_enabled=True),
                 grounding="current scope",
             )
 
@@ -260,7 +260,7 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         missed_count = anki_entry._missed_card_count(
             entries,
-            BonsaiConfig(minimum_misses=2, result_limit=20),
+            AnkiLensConfig(minimum_misses=2, result_limit=20),
         )
 
         self.assertEqual(missed_count, 25)
@@ -276,12 +276,12 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
             without_demo = anki_entry._load_review_entries(
                 object(),
-                BonsaiConfig(demo_data_enabled=False),
+                AnkiLensConfig(demo_data_enabled=False),
                 now=datetime(2026, 6, 26, 12),
             )
             with_demo = anki_entry._load_review_entries(
                 object(),
-                BonsaiConfig(demo_data_enabled=True),
+                AnkiLensConfig(demo_data_enabled=True),
                 now=datetime(2026, 6, 26, 12),
             )
         finally:
@@ -356,25 +356,25 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
     def test_debrief_loader_refreshes_dialog_dependencies_first(self) -> None:
         self.assertEqual(
-            anki_entry._debrief_dialog_module_names("bonsai"),
+            anki_entry._debrief_dialog_module_names("ankilens"),
             (
-                "bonsai.debrief_dialog_copy",
-                "bonsai.copy_text",
-                "bonsai.session_context",
-                "bonsai.ui_helpers",
-                "bonsai.dialog_actions",
-                "bonsai.debrief_dialog",
+                "ankilens.debrief_dialog_copy",
+                "ankilens.copy_text",
+                "ankilens.session_context",
+                "ankilens.ui_helpers",
+                "ankilens.dialog_actions",
+                "ankilens.debrief_dialog",
             ),
         )
 
     def test_debrief_loader_refreshes_model_dependencies_first(self) -> None:
         self.assertEqual(
-            anki_entry._debrief_model_module_names("bonsai"),
+            anki_entry._debrief_model_module_names("ankilens"),
             (
-                "bonsai.content_signals",
-                "bonsai.terms",
-                "bonsai.analytics",
-                "bonsai.debrief",
+                "ankilens.content_signals",
+                "ankilens.terms",
+                "ankilens.analytics",
+                "ankilens.debrief",
             ),
         )
 

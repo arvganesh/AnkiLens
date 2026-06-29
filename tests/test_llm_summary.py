@@ -5,7 +5,7 @@ import unittest
 from datetime import datetime
 
 from analytics import ReviewLogEntry
-from config import BonsaiConfig
+from config import AnkiLensConfig
 from llm_summary import build_llm_summary
 
 
@@ -41,7 +41,7 @@ class LlmSummaryTest(unittest.TestCase):
 
         result = build_llm_summary(
             [_entry(1, 1, 0)],
-            BonsaiConfig(llm_summary_enabled=False),
+            AnkiLensConfig(llm_summary_enabled=False),
             api_key_getter=lambda _name: "key",
             env_file_getter=lambda _name: None,
             opener=lambda *args, **kwargs: calls.append((args, kwargs)),
@@ -55,7 +55,7 @@ class LlmSummaryTest(unittest.TestCase):
 
         result = build_llm_summary(
             [_entry(1, 1, 0)],
-            BonsaiConfig(llm_summary_enabled=True),
+            AnkiLensConfig(llm_summary_enabled=True),
             api_key_getter=lambda _name: None,
             env_file_getter=lambda _name: None,
             opener=lambda *args, **kwargs: calls.append((args, kwargs)),
@@ -102,7 +102,7 @@ class LlmSummaryTest(unittest.TestCase):
                 _entry(2, 1, 1, text="mitral murmur"),
                 _entry(3, 3, 2, text="stable valve card"),
             ],
-            BonsaiConfig(llm_summary_enabled=True, llm_max_chars=1000, llm_timeout_seconds=7),
+            AnkiLensConfig(llm_summary_enabled=True, llm_max_chars=1000, llm_timeout_seconds=7),
             api_key_getter=lambda name: "test-key" if name == "OPENROUTER_API_KEY" else None,
             env_file_getter=lambda _name: None,
             opener=opener,
@@ -181,7 +181,7 @@ class LlmSummaryTest(unittest.TestCase):
 
         result = build_llm_summary(
             [_entry(1, 1, 0)],
-            BonsaiConfig(llm_summary_enabled=True),
+            AnkiLensConfig(llm_summary_enabled=True),
             api_key_getter=lambda _name: "test-key",
             env_file_getter=lambda _name: None,
             opener=lambda *_args, **_kwargs: _FakeResponse(payload),
@@ -218,7 +218,7 @@ class LlmSummaryTest(unittest.TestCase):
 
         result = build_llm_summary(
             [_entry(1, 1, 0)],
-            BonsaiConfig(llm_summary_enabled=True),
+            AnkiLensConfig(llm_summary_enabled=True),
             api_key_getter=lambda _name: "test-key",
             env_file_getter=lambda _name: None,
             opener=lambda *_args, **_kwargs: _FakeResponse(payload),
@@ -269,7 +269,7 @@ class LlmSummaryTest(unittest.TestCase):
 
         result = build_llm_summary(
             [_entry(1, 1, 0)],
-            BonsaiConfig(llm_summary_enabled=True),
+            AnkiLensConfig(llm_summary_enabled=True),
             api_key_getter=lambda _name: "test-key",
             env_file_getter=lambda _name: None,
             opener=lambda *_args, **_kwargs: _FakeResponse(payload),

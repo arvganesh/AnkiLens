@@ -24,9 +24,9 @@ except ImportError:
     from demo_data import build_demo_review_entries
 
 
-DECK_SCOPE_MESSAGE_PREFIX = "bonsai:deck:"
-LOOKBACK_SCOPE_MESSAGE_PREFIX = "bonsai:lookback:"
-BROWSE_SEARCH_MESSAGE_PREFIX = "bonsai:browse:"
+DECK_SCOPE_MESSAGE_PREFIX = "ankilens:deck:"
+LOOKBACK_SCOPE_MESSAGE_PREFIX = "ankilens:lookback:"
+BROWSE_SEARCH_MESSAGE_PREFIX = "ankilens:browse:"
 LOOKBACK_OPTIONS = (7, 30, 90)
 _selected_deck_name: str | None = None
 _selected_lookback_days: int | None = None
@@ -53,11 +53,11 @@ def _register_deck_browser_button() -> None:
 def _add_top_toolbar_link(links, toolbar) -> None:
     links.append(
         toolbar.create_link(
-            "bonsai",
+            "ankilens",
             "Insights",
-            show_bonsai_page,
+            show_ankilens_page,
             tip="Analyze missed cards",
-            id="bonsai-top-tab",
+            id="ankilens-top-tab",
         )
     )
 
@@ -74,11 +74,11 @@ def _missed_card_count(entries, config) -> int:
 def _handle_js_message(handled, message: str, _context):
     if message.startswith(DECK_SCOPE_MESSAGE_PREFIX):
         _set_selected_deck(unquote(message.removeprefix(DECK_SCOPE_MESSAGE_PREFIX)))
-        show_bonsai_page()
+        show_ankilens_page()
         return (True, None)
     if message.startswith(LOOKBACK_SCOPE_MESSAGE_PREFIX):
         _set_selected_lookback_days(message.removeprefix(LOOKBACK_SCOPE_MESSAGE_PREFIX))
-        show_bonsai_page()
+        show_ankilens_page()
         return (True, None)
     if message.startswith(BROWSE_SEARCH_MESSAGE_PREFIX):
         _open_search_from_debrief(unquote(message.removeprefix(BROWSE_SEARCH_MESSAGE_PREFIX)))
@@ -109,7 +109,7 @@ def show_session_debrief() -> None:
     dialog.exec()
 
 
-def show_bonsai_page() -> None:
+def show_ankilens_page() -> None:
     from aqt import mw
 
     current_build_debrief = _load_debrief_builder()
@@ -194,10 +194,10 @@ def _attach_llm_summary(dialog, entries, config) -> None:
 def _attach_llm_summary_to_page(web, entries, config, evidence=None, *, grounding: str = "") -> None:
     page = _load_debrief_page_module()
     request_id = _next_llm_request_id()
-    web._bonsai_llm_request_id = request_id
+    web._ankilens_llm_request_id = request_id
 
     def update_page(summary) -> None:
-        if getattr(web, "_bonsai_llm_request_id", None) != request_id:
+        if getattr(web, "_ankilens_llm_request_id", None) != request_id:
             return
         web.eval(
             page.llm_summary_update_js(summary, evidence, grounding=grounding)
@@ -235,8 +235,8 @@ def _start_llm_summary_worker(parent, entries, config, callback) -> None:
         notifier.summary_ready.emit(summary)
 
     thread = threading.Thread(target=run, daemon=True)
-    parent._bonsai_llm_notifier = notifier
-    parent._bonsai_llm_thread = thread
+    parent._ankilens_llm_notifier = notifier
+    parent._ankilens_llm_thread = thread
     thread.start()
 
 

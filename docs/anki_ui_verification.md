@@ -1,9 +1,9 @@
 # Anki UI Verification Notes
 
-Bonsai is symlinked into Anki for live testing:
+AnkiLens is symlinked into Anki for live testing:
 
 ```sh
-ls -l "$HOME/Library/Application Support/Anki2/addons21/bonsai"
+ls -l "$HOME/Library/Application Support/Anki2/addons21/ankilens"
 ```
 
 Expected target:
@@ -22,7 +22,7 @@ Use Computer Use app-state capture for visual checks:
 
 This can read Anki's accessibility tree and return a screenshot of the active
 Anki window. On June 27, 2026, this successfully captured the deck browser and
-Bonsai deck panel.
+AnkiLens deck panel.
 
 Terminal `screencapture` is not reliable in this Codex desktop environment. It
 can return only the Codex desktop wallpaper/menu bar even while Computer Use can

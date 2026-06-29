@@ -69,9 +69,9 @@ except ImportError:
     from session_context import session_context_text
 
 
-DECK_SCOPE_MESSAGE_PREFIX = "bonsai:deck:"
-LOOKBACK_SCOPE_MESSAGE_PREFIX = "bonsai:lookback:"
-BROWSE_SEARCH_MESSAGE_PREFIX = "bonsai:browse:"
+DECK_SCOPE_MESSAGE_PREFIX = "ankilens:deck:"
+LOOKBACK_SCOPE_MESSAGE_PREFIX = "ankilens:lookback:"
+BROWSE_SEARCH_MESSAGE_PREFIX = "ankilens:browse:"
 
 
 def debrief_page_html(
@@ -90,7 +90,7 @@ def debrief_page_html(
         if debrief.llm_summary
         else _llm_loading_html(debrief.evidence, grounding=grounding) if llm_enabled else _llm_disabled_html(debrief.evidence, grounding=grounding)
     )
-    sections = [f'<div id="bonsai-llm-summary">{llm_summary}</div>']
+    sections = [f'<div id="ankilens-llm-summary">{llm_summary}</div>']
     return f"""
 <style>
   body {{
@@ -99,42 +99,42 @@ def debrief_page_html(
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     margin: 0;
   }}
-  .bonsai-page {{
+  .ankilens-page {{
     box-sizing: border-box;
     margin: 0 auto;
     max-width: 900px;
     padding: 34px 26px 56px;
   }}
-  .bonsai-page h1 {{
+  .ankilens-page h1 {{
     font-size: 28px;
     line-height: 1.1;
     margin: 0 0 8px;
   }}
-  .bonsai-intro {{
+  .ankilens-intro {{
     color: #5f6368;
     font-size: 14px;
     margin-bottom: 0;
   }}
-  .bonsai-header {{
+  .ankilens-header {{
     align-items: end;
     display: grid;
     gap: 14px;
     grid-template-columns: minmax(0, 1fr) minmax(300px, 430px);
     margin-bottom: 18px;
   }}
-  .bonsai-filters {{
+  .ankilens-filters {{
     display: grid;
     gap: 10px;
     grid-template-columns: minmax(150px, 1fr) minmax(120px, 0.6fr);
   }}
-  .bonsai-filter label {{
+  .ankilens-filter label {{
     color: #5f6368;
     display: block;
     font-size: 12px;
     font-weight: 700;
     margin-bottom: 5px;
   }}
-  .bonsai-filter select {{
+  .ankilens-filter select {{
     background: #ffffff;
     border: 1px solid #dadce0;
     border-radius: 9px;
@@ -146,51 +146,51 @@ def debrief_page_html(
     width: 100%;
   }}
   @media (max-width: 680px) {{
-    .bonsai-header {{
+    .ankilens-header {{
       align-items: stretch;
       grid-template-columns: 1fr;
     }}
-    .bonsai-filters {{
+    .ankilens-filters {{
       grid-template-columns: 1fr;
     }}
-    .bonsai-evidence {{
+    .ankilens-evidence {{
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }}
   }}
-  .bonsai-stack {{
+  .ankilens-stack {{
     display: grid;
     gap: 14px;
   }}
-  .bonsai-card {{
+  .ankilens-card {{
     background: #ffffff;
     border: 1px solid #dadce0;
     border-radius: 10px;
     box-sizing: border-box;
     padding: 18px 20px;
   }}
-  .bonsai-card.primary {{
+  .ankilens-card.primary {{
     padding: 22px 24px;
   }}
-  .bonsai-card.quiet {{
+  .ankilens-card.quiet {{
     background: #ffffff;
     border-color: #e5e7eb;
     padding: 13px 15px;
   }}
-  .bonsai-eyebrow {{
+  .ankilens-eyebrow {{
     color: #5f6368;
     font-size: 11px;
     font-weight: 700;
     margin-bottom: 5px;
   }}
-  .bonsai-card h2 {{
+  .ankilens-card h2 {{
     font-size: 19px;
     line-height: 1.2;
     margin: 0 0 9px;
   }}
-  .bonsai-card.primary h2 {{
+  .ankilens-card.primary h2 {{
     font-size: 22px;
   }}
-  .bonsai-evidence {{
+  .ankilens-evidence {{
     border-bottom: 1px solid #e5e7eb;
     display: grid;
     gap: 10px;
@@ -198,23 +198,23 @@ def debrief_page_html(
     margin: 0 0 10px;
     padding: 0 0 15px;
   }}
-  .bonsai-stat {{
+  .ankilens-stat {{
     min-width: 0;
   }}
-  .bonsai-stat strong {{
+  .ankilens-stat strong {{
     color: #202124;
     display: block;
     font-size: 18px;
     line-height: 1.1;
   }}
-  .bonsai-stat span {{
+  .ankilens-stat span {{
     color: #5f6368;
     display: block;
     font-size: 11px;
     font-weight: 700;
     margin-top: 4px;
   }}
-  .bonsai-grounding {{
+  .ankilens-grounding {{
     border-bottom: 1px solid #e5e7eb;
     color: #5f6368;
     font-size: 12px;
@@ -222,11 +222,11 @@ def debrief_page_html(
     margin: 0 0 17px;
     padding: 0 0 14px;
   }}
-  .bonsai-card.quiet h2 {{
+  .ankilens-card.quiet h2 {{
     font-size: 15px;
     margin-bottom: 6px;
   }}
-  .bonsai-pill {{
+  .ankilens-pill {{
     background: #eef3fe;
     border: 1px solid #d3e3fd;
     border-radius: 8px;
@@ -237,73 +237,73 @@ def debrief_page_html(
     margin-bottom: 13px;
     padding: 6px 9px;
   }}
-  .bonsai-main {{
+  .ankilens-main {{
     color: #202124;
     font-size: 14px;
     font-weight: 650;
     line-height: 1.35;
     margin: 0 0 13px;
   }}
-  .bonsai-detail {{
+  .ankilens-detail {{
     margin-top: 9px;
   }}
-  .bonsai-detail strong {{
+  .ankilens-detail strong {{
     color: #5f6368;
     display: block;
     font-size: 12px;
     margin-bottom: 4px;
   }}
-  .bonsai-detail span, .bonsai-card p {{
+  .ankilens-detail span, .ankilens-card p {{
     color: #202124;
     font-size: 13px;
     line-height: 1.38;
   }}
-  .bonsai-card.quiet p, .bonsai-card.quiet .bonsai-detail span {{
+  .ankilens-card.quiet p, .ankilens-card.quiet .ankilens-detail span {{
     color: #3c4043;
     font-size: 12px;
   }}
-  .bonsai-insight-context {{
+  .ankilens-insight-context {{
     color: #5f6368;
     font-size: 13px;
     line-height: 1.35;
     margin: 0 0 17px;
   }}
-  .bonsai-insight-section {{
+  .ankilens-insight-section {{
     margin: 0 0 18px;
   }}
-  .bonsai-insight-section:last-child {{
+  .ankilens-insight-section:last-child {{
     margin-bottom: 0;
   }}
-  .bonsai-insight-section h3 {{
+  .ankilens-insight-section h3 {{
     color: #5f6368;
     font-size: 12px;
     line-height: 1.25;
     margin: 0 0 8px;
   }}
-  .bonsai-recommendations {{
+  .ankilens-recommendations {{
     color: #202124;
     font-size: 13px;
     line-height: 1.42;
     margin: 0;
     padding-left: 20px;
   }}
-  .bonsai-recommendations li {{
+  .ankilens-recommendations li {{
     margin: 0 0 8px;
   }}
-  .bonsai-recommendations li:last-child {{
+  .ankilens-recommendations li:last-child {{
     margin-bottom: 0;
   }}
-  .bonsai-action {{
+  .ankilens-action {{
     color: #5f6368;
     display: block;
     font-size: 12px;
     line-height: 1.35;
     margin-top: 3px;
   }}
-  .bonsai-insight-actions {{
+  .ankilens-insight-actions {{
     margin-top: 16px;
   }}
-  .bonsai-action-button {{
+  .ankilens-action-button {{
     background: #ffffff;
     border: 1px solid #dadce0;
     border-radius: 8px;
@@ -313,7 +313,7 @@ def debrief_page_html(
     font-weight: 700;
     padding: 7px 10px;
   }}
-  .bonsai-action-button:hover {{
+  .ankilens-action-button:hover {{
     background: #f8f9fa;
   }}
   @media (prefers-color-scheme: dark) {{
@@ -321,68 +321,68 @@ def debrief_page_html(
       background: #202124;
       color: #e8eaed;
     }}
-    .bonsai-intro,
-    .bonsai-filter label,
-    .bonsai-eyebrow,
-    .bonsai-stat span,
-    .bonsai-grounding,
-    .bonsai-insight-context,
-    .bonsai-insight-section h3,
-    .bonsai-action,
-    .bonsai-detail strong {{
+    .ankilens-intro,
+    .ankilens-filter label,
+    .ankilens-eyebrow,
+    .ankilens-stat span,
+    .ankilens-grounding,
+    .ankilens-insight-context,
+    .ankilens-insight-section h3,
+    .ankilens-action,
+    .ankilens-detail strong {{
       color: #bdc1c6;
     }}
-    .bonsai-grounding {{
+    .ankilens-grounding {{
       border-color: #3c4043;
     }}
-    .bonsai-filter select,
-    .bonsai-card,
-    .bonsai-card.quiet,
-    .bonsai-action-button {{
+    .ankilens-filter select,
+    .ankilens-card,
+    .ankilens-card.quiet,
+    .ankilens-action-button {{
       background: #2b2c2f;
       border-color: #3c4043;
       color: #e8eaed;
     }}
-    .bonsai-pill {{
+    .ankilens-pill {{
       background: #243b67;
       border-color: #3f5f99;
       color: #d2e3fc;
     }}
-    .bonsai-main,
-    .bonsai-stat strong,
-    .bonsai-detail span,
-    .bonsai-card p,
-    .bonsai-recommendations,
-    .bonsai-card.quiet p,
-    .bonsai-card.quiet .bonsai-detail span {{
+    .ankilens-main,
+    .ankilens-stat strong,
+    .ankilens-detail span,
+    .ankilens-card p,
+    .ankilens-recommendations,
+    .ankilens-card.quiet p,
+    .ankilens-card.quiet .ankilens-detail span {{
       color: #e8eaed;
     }}
   }}
 </style>
 <script>
-  window.bonsaiSetLlmSummary = function(html) {{
-    const target = document.getElementById("bonsai-llm-summary");
+  window.ankilensSetLlmSummary = function(html) {{
+    const target = document.getElementById("ankilens-llm-summary");
     if (target) {{
       target.innerHTML = html;
     }}
   }};
   document.addEventListener("click", function(event) {{
-    const button = event.target.closest("[data-bonsai-browse-query]");
+    const button = event.target.closest("[data-ankilens-browse-query]");
     if (!button) {{
       return;
     }}
-    pycmd("{BROWSE_SEARCH_MESSAGE_PREFIX}" + encodeURIComponent(button.dataset.bonsaiBrowseQuery));
+    pycmd("{BROWSE_SEARCH_MESSAGE_PREFIX}" + encodeURIComponent(button.dataset.ankilensBrowseQuery));
   }});
 </script>
-<main class="bonsai-page">
-  <header class="bonsai-header">
+<main class="ankilens-page">
+  <header class="ankilens-header">
     <div>
       <h1>{escape(debrief_title())}</h1>
-      <div class="bonsai-intro">{escape(debrief_intro_text(lookback_days))}</div>
+      <div class="ankilens-intro">{escape(debrief_intro_text(lookback_days))}</div>
     </div>
     {_filters_html(deck_options, selected_deck, lookback_options, lookback_days)}
   </header>
-  <section class="bonsai-stack">
+  <section class="ankilens-stack">
     {"".join(sections)}
   </section>
 </main>
@@ -398,11 +398,11 @@ def llm_summary_html(summary: LlmDebriefSummary, evidence=None, *, grounding: st
 
 
 def llm_summary_update_js(summary: LlmDebriefSummary, evidence=None, *, grounding: str = "") -> str:
-    return f"window.bonsaiSetLlmSummary({json.dumps(llm_summary_html(summary, evidence, grounding=grounding))});"
+    return f"window.ankilensSetLlmSummary({json.dumps(llm_summary_html(summary, evidence, grounding=grounding))});"
 
 
 def llm_summary_status_update_js(message: str, evidence=None, *, grounding: str = "") -> str:
-    return f"window.bonsaiSetLlmSummary({json.dumps(_llm_status_html(message, evidence, grounding=grounding))});"
+    return f"window.ankilensSetLlmSummary({json.dumps(_llm_status_html(message, evidence, grounding=grounding))});"
 
 
 def _filters_html(
@@ -415,7 +415,7 @@ def _filters_html(
     lookback_selector = _lookback_selector_html(lookback_options, selected_lookback_days)
     if not deck_selector and not lookback_selector:
         return ""
-    return f'<div class="bonsai-filters">{deck_selector}{lookback_selector}</div>'
+    return f'<div class="ankilens-filters">{deck_selector}{lookback_selector}</div>'
 
 
 def _deck_selector_html(deck_options: tuple[str, ...], selected_deck: str | None) -> str:
@@ -429,10 +429,10 @@ def _deck_selector_html(deck_options: tuple[str, ...], selected_deck: str | None
             f"{escape(_deck_display_label(deck))}</option>"
         )
     return f"""
-<div class="bonsai-filter">
-  <label for="bonsai-deck-select">Deck</label>
+<div class="ankilens-filter">
+  <label for="ankilens-deck-select">Deck</label>
   <select
-    id="bonsai-deck-select"
+    id="ankilens-deck-select"
     onchange="pycmd('{DECK_SCOPE_MESSAGE_PREFIX}' + encodeURIComponent(this.value))"
   >
     {"".join(options)}
@@ -448,10 +448,10 @@ def _lookback_selector_html(lookback_options: tuple[int, ...], selected_lookback
         label = f"{days} days"
         options.append(f'<option value="{days}"{selected}>{escape(label)}</option>')
     return f"""
-<div class="bonsai-filter">
-  <label for="bonsai-lookback-select">Time window</label>
+<div class="ankilens-filter">
+  <label for="ankilens-lookback-select">Time window</label>
   <select
-    id="bonsai-lookback-select"
+    id="ankilens-lookback-select"
     onchange="pycmd('{LOOKBACK_SCOPE_MESSAGE_PREFIX}' + encodeURIComponent(this.value))"
   >
     {"".join(options)}
@@ -562,11 +562,11 @@ def _recommendation_html(
 ) -> str:
     check_html = _detail_html("Before studying more", check) if check else ""
     return f"""
-<article class="bonsai-card">
-  <div class="bonsai-eyebrow">{escape(eyebrow)}</div>
+<article class="ankilens-card">
+  <div class="ankilens-eyebrow">{escape(eyebrow)}</div>
   <h2>{escape(title)}</h2>
-  <div class="bonsai-pill">{escape(confidence)}</div>
-  <p class="bonsai-main">{escape(next_step)}</p>
+  <div class="ankilens-pill">{escape(confidence)}</div>
+  <p class="ankilens-main">{escape(next_step)}</p>
   {_detail_html("What stood out", evidence)}
   {check_html}
 </article>
@@ -577,7 +577,7 @@ def _panel_html(title: str, body: str, *, quiet: bool = False, primary: bool = F
     quiet_class = " quiet" if quiet else ""
     primary_class = " primary" if primary else ""
     title_html = f"<h2>{escape(title)}</h2>" if title else ""
-    return f'<article class="bonsai-card{quiet_class}{primary_class}">{title_html}{body}</article>'
+    return f'<article class="ankilens-card{quiet_class}{primary_class}">{title_html}{body}</article>'
 
 
 def _paragraph(text: str) -> str:
@@ -588,7 +588,7 @@ def _insight_context_html(evidence) -> str:
     if evidence is None:
         return ""
     label = "review" if evidence.reviews == 1 else "reviews"
-    return f'<p class="bonsai-insight-context">Based on analysis of the last {evidence.reviews} {label}:</p>'
+    return f'<p class="ankilens-insight-context">Based on analysis of the last {evidence.reviews} {label}:</p>'
 
 
 def _insight_rows_html(summary: LlmDebriefSummary) -> str:
@@ -601,15 +601,15 @@ def _insight_rows_html(summary: LlmDebriefSummary) -> str:
 
 def _bullet_section_html(title: str, items: tuple[str, ...]) -> str:
     item_html = "".join(f"<li>{escape(item)}</li>" for item in items)
-    return f'<section class="bonsai-insight-section"><h3>{escape(title)}</h3><ul class="bonsai-recommendations">{item_html}</ul></section>'
+    return f'<section class="ankilens-insight-section"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
 
 
 def _improvement_section_html(title: str, items) -> str:
     item_html = "".join(
-        f"<li>{escape(item.insight)}<span class=\"bonsai-action\">Try: {escape(item.action)}</span></li>"
+        f"<li>{escape(item.insight)}<span class=\"ankilens-action\">Try: {escape(item.action)}</span></li>"
         for item in items
     )
-    return f'<section class="bonsai-insight-section"><h3>{escape(title)}</h3><ul class="bonsai-recommendations">{item_html}</ul></section>'
+    return f'<section class="ankilens-insight-section"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
 
 
 def _insight_actions_html(summary: LlmDebriefSummary) -> str:
@@ -618,8 +618,8 @@ def _insight_actions_html(summary: LlmDebriefSummary) -> str:
     if not query:
         return ""
     return (
-        '<div class="bonsai-insight-actions">'
-        f'<button type="button" class="bonsai-action-button" data-bonsai-browse-query="{escape(query, quote=True)}">'
+        '<div class="ankilens-insight-actions">'
+        f'<button type="button" class="ankilens-action-button" data-ankilens-browse-query="{escape(query, quote=True)}">'
         f"Open {_count_label(len(card_ids), 'missed card', 'missed cards')} in Browse"
         "</button>"
         "</div>"
@@ -642,7 +642,7 @@ def _evidence_html(evidence) -> str:
     if evidence is None:
         return ""
     return f"""
-<div class="bonsai-evidence">
+<div class="ankilens-evidence">
   {_stat_html(str(evidence.missed_cards), "cards with misses")}
   {_stat_html(str(evidence.reviewed_cards), "cards reviewed")}
   {_stat_html(str(evidence.misses), "misses")}
@@ -654,7 +654,7 @@ def _evidence_html(evidence) -> str:
 def _grounding_html(text: str) -> str:
     if not text:
         return ""
-    return f'<div class="bonsai-grounding">{escape(text)}</div>'
+    return f'<div class="ankilens-grounding">{escape(text)}</div>'
 
 
 def grounding_text(deck_label: str | None, lookback_days: int) -> str:
@@ -663,11 +663,11 @@ def grounding_text(deck_label: str | None, lookback_days: int) -> str:
 
 
 def _stat_html(value: str, label: str) -> str:
-    return f'<div class="bonsai-stat"><strong>{escape(value)}</strong><span>{escape(label)}</span></div>'
+    return f'<div class="ankilens-stat"><strong>{escape(value)}</strong><span>{escape(label)}</span></div>'
 
 
 def _detail_html(label: str, value: str) -> str:
-    return f'<div class="bonsai-detail"><strong>{escape(label)}</strong><span>{escape(value)}</span></div>'
+    return f'<div class="ankilens-detail"><strong>{escape(label)}</strong><span>{escape(value)}</span></div>'
 
 
 def _target_label(target: StudyTarget | None) -> str:
