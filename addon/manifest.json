@@ -1,8 +1,8 @@
 {
   "package": "ankilens",
-  "name": "Missed Card Insights",
+  "name": "AnkiLens",
   "mod": 0,
   "author": "Arvgan",
-  "description": "Read-only analytics for cards that often need attention.",
-  "homepage": "https://example.invalid"
+  "description": "Read-only missed-card insights from recent review history.",
+  "homepage": "https://github.com/arvganesh/AnkiLens"
 }

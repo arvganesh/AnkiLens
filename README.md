@@ -7,6 +7,8 @@ has been going well and which missed cards may be worth checking next. It uses
 your recent review history and missed-card text, but it does not change Anki
 scheduling or edit any cards.
 
+This alpha uses a bring-your-own OpenRouter API key for generated insights.
+
 ## What It Does
 
 - Looks at recent reviews for one deck at a time.
@@ -25,6 +27,37 @@ ln -s "$(pwd)/addon" "$HOME/Library/Application Support/Anki2/addons21/ankilens"
 ```
 
 Restart Anki after Python changes.
+
+## Alpha Setup
+
+AnkiLens currently uses the `OPENROUTER_API_KEY` environment variable for
+generated insights. Create an OpenRouter key, then launch Anki from a shell that
+has the variable set:
+
+```sh
+export OPENROUTER_API_KEY="your-key-here"
+open -a Anki
+```
+
+On macOS, launching Anki from the Dock may not include shell environment
+variables. If insights do not load, quit Anki and start it from Terminal with
+the commands above.
+
+The default model is `deepseek/deepseek-v4-flash`. Advanced users can change
+`llm_model` in `addon/config.json`, but the main alpha does not include an
+in-app model picker.
+
+OpenRouter usage and billing stay in the user's OpenRouter account. AnkiLens
+does not show token pricing in the UI.
+
+## Privacy
+
+When generated insights are enabled, AnkiLens sends selected missed-card text
+and review metadata for the chosen deck/window to the configured LLM endpoint.
+It does not send the whole collection.
+
+The add-on is read-only. It does not change scheduling, notes, cards, decks, or
+review logs.
 
 ## Configuration
 
@@ -58,6 +91,14 @@ make test
 ```
 
 The tests do not require a live Anki GUI.
+
+Build an uploadable add-on package with:
+
+```sh
+make package
+```
+
+The package is written to `dist/ankilens.ankiaddon`.
 
 ## Code Map
 

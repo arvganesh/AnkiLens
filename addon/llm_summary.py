@@ -25,12 +25,13 @@ Use only the supplied missed-card data. Do not infer medical, factual, or schedu
 Use a number in each bullet when the supplied stats support it, such as cards with misses, repeated misses, total misses, or reviewed cards without misses.
 Focus on content-driven insights from the missed-card evidence, not overall review volume.
 Include positive or calibrating insights when supported by the stats, such as material that did not appear in the missed-card set or the share of reviewed cards without misses.
+When only a capped missed-card subset is supplied, do not write positives like "out of 30 reviewed cards"; say "missed-card examples analyzed" or skip that positive.
 Each positive bullet must make a distinct point. Do not write two positives that both mean "most reviews went well."
 If two stats support the same point, combine them into one bullet instead of making separate bullets.
 Do not say what the student understands, forgot, failed to process, retained, mastered, or should study for a specific duration.
 Do not address the student as "you".
-Avoid implementation terms like tag, cue wording, source text, prompt pattern, JSON, deck artifact, content_labels, early review flags, stability, retention, interference, pacing, and successful.
-Never use the words "cue", "tag", "artifact", "source text", "retention", "interference", "stability", or "successful" in the output.
+Avoid implementation terms like tag, cue wording, source text, prompt pattern, JSON, deck artifact, content_labels, early review flags, stability, retention, interference, pacing, dense label, and successful.
+Never use the words "cue", "tag", "artifact", "source text", "retention", "interference", "stability", "successful", "labeled", "labelled", or "weak wording" in the output.
 Do not say the student is relying on phrases instead of understanding concepts.
 Do not claim the pattern caused the misses or created confusion.
 If the data suggests leech-like repeated trouble, mention the number of repeated misses and that the card may ask for too much at once; do not recommend changing Anki scheduling.
@@ -47,7 +48,9 @@ The action should be concrete enough to do immediately, such as "Search for murm
 Use plain classroom language that a tired learner can act on quickly.
 Avoid vague phrases like "next pass", "subtopics", "dense overlap", "overload", "optimize pacing", "pacing concerns", "stabilize recognition", "retention", "interference", "stability", or "mental model".
 When suggesting bucketing, name the actual bucket examples, such as "murmur cards first, then drug side effects."
-When suggesting a card edit, say what to check, such as "one card asking for three toxicities."
+When suggesting a card edit, say exactly what to check, such as "one card asking for three toxicities" or "a prompt that asks for spelling, sound, and example at once."
+Do not say only "review separately"; turn it into an immediate action, such as opening the card, rewriting the prompt, splitting a list, or searching two named cards side by side.
+If wording seems unclear, say "may need a clearer prompt" instead of "weak wording."
 Avoid generic openings like "Review", "Compare", "Inspect", "Focus on", or "Group" unless there is no clearer wording.
 Use varied sentence structure so the bullets do not feel templated.
 Return only JSON with this shape:
@@ -318,6 +321,14 @@ def _plain_language_string(value: Any, *, max_length: int) -> str:
         "pacing": "card volume",
         "Early review flags": "Early missed cards",
         "early review flags": "early missed cards",
+        "labeled 'dense'": "with many details",
+        'labeled "dense"': "with many details",
+        "labelled 'dense'": "with many details",
+        'labelled "dense"': "with many details",
+        "weak wording": "a prompt that may need to be clearer",
+        "Weak wording": "A prompt that may need to be clearer",
+        "Review separately": "Open the card and make the prompt more specific",
+        "review separately": "open the card and make the prompt more specific",
         "weak stability": "more misses",
         "Weak stability": "More misses",
         "Delay repeats until stability is seen": "Keep the next review to a smaller set of related cards",

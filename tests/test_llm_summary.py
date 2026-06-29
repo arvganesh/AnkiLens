@@ -140,6 +140,8 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertIn("Use a number in each bullet", system_prompt)
         self.assertIn("Focus on content-driven insights", system_prompt)
         self.assertIn("positive or calibrating insight", system_prompt)
+        self.assertIn("When only a capped missed-card subset is supplied", system_prompt)
+        self.assertIn("missed-card examples analyzed", system_prompt)
         self.assertIn("Each positive bullet must make a distinct point", system_prompt)
         self.assertIn("combine them into one bullet", system_prompt)
         self.assertIn("review-method signals", system_prompt)
@@ -161,6 +163,10 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertIn("retained, mastered", system_prompt)
         self.assertIn("do not recommend changing Anki scheduling", system_prompt)
         self.assertIn("Avoid implementation terms", system_prompt)
+        self.assertIn("dense label", system_prompt)
+        self.assertIn("weak wording", system_prompt)
+        self.assertIn("Do not say only \"review separately\"", system_prompt)
+        self.assertIn("may need a clearer prompt", system_prompt)
         self.assertIn("Miss definition: only Again review buttons count as misses.", body["messages"][1]["content"])
         self.assertIn("Focus on content patterns in the missed-card evidence", body["messages"][1]["content"])
         self.assertIn("Do not repeat the same positive in different words", body["messages"][1]["content"])
@@ -249,6 +255,44 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertNotIn("understanding concepts", rendered)
         self.assertNotIn("causing", rendered)
         self.assertNotIn("creating confusion", rendered)
+
+    def test_parser_rewrites_card_edit_slop(self) -> None:
+        payload = {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "positives": [],
+                                "improvements": [
+                                    {
+                                        "insight": "The protein card was labeled 'dense' and has weak wording.",
+                                        "action": "Review separately.",
+                                    }
+                                ],
+                            }
+                        )
+                    }
+                }
+            ]
+        }
+
+        result = build_llm_summary(
+            [_entry(1, 1, 0)],
+            AnkiLensConfig(llm_summary_enabled=True),
+            api_key_getter=lambda _name: "test-key",
+            env_file_getter=lambda _name: None,
+            opener=lambda *_args, **_kwargs: _FakeResponse(payload),
+        )
+
+        self.assertIsNotNone(result)
+        rendered = " ".join((result.improvements[0].insight, result.improvements[0].action))
+        self.assertNotIn("labeled", rendered)
+        self.assertNotIn("dense", rendered)
+        self.assertNotIn("weak wording", rendered)
+        self.assertNotIn("Review separately", rendered)
+        self.assertIn("many details", rendered)
+        self.assertIn("clearer", rendered)
 
     def test_parser_truncates_long_recommendations_at_word_boundary(self) -> None:
         long_text = (
