@@ -130,8 +130,9 @@ def debrief_page_html(
     padding-bottom: 13px;
   }}
   .ankilens-insight-section {{
+    border-left: 3px solid transparent;
     margin: 0;
-    padding: 0 0 17px;
+    padding: 0 0 17px 12px;
   }}
   .ankilens-insight-section + .ankilens-insight-section {{
     border-top: 1px solid #e8eaed;
@@ -147,6 +148,18 @@ def debrief_page_html(
     line-height: 1.25;
     margin: 0 0 9px;
   }}
+  .ankilens-insight-section.good {{
+    border-left-color: #5f9f7d;
+  }}
+  .ankilens-insight-section.improve {{
+    border-left-color: #d0a342;
+  }}
+  .ankilens-insight-section.good h3 {{
+    color: #2f6f50;
+  }}
+  .ankilens-insight-section.improve h3 {{
+    color: #795800;
+  }}
   .ankilens-recommendations {{
     color: #202124;
     font-size: 13px;
@@ -161,11 +174,17 @@ def debrief_page_html(
   .ankilens-recommendations li::marker {{
     color: #5f6368;
   }}
+  .ankilens-insight-section.good li::marker {{
+    color: #5f9f7d;
+  }}
+  .ankilens-insight-section.improve li::marker {{
+    color: #d0a342;
+  }}
   .ankilens-recommendations li:last-child {{
     margin-bottom: 0;
   }}
   .ankilens-action {{
-    border-left: 2px solid #dadce0;
+    border-left: 2px solid #d0a342;
     color: #5f6368;
     display: block;
     font-size: 12px;
@@ -219,6 +238,19 @@ def debrief_page_html(
     .ankilens-recommendations,
     .ankilens-insight-section h3 {{
       color: #e8eaed;
+    }}
+    .ankilens-insight-section.good {{
+      border-left-color: #7fc7ae;
+    }}
+    .ankilens-insight-section.improve,
+    .ankilens-action {{
+      border-left-color: #d8b96a;
+    }}
+    .ankilens-insight-section.good li::marker {{
+      color: #7fc7ae;
+    }}
+    .ankilens-insight-section.improve li::marker {{
+      color: #d8b96a;
     }}
   }}
 </style>
@@ -349,7 +381,7 @@ def _insight_rows_html(summary: LlmDebriefSummary) -> str:
 
 def _bullet_section_html(title: str, items: tuple[str, ...]) -> str:
     item_html = "".join(f"<li>{escape(item)}</li>" for item in items)
-    return f'<section class="ankilens-insight-section"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
+    return f'<section class="ankilens-insight-section good"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
 
 
 def _improvement_section_html(title: str, items) -> str:
@@ -357,7 +389,7 @@ def _improvement_section_html(title: str, items) -> str:
         f"<li>{escape(item.insight)}<span class=\"ankilens-action\">Try: {escape(item.action)}</span></li>"
         for item in items
     )
-    return f'<section class="ankilens-insight-section"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
+    return f'<section class="ankilens-insight-section improve"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
 
 
 def _insight_actions_html(summary: LlmDebriefSummary) -> str:
