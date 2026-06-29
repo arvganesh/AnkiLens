@@ -187,20 +187,12 @@ def debrief_page_html(
     padding-top: 14px;
   }}
   .ankilens-action-button {{
-    -webkit-appearance: none;
-    appearance: none;
     background: transparent;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
     color: #3c4043;
     cursor: pointer;
-    font-family: inherit;
     font-size: 12px;
     font-weight: 500;
     line-height: 1.35;
-    margin: 0;
-    padding: 0;
     text-decoration: underline;
     text-underline-offset: 2px;
   }}
@@ -222,10 +214,12 @@ def debrief_page_html(
       color: #bdc1c6;
     }}
     .ankilens-filter select,
-    .ankilens-card,
-    .ankilens-action-button {{
+    .ankilens-card {{
       background: #2b2c2f;
       border-color: #3c4043;
+      color: #e8eaed;
+    }}
+    .ankilens-action-button {{
       color: #e8eaed;
     }}
     .ankilens-insight-context,
@@ -259,6 +253,7 @@ def debrief_page_html(
     if (!button) {{
       return;
     }}
+    event.preventDefault();
     pycmd("{BROWSE_SEARCH_MESSAGE_PREFIX}" + encodeURIComponent(button.dataset.ankilensBrowseQuery));
   }});
 </script>
@@ -392,9 +387,9 @@ def _insight_actions_html(summary: LlmDebriefSummary) -> str:
         return ""
     return (
         '<div class="ankilens-insight-actions">'
-        f'<button type="button" class="ankilens-action-button" data-ankilens-browse-query="{escape(query, quote=True)}">'
+        f'<a href="#" class="ankilens-action-button" data-ankilens-browse-query="{escape(query, quote=True)}">'
         f"Open {_count_label(len(card_ids), 'missed card', 'missed cards')} in Browse"
-        "</button>"
+        "</a>"
         "</div>"
     )
 
