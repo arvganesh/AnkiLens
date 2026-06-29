@@ -151,7 +151,7 @@ def debrief_page_html(
     color: #3f7a5c;
   }}
   .ankilens-insight-section.improve h3 {{
-    color: #8a6a00;
+    color: #9a5538;
   }}
   .ankilens-recommendations {{
     color: #202124;
