@@ -102,6 +102,8 @@
 
 - `addon/` - Anki add-on source.
 - `addon/anki_entry.py` - Anki hook/page entrypoint and webview message bridge.
+- `addon/anki_gateway.py` - Anki review-log adapter and card text cleanup.
+- `addon/anki_browser.py` - Browse search construction and Browser opening.
 - `addon/debrief.py` - Small evidence and LLM insight data models.
 - `addon/debrief_page.py` - Main Insights page HTML/CSS/JS rendering.
 - `addon/llm_summary.py` - LLM prompt, request, parsing, and cleanup logic.
@@ -110,8 +112,8 @@
 - `tests/` - Pure Python tests that should not require a live Anki GUI.
 - `tests/fake_anki.py` - Minimal fake Anki collection surface for tests.
 - `docs/anki_ui_verification.md` - Current Anki visual QA notes and limitations.
-- `docs/post_session_debrief.md` - Older deterministic debrief plan. Treat as
-  historical context; the current direction is LLM-grounded deck insights.
+- `docs/post_session_debrief.md` - Historical and future-direction notes. Treat
+  as planning context; the current direction is LLM-grounded deck insights.
 
 ## Local Development
 

@@ -4,8 +4,10 @@ import json
 from html import escape
 
 try:
+    from .anki_browser import browser_search_for_cards
     from .debrief import Debrief, LlmDebriefSummary
 except ImportError:
+    from anki_browser import browser_search_for_cards
     from debrief import Debrief, LlmDebriefSummary
 
 
@@ -354,7 +356,7 @@ def _insight_actions_html(summary: LlmDebriefSummary) -> str:
 
 
 def _card_search_query(card_ids: tuple[int, ...]) -> str:
-    return " or ".join(f"cid:{card_id}" for card_id in _unique_card_ids(card_ids))
+    return browser_search_for_cards(card_ids)
 
 
 def _unique_card_ids(card_ids: tuple[int, ...]) -> tuple[int, ...]:

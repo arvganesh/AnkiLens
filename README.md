@@ -91,6 +91,8 @@ integration surfaces, and page message handling.
 
 - `addon/` - Anki add-on source.
 - `addon/anki_entry.py` - Anki hook/page entrypoint and webview message bridge.
+- `addon/anki_gateway.py` - Anki review-log adapter and card text cleanup.
+- `addon/anki_browser.py` - Browse search construction and Browser opening.
 - `addon/debrief.py` - Small evidence and LLM insight data models.
 - `addon/debrief_page.py` - Main Insights page HTML/CSS/JS rendering.
 - `addon/llm_summary.py` - LLM prompt, request, parsing, and cleanup logic.

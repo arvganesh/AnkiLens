@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from content_text import clean_card_text
+from anki_gateway import clean_card_text
 
 
 class ContentTextTest(unittest.TestCase):

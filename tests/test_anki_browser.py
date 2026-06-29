@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import unittest
 
-from anki_browser import open_browser_search
+from anki_browser import browser_search_for_cards, open_browser_search
 
 
 class AnkiBrowserTest(unittest.TestCase):
+    def test_builds_exact_card_search(self) -> None:
+        self.assertEqual(browser_search_for_cards((123, 456, 123)), "cid:123 or cid:456")
+
     def test_opens_browser_with_exact_search(self) -> None:
         calls = []
 
