@@ -24,10 +24,10 @@ class DebriefPageTest(unittest.TestCase):
         )
 
         self.assertIn("<main class=\"ankilens-page\">", html)
-        self.assertIn("ankilens-brand", html)
-        self.assertIn("AnkiLens", html)
+        self.assertNotIn("ankilens-brand", html)
+        self.assertNotIn("ankilens-brand-mark", html)
         self.assertIn("<h1>Insights</h1>", html)
-        self.assertIn("Last 90 days", html)
+        self.assertNotIn("Last 90 days", html)
         self.assertNotIn("Renal::Tubules · Last 90 days", html)
         self.assertNotIn("read-only", html)
         self.assertNotIn("scheduling is unchanged", html)

@@ -44,54 +44,20 @@ def debrief_page_html(
   .ankilens-page {{
     box-sizing: border-box;
     margin: 0 auto;
-    max-width: 900px;
-    padding: 34px 26px 56px;
-  }}
-  .ankilens-brand {{
-    align-items: center;
-    color: #285c4d;
-    display: flex;
-    font-size: 12px;
-    font-weight: 750;
-    gap: 8px;
-    line-height: 1;
-    margin-bottom: 9px;
-  }}
-  .ankilens-brand-mark {{
-    background: #285c4d;
-    border-radius: 3px;
-    display: inline-block;
-    height: 12px;
-    width: 12px;
+    max-width: 880px;
+    padding: 30px 24px 48px;
   }}
   .ankilens-page h1 {{
-    font-size: 32px;
-    line-height: 1.1;
-    margin: 0 0 6px;
-  }}
-  .ankilens-intro {{
-    color: #5f6368;
-    font-size: 14px;
-    margin-bottom: 0;
+    font-size: 28px;
+    line-height: 1.15;
+    margin: 0 0 7px;
   }}
   .ankilens-header {{
     align-items: end;
     display: grid;
-    gap: 14px;
+    gap: 18px;
     grid-template-columns: minmax(0, 1fr) minmax(300px, 430px);
-    margin-bottom: 20px;
-    padding-left: 14px;
-    position: relative;
-  }}
-  .ankilens-header::before {{
-    background: #285c4d;
-    border-radius: 2px;
-    bottom: 2px;
-    content: "";
-    left: 0;
-    position: absolute;
-    top: 2px;
-    width: 4px;
+    margin-bottom: 18px;
   }}
   .ankilens-filters {{
     display: grid;
@@ -102,13 +68,13 @@ def debrief_page_html(
     color: #5f6368;
     display: block;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 650;
     margin-bottom: 5px;
   }}
   .ankilens-filter select {{
     background: #ffffff;
     border: 1px solid #dadce0;
-    border-radius: 9px;
+    border-radius: 6px;
     box-sizing: border-box;
     color: #202124;
     font-size: 13px;
@@ -132,13 +98,12 @@ def debrief_page_html(
   .ankilens-card {{
     background: #ffffff;
     border: 1px solid #dadce0;
-    border-radius: 10px;
+    border-radius: 7px;
     box-sizing: border-box;
     padding: 18px 20px;
   }}
   .ankilens-card.primary {{
-    border-top: 4px solid #285c4d;
-    padding: 22px 24px;
+    padding: 20px 22px;
   }}
   .ankilens-card h2 {{
     font-size: 19px;
@@ -197,12 +162,12 @@ def debrief_page_html(
   .ankilens-action-button {{
     background: #ffffff;
     border: 1px solid #dadce0;
-    border-radius: 8px;
+    border-radius: 6px;
     color: #202124;
     cursor: pointer;
     font-size: 12px;
-    font-weight: 700;
-    padding: 7px 10px;
+    font-weight: 650;
+    padding: 6px 10px;
   }}
   .ankilens-action-button:hover {{
     background: #f8f9fa;
@@ -212,17 +177,11 @@ def debrief_page_html(
       background: #202124;
       color: #e8eaed;
     }}
-    .ankilens-intro,
-    .ankilens-brand,
     .ankilens-filter label,
     .ankilens-insight-context,
     .ankilens-insight-section h3,
     .ankilens-action {{
       color: #bdc1c6;
-    }}
-    .ankilens-brand-mark,
-    .ankilens-header::before {{
-      background: #7fc7ae;
     }}
     .ankilens-filter select,
     .ankilens-card,
@@ -230,9 +189,6 @@ def debrief_page_html(
       background: #2b2c2f;
       border-color: #3c4043;
       color: #e8eaed;
-    }}
-    .ankilens-card.primary {{
-      border-top-color: #7fc7ae;
     }}
     .ankilens-card p,
     .ankilens-recommendations {{
@@ -258,9 +214,7 @@ def debrief_page_html(
 <main class="ankilens-page">
   <header class="ankilens-header">
     <div>
-      <div class="ankilens-brand"><span class="ankilens-brand-mark"></span>AnkiLens</div>
       <h1>{escape(debrief_title())}</h1>
-      <div class="ankilens-intro">{escape(debrief_intro_text(lookback_days))}</div>
     </div>
     {_filters_html(deck_options, selected_deck, lookback_options, lookback_days)}
   </header>
@@ -440,11 +394,3 @@ def _deck_display_label(deck_name: str) -> str:
 
 def debrief_title() -> str:
     return "Insights"
-
-
-def debrief_intro_text(lookback_days: int) -> str:
-    if lookback_days <= 0:
-        return "All available reviews"
-    if lookback_days == 1:
-        return "Last 24 hours"
-    return f"Last {lookback_days} days"
