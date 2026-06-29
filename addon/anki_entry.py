@@ -68,7 +68,6 @@ def _handle_js_message(handled, message: str, _context):
 def show_ankilens_page() -> None:
     from aqt import mw
 
-    _hide_deck_browser_footer(mw)
     current_build_debrief = _load_debrief_builder()
     page = _load_debrief_page_module()
     config = load_config(mw.addonManager.getConfig(__package__))
@@ -97,19 +96,6 @@ def show_ankilens_page() -> None:
         debrief.evidence,
         grounding=page.grounding_text(_deck_display_label(selected_deck) if selected_deck else None, lookback_days),
     )
-
-
-def _hide_deck_browser_footer(mw) -> None:
-    for attr in ("bottomWeb", "bottom_web"):
-        footer = getattr(mw, attr, None)
-        if footer is None:
-            continue
-        if hasattr(footer, "setVisible"):
-            footer.setVisible(False)
-            return
-        if hasattr(footer, "hide"):
-            footer.hide()
-            return
 
 
 def _load_debrief_builder():
