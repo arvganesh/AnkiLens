@@ -88,6 +88,29 @@ class AnkiEntryMessagesTest(unittest.TestCase):
         self.assertEqual(handled, (True, None))
         self.assertEqual(calls, ["cid:10 or cid:11"])
 
+    def test_hides_deck_browser_footer_when_available(self) -> None:
+        calls = []
+
+        class FakeFooter:
+            def setVisible(self, visible) -> None:
+                calls.append(("setVisible", visible))
+
+        anki_entry._hide_deck_browser_footer(types.SimpleNamespace(bottomWeb=FakeFooter()))
+
+        self.assertEqual(calls, [("setVisible", False)])
+
+    def test_hides_deck_browser_footer_with_hide_fallback(self) -> None:
+        calls = []
+
+        class FakeFooter:
+            def hide(self) -> None:
+                calls.append("hide")
+
+        anki_entry._hide_deck_browser_footer(types.SimpleNamespace(bottom_web=FakeFooter()))
+        anki_entry._hide_deck_browser_footer(types.SimpleNamespace())
+
+        self.assertEqual(calls, ["hide"])
+
     def test_ignores_other_web_messages(self) -> None:
         self.assertEqual(anki_entry._handle_js_message((False, None), "other", None), (False, None))
 
