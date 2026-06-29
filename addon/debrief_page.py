@@ -54,6 +54,21 @@ def debrief_page_html(
     line-height: 1.15;
     margin: 0 0 7px;
   }}
+  .ankilens-title-row {{
+    align-items: center;
+    display: flex;
+    gap: 8px;
+  }}
+  .ankilens-alpha-badge {{
+    background: #eef0f3;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    color: #5f6368;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1;
+    padding: 4px 6px;
+  }}
   .ankilens-header {{
     align-items: end;
     display: grid;
@@ -240,6 +255,11 @@ def debrief_page_html(
     .ankilens-action-button {{
       color: #e8eaed;
     }}
+    .ankilens-alpha-badge {{
+      background: #303134;
+      border-color: #3c4043;
+      color: #bdc1c6;
+    }}
     .ankilens-secondary-text {{
       color: #bdc1c6;
     }}
@@ -286,7 +306,10 @@ def debrief_page_html(
 <main class="ankilens-page">
   <header class="ankilens-header">
     <div>
-      <h1>{escape(debrief_title())}</h1>
+      <div class="ankilens-title-row">
+        <h1>{escape(debrief_title())}</h1>
+        <span class="ankilens-alpha-badge">Alpha</span>
+      </div>
     </div>
       {_filters_html(deck_options, selected_deck, lookback_options, lookback_days)}
   </header>

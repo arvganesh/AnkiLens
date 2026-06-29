@@ -27,6 +27,8 @@ class DebriefPageTest(unittest.TestCase):
         self.assertNotIn("ankilens-brand", html)
         self.assertNotIn("ankilens-brand-mark", html)
         self.assertIn("<h1>AnkiLens</h1>", html)
+        self.assertIn("ankilens-alpha-badge", html)
+        self.assertIn(">Alpha</span>", html)
         self.assertNotIn("Last 90 days", html)
         self.assertNotIn("Renal::Tubules · Last 90 days", html)
         self.assertNotIn("read-only", html)
