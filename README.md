@@ -1,74 +1,44 @@
 # AnkiLens
 
-AnkiLens is a read-only Anki add-on that turns recent missed-card review history
-into grounded study insights.
+AnkiLens is a read-only Anki add-on for reviewing missed cards.
 
-The goal is simple: select a deck and time window, see evidence from real review
-logs, and get concise recommendations about what to inspect or study next.
-AnkiLens does not change scheduling, notes, cards, decks, or review history.
+Pick a deck, choose a time window, and AnkiLens shows a short summary of what
+has been going well and which missed cards may be worth checking next. It uses
+your recent review history and missed-card text, but it does not change Anki
+scheduling or edit any cards.
 
 ## What It Does
 
-- Shows missed-card insights for one selected deck at a time.
-- Supports time windows such as 7, 30, and 90 days.
-- Uses review logs to count misses, reviewed cards, and repeated trouble spots.
-- Sends capped missed-card evidence to an LLM when enabled.
-- Renders calm, student-facing recommendations:
-  - what is going well
-  - areas for improvement
-  - concrete `Try:` actions
-- Opens the relevant missed cards in Anki Browse for inspection.
-- Includes demo data for profiles without recent misses.
+- Looks at recent reviews for one deck at a time.
+- Supports 7, 30, and 90 day windows.
+- Summarizes missed cards in plain language.
+- Shows what went well and where to focus.
+- Opens the relevant missed cards in Anki Browse.
+- Stays read-only: no scheduling, card, note, deck, or review-log changes.
 
-## Current Product Shape
+## Local Setup
 
-The main page is designed around a low-friction loop:
-
-1. Select a deck.
-2. Select a time window.
-3. Read recent missed-card insights.
-4. Open the relevant missed cards in Browse.
-5. Decide what to inspect, edit mentally, study, or ignore.
-
-The LLM output is grounded in visible review-history facts. It should not make
-medical claims, factual claims about card content, or scheduling recommendations.
-
-## Safety And Scope
-
-AnkiLens is intentionally read-only.
-
-- It does not change Anki scheduling.
-- It does not mutate notes, cards, decks, or revlog data.
-- It does not suspend, bury, reschedule, or edit cards.
-- It does not infer that the learner is lazy, failing, or should simply study
-  harder.
-- API keys should live in ignored local environment/config files, not committed
-  source.
-
-## Local Development
-
-Install the add-on by symlinking or copying `addon/` into Anki's add-ons folder.
-During local development, symlinking is easiest:
+Symlink the add-on into Anki:
 
 ```sh
 ln -s "$(pwd)/addon" "$HOME/Library/Application Support/Anki2/addons21/ankilens"
 ```
 
-Anki usually needs to be restarted after Python hook or callback changes.
+Restart Anki after Python changes.
 
 ## Configuration
 
-Local add-on configuration lives in `addon/config.json`.
+Configuration lives in `addon/config.json`.
 
-Important options:
+Useful settings:
 
-- `llm_summary_enabled`: enables LLM-generated insights.
-- `llm_model`: model name sent to the configured API.
-- `llm_api_url`: chat-completions compatible endpoint.
-- `llm_api_key_env`: environment variable used for the API key.
-- `llm_max_cards`: maximum missed-card summaries sent to the LLM.
-- `llm_max_chars`: maximum prompt character budget.
-- `demo_data_enabled`: adds realistic demo review logs for local testing.
+- `llm_summary_enabled`: turns generated insights on or off.
+- `llm_model`: model name.
+- `llm_api_url`: chat-completions compatible API endpoint.
+- `llm_api_key_env`: environment variable that contains the API key.
+- `llm_max_cards`: maximum missed cards sent for summarization.
+- `llm_max_chars`: maximum prompt size.
+- `demo_data_enabled`: adds local demo review data.
 
 The default API key environment variable is:
 
@@ -76,40 +46,27 @@ The default API key environment variable is:
 OPENROUTER_API_KEY
 ```
 
-## Testing
+Do not commit API keys.
 
-Run pure Python tests without a live Anki GUI:
+## Development
+
+Run tests with:
 
 ```sh
 make test
 ```
 
-The tests cover analytics, prompt construction, page rendering, fake Anki
-integration surfaces, and page message handling.
+The tests do not require a live Anki GUI.
 
-## Repository Layout
+## Code Map
 
-- `addon/` - Anki add-on source.
-- `addon/anki_entry.py` - Anki hook/page entrypoint and webview message bridge.
-- `addon/anki_gateway.py` - Anki review-log adapter and card text cleanup.
-- `addon/anki_browser.py` - Browse search construction and Browser opening.
-- `addon/debrief.py` - Small evidence and LLM insight data models.
-- `addon/debrief_page.py` - Main Insights page HTML/CSS/JS rendering.
-- `addon/llm_summary.py` - LLM prompt, request, parsing, and cleanup logic.
-- `addon/demo_data.py` - Realistic demo card and review-log generation.
-- `tests/` - Pure Python tests that do not require a live Anki GUI.
-- `docs/` - Verification notes and future product directions.
-
-## Future Directions
-
-For med-school scale use, AnkiLens should eventually summarize full review
-windows with aggregate stats before the LLM sees representative examples. This
-would help with 30-day windows containing thousands of review events and
-hundreds of missed cards.
-
-Future work is tracked in `docs/post_session_debrief.md`, including:
-
-- review-event stats as visible evidence
-- deterministic topic grouping before the LLM
-- better cloze-note normalization for sibling cloze cards
-- richer read-only Browse actions
+- `addon/anki_entry.py` - Anki menu, toolbar, page loading, and webview messages.
+- `addon/anki_gateway.py` - reads Anki review logs and cleans card text.
+- `addon/anki_browser.py` - builds Browse searches and opens Anki Browse.
+- `addon/analytics.py` - turns review logs into missed-card summaries.
+- `addon/debrief.py` - small data models for evidence and generated insights.
+- `addon/debrief_page.py` - the Insights page HTML/CSS/JS.
+- `addon/llm_summary.py` - prompt, API request, and response parsing.
+- `addon/demo_data.py` - local demo review history.
+- `tests/` - unit tests for the core behavior.
+- `docs/` - notes for verification and future work.
