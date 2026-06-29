@@ -8,13 +8,38 @@ from datetime import datetime
 import anki_entry
 from analytics import ReviewLogEntry
 from config import AnkiLensConfig
+from debrief import LlmDebriefError
 
 
 class AnkiEntryMessagesTest(unittest.TestCase):
-    def test_registers_toolbar_link_without_tools_menu_action(self) -> None:
+    def test_registers_toolbar_link_and_tools_menu_action(self) -> None:
         original_aqt = sys.modules.get("aqt")
+        original_aqt_qt = sys.modules.get("aqt.qt")
         hooks = types.SimpleNamespace(top_toolbar_did_init_links=[], webview_did_receive_js_message=[])
-        sys.modules["aqt"] = types.SimpleNamespace(gui_hooks=hooks)
+        menu_calls = []
+
+        class FakeSignal:
+            def connect(self, callback):
+                menu_calls.append(("connect", callback))
+
+        class FakeAction:
+            def __init__(self, label, parent):
+                self.label = label
+                self.parent = parent
+                self.triggered = FakeSignal()
+
+        class FakeMenu:
+            def __init__(self, label, parent):
+                self.label = label
+                self.parent = parent
+
+            def addAction(self, action):
+                menu_calls.append(("addAction", self.label, action.label))
+
+        fake_tools_menu = types.SimpleNamespace(addMenu=lambda menu: menu_calls.append(("addMenu", menu.label)))
+        fake_mw = types.SimpleNamespace(form=types.SimpleNamespace(menuTools=fake_tools_menu))
+        sys.modules["aqt"] = types.SimpleNamespace(gui_hooks=hooks, mw=fake_mw)
+        sys.modules["aqt.qt"] = types.SimpleNamespace(QAction=FakeAction, QMenu=FakeMenu)
         try:
             anki_entry.register_toolbar()
         finally:
@@ -22,9 +47,16 @@ class AnkiEntryMessagesTest(unittest.TestCase):
                 sys.modules.pop("aqt", None)
             else:
                 sys.modules["aqt"] = original_aqt
+            if original_aqt_qt is None:
+                sys.modules.pop("aqt.qt", None)
+            else:
+                sys.modules["aqt.qt"] = original_aqt_qt
 
         self.assertEqual(hooks.top_toolbar_did_init_links, [anki_entry._add_top_toolbar_link])
         self.assertEqual(hooks.webview_did_receive_js_message, [anki_entry._handle_js_message])
+        self.assertIn(("connect", anki_entry.open_api_key_dialog), menu_calls)
+        self.assertIn(("addAction", "AnkiLens", "Set API key"), menu_calls)
+        self.assertIn(("addMenu", "AnkiLens"), menu_calls)
 
     def test_adds_ankilens_top_toolbar_tab(self) -> None:
         links = []
@@ -90,6 +122,38 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
     def test_ignores_other_web_messages(self) -> None:
         self.assertEqual(anki_entry._handle_js_message((False, None), "other", None), (False, None))
+
+    def test_save_api_key_writes_local_config(self) -> None:
+        original_aqt = sys.modules.get("aqt")
+        calls = []
+
+        class FakeAddonManager:
+            def __init__(self) -> None:
+                self.config = {"llm_summary_enabled": False}
+
+            def getConfig(self, package):
+                calls.append(("get", package))
+                return dict(self.config)
+
+            def writeConfig(self, package, config):
+                calls.append(("write", package, config))
+                self.config = dict(config)
+
+        addon_manager = FakeAddonManager()
+        sys.modules["aqt"] = types.SimpleNamespace(mw=types.SimpleNamespace(addonManager=addon_manager))
+        try:
+            saved = anki_entry._save_api_key("  sk-test-key  ")
+            blank_saved = anki_entry._save_api_key("  ")
+        finally:
+            if original_aqt is None:
+                sys.modules.pop("aqt", None)
+            else:
+                sys.modules["aqt"] = original_aqt
+
+        self.assertTrue(saved)
+        self.assertFalse(blank_saved)
+        self.assertIn(("get", ""), calls)
+        self.assertIn(("write", "", {"llm_summary_enabled": True, "llm_api_key": "sk-test-key"}), calls)
 
     def test_browse_messages_name_exact_cards_and_copy_fallbacks(self) -> None:
         self.assertEqual(
@@ -211,9 +275,47 @@ class AnkiEntryMessagesTest(unittest.TestCase):
 
         self.assertEqual(evals, ["summary:current result:current scope"])
 
+    def test_page_llm_summary_renders_error_status(self) -> None:
+        original_page_loader = anki_entry._load_debrief_page_module
+        original_worker = anki_entry._start_llm_summary_worker
+        evals = []
+
+        class FakePage:
+            @staticmethod
+            def llm_summary_update_js(summary, _evidence=None, *, grounding=""):
+                return f"summary:{summary}"
+
+            @staticmethod
+            def llm_summary_status_update_js(message, _evidence=None, *, grounding=""):
+                return f"status:{message}:{grounding}"
+
+        web = types.SimpleNamespace(eval=lambda js: evals.append(js))
+
+        def fake_worker(_web, _entries, _config, callback, *, miss_eases=None) -> None:
+            callback(LlmDebriefError("OpenRouter rejected the API key. Check the key and try again."))
+
+        anki_entry._load_debrief_page_module = lambda: FakePage
+        anki_entry._start_llm_summary_worker = fake_worker
+        try:
+            anki_entry._attach_llm_summary_to_page(
+                web,
+                ["entry"],
+                AnkiLensConfig(llm_summary_enabled=True),
+                grounding="current scope",
+            )
+        finally:
+            anki_entry._load_debrief_page_module = original_page_loader
+            anki_entry._start_llm_summary_worker = original_worker
+
+        self.assertEqual(evals, ["status:OpenRouter rejected the API key. Check the key and try again.:current scope"])
+
     def test_miss_eases_expand_when_hard_counts_as_miss(self) -> None:
         self.assertEqual(anki_entry._miss_eases(AnkiLensConfig()), (1, 2))
         self.assertEqual(anki_entry._miss_eases(AnkiLensConfig(count_hard_as_miss=False)), (1,))
+
+    def test_api_key_configured_prefers_local_key(self) -> None:
+        self.assertTrue(anki_entry._api_key_configured(AnkiLensConfig(llm_api_key="local-key")))
+        self.assertFalse(anki_entry._api_key_configured(AnkiLensConfig(llm_api_key_env="")))
 
     def test_loader_appends_demo_entries_only_when_enabled(self) -> None:
         original_loader = anki_entry.load_review_entries

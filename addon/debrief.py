@@ -22,6 +22,11 @@ class LlmDebriefSummary:
 
 
 @dataclass(frozen=True)
+class LlmDebriefError:
+    message: str
+
+
+@dataclass(frozen=True)
 class DebriefEvidence:
     reviewed_cards: int
     missed_cards: int
@@ -38,7 +43,7 @@ class DebriefEvidence:
 @dataclass(frozen=True)
 class Debrief:
     evidence: DebriefEvidence
-    llm_summary: LlmDebriefSummary | None = None
+    llm_summary: LlmDebriefSummary | LlmDebriefError | None = None
 
 
 def build_debrief(

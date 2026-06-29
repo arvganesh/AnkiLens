@@ -14,6 +14,7 @@ class AnkiLensConfig:
     llm_model: str = "deepseek/deepseek-v4-flash"
     llm_api_url: str = "https://openrouter.ai/api/v1/chat/completions"
     llm_api_key_env: str = "OPENROUTER_API_KEY"
+    llm_api_key: str = ""
     llm_max_cards: int = 30
     llm_max_chars: int = 10000
     llm_timeout_seconds: int = 30
@@ -36,6 +37,7 @@ def load_config(raw_config: dict[str, Any] | None) -> AnkiLensConfig:
             max_length=300,
         ),
         llm_api_key_env=_string(raw.get("llm_api_key_env"), default="OPENROUTER_API_KEY", max_length=80),
+        llm_api_key=_string(raw.get("llm_api_key"), default="", max_length=300),
         llm_max_cards=_bounded_int(raw.get("llm_max_cards"), default=30, low=1, high=200),
         llm_max_chars=_bounded_int(raw.get("llm_max_chars"), default=10000, low=1000, high=60000),
         llm_timeout_seconds=_bounded_int(raw.get("llm_timeout_seconds"), default=30, low=3, high=90),

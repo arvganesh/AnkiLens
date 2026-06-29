@@ -15,6 +15,7 @@ class AnkiLensConfigTest(unittest.TestCase):
         self.assertFalse(config.llm_summary_enabled)
         self.assertEqual(config.llm_model, "deepseek/deepseek-v4-flash")
         self.assertEqual(config.llm_api_key_env, "OPENROUTER_API_KEY")
+        self.assertEqual(config.llm_api_key, "")
         self.assertEqual(config.llm_max_cards, 30)
         self.assertFalse(config.demo_data_enabled)
         self.assertTrue(config.count_hard_as_miss)
@@ -28,6 +29,7 @@ class AnkiLensConfigTest(unittest.TestCase):
                 "llm_summary_enabled": True,
                 "llm_model": "anthropic/claude-sonnet-4",
                 "llm_api_key_env": "ANKILENS_LLM_KEY",
+                "llm_api_key": "local-key",
                 "llm_max_cards": 60,
                 "demo_data_enabled": True,
                 "count_hard_as_miss": True,
@@ -49,6 +51,7 @@ class AnkiLensConfigTest(unittest.TestCase):
         self.assertTrue(valid.llm_summary_enabled)
         self.assertEqual(valid.llm_model, "anthropic/claude-sonnet-4")
         self.assertEqual(valid.llm_api_key_env, "ANKILENS_LLM_KEY")
+        self.assertEqual(valid.llm_api_key, "local-key")
         self.assertEqual(valid.llm_max_cards, 60)
         self.assertTrue(valid.demo_data_enabled)
         self.assertTrue(valid.count_hard_as_miss)

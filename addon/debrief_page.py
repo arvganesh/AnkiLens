@@ -14,6 +14,7 @@ except ImportError:
 DECK_SCOPE_MESSAGE_PREFIX = "ankilens:deck:"
 LOOKBACK_SCOPE_MESSAGE_PREFIX = "ankilens:lookback:"
 BROWSE_SEARCH_MESSAGE_PREFIX = "ankilens:browse:"
+POSITIVE_PLACEHOLDER = "you studied hard, be proud!!"
 
 
 def debrief_page_html(
@@ -25,12 +26,13 @@ def debrief_page_html(
     selected_deck: str | None = None,
     deck_label: str | None = None,
     llm_enabled: bool = True,
+    api_key_configured: bool = True,
 ) -> str:
     grounding = grounding_text(deck_label or selected_deck, lookback_days)
     llm_summary = (
         llm_summary_html(debrief.llm_summary, debrief.evidence, grounding=grounding)
         if debrief.llm_summary
-        else _llm_loading_html(debrief.evidence, grounding=grounding) if llm_enabled else _llm_disabled_html(debrief.evidence, grounding=grounding)
+        else _llm_loading_html(debrief.evidence, grounding=grounding) if llm_enabled and api_key_configured else _api_key_setup_html(debrief.evidence, grounding=grounding) if llm_enabled else _llm_disabled_html(debrief.evidence, grounding=grounding)
     )
     sections = [f'<div id="ankilens-llm-summary">{llm_summary}</div>']
     return f"""
@@ -121,13 +123,23 @@ def debrief_page_html(
   .ankilens-insight-body {{
     max-width: 760px;
   }}
-  .ankilens-insight-context {{
+  .ankilens-evidence {{
     border-bottom: 1px solid #e8eaed;
-    color: #3c4043;
-    font-size: 13px;
-    line-height: 1.35;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
     margin: 0 0 18px;
     padding-bottom: 13px;
+  }}
+  .ankilens-evidence-item {{
+    background: #f5f6f8;
+    border: 1px solid #e8eaed;
+    border-radius: 4px;
+    color: #3c4043;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.25;
+    padding: 5px 7px;
   }}
   .ankilens-insight-section {{
     margin: 0;
@@ -203,6 +215,12 @@ def debrief_page_html(
   .ankilens-action-button:hover {{
     color: #202124;
   }}
+  .ankilens-secondary-text {{
+    color: #5f6368;
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0;
+  }}
   @media (prefers-color-scheme: dark) {{
     body {{
       background: #202124;
@@ -222,10 +240,18 @@ def debrief_page_html(
     .ankilens-action-button {{
       color: #e8eaed;
     }}
-    .ankilens-insight-context,
+    .ankilens-secondary-text {{
+      color: #bdc1c6;
+    }}
+    .ankilens-evidence,
     .ankilens-insight-section + .ankilens-insight-section,
     .ankilens-insight-actions {{
       border-color: #3c4043;
+    }}
+    .ankilens-evidence-item {{
+      background: #202124;
+      border-color: #3c4043;
+      color: #bdc1c6;
     }}
     .ankilens-card p,
     .ankilens-recommendations {{
@@ -262,7 +288,7 @@ def debrief_page_html(
     <div>
       <h1>{escape(debrief_title())}</h1>
     </div>
-    {_filters_html(deck_options, selected_deck, lookback_options, lookback_days)}
+      {_filters_html(deck_options, selected_deck, lookback_options, lookback_days)}
   </header>
   <section class="ankilens-stack">
     {"".join(sections)}
@@ -272,9 +298,10 @@ def debrief_page_html(
 
 
 def llm_summary_html(summary: LlmDebriefSummary, evidence=None, *, grounding: str = "") -> str:
+    checked_count = len(_unique_card_ids(summary.action_card_ids))
     return _panel_html(
         "",
-        f'<div class="ankilens-insight-body">{_insight_context_html(evidence)}{_insight_rows_html(summary)}{_insight_actions_html(summary)}</div>',
+        f'<div class="ankilens-insight-body">{_insight_context_html(evidence, checked_count=checked_count)}{_insight_rows_html(summary, evidence)}{_insight_actions_html(summary)}</div>',
         primary=True,
     )
 
@@ -352,17 +379,18 @@ def _paragraph(text: str) -> str:
     return f"<p>{escape(text)}</p>"
 
 
-def _insight_context_html(evidence) -> str:
+def _insight_context_html(evidence, *, checked_count: int = 0) -> str:
     if evidence is None:
         return ""
-    label = "review" if evidence.reviews == 1 else "reviews"
-    return f'<p class="ankilens-insight-context">Based on analysis of the last {evidence.reviews} {label}:</p>'
+    items = (
+        _count_label(evidence.reviews, "review analyzed", "reviews analyzed"),
+    )
+    return '<div class="ankilens-evidence">' + "".join(f'<span class="ankilens-evidence-item">{escape(item)}</span>' for item in items) + "</div>"
 
 
-def _insight_rows_html(summary: LlmDebriefSummary) -> str:
+def _insight_rows_html(summary: LlmDebriefSummary, evidence=None) -> str:
     sections = []
-    if summary.positives:
-        sections.append(_bullet_section_html("What you're doing well", summary.positives))
+    sections.append(_bullet_section_html("What you're doing well", (POSITIVE_PLACEHOLDER,)))
     sections.append(_improvement_section_html("Areas for improvement", summary.improvements))
     return "".join(sections)
 
@@ -375,7 +403,7 @@ def _bullet_section_html(title: str, items: tuple[str, ...]) -> str:
 def _improvement_section_html(title: str, items) -> str:
     item_html = "".join(
         f"<li>{escape(item.insight)} <span class=\"ankilens-action\">Try: {escape(item.action)}</span></li>"
-        for item in items
+        for item in tuple(items)[:3]
     )
     return f'<section class="ankilens-insight-section improve"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
 
@@ -421,6 +449,19 @@ def _llm_loading_html(evidence=None, *, grounding: str = "") -> str:
 
 def _llm_disabled_html(evidence=None, *, grounding: str = "") -> str:
     return _llm_status_html("LLM insights are not enabled for this add-on configuration.", evidence, grounding=grounding)
+
+
+def _api_key_setup_html(evidence=None, *, grounding: str = "") -> str:
+    return _panel_html(
+        "",
+        """
+<div class="ankilens-insight-body">
+  <p>AnkiLens needs an OpenRouter API key before it can generate insights.</p>
+  <p class="ankilens-secondary-text">Create a key at <a href="https://openrouter.ai/keys">openrouter.ai/keys</a>, then open Tools &gt; AnkiLens &gt; Set API key.</p>
+</div>
+""",
+        primary=True,
+    )
 
 
 def _llm_status_html(message: str, evidence=None, *, grounding: str = "") -> str:

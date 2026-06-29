@@ -30,9 +30,15 @@ Restart Anki after Python changes.
 
 ## Alpha Setup
 
-AnkiLens currently uses the `OPENROUTER_API_KEY` environment variable for
-generated insights. Create an OpenRouter key, then launch Anki from a shell that
-has the variable set:
+AnkiLens needs an OpenRouter API key for generated insights.
+
+Create a key at:
+
+```text
+https://openrouter.ai/keys
+```
+
+Advanced users can also use the `OPENROUTER_API_KEY` environment variable:
 
 ```sh
 export OPENROUTER_API_KEY="your-key-here"
@@ -42,6 +48,14 @@ open -a Anki
 On macOS, launching Anki from the Dock may not include shell environment
 variables. If insights do not load, quit Anki and start it from Terminal with
 the commands above.
+
+You can also set the key in Anki:
+
+```text
+Tools -> AnkiLens -> Set API key
+```
+
+Paste the key into the dialog and AnkiLens will save it locally.
 
 The default model is `deepseek/deepseek-v4-flash`. Advanced users can change
 `llm_model` in `addon/config.json`, but the main alpha does not include an
@@ -69,6 +83,7 @@ Useful settings:
 - `llm_model`: model name.
 - `llm_api_url`: chat-completions compatible API endpoint.
 - `llm_api_key_env`: environment variable that contains the API key.
+- `llm_api_key`: local API key. Do not commit a real value.
 - `llm_max_cards`: maximum missed cards sent for summarization.
 - `llm_max_chars`: maximum prompt size.
 - `demo_data_enabled`: adds local demo review data.

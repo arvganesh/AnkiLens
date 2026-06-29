@@ -13,6 +13,7 @@ class ReleaseConfigTest(unittest.TestCase):
         config = json.loads((ROOT / "addon" / "config.json").read_text(encoding="utf-8"))
 
         self.assertIs(config["demo_data_enabled"], False)
+        self.assertEqual(config["llm_api_key"], "")
 
     def test_manifest_has_publishable_metadata(self) -> None:
         manifest = json.loads((ROOT / "addon" / "manifest.json").read_text(encoding="utf-8"))

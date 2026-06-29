@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import json
 import unittest
+import urllib.error
 from datetime import datetime
 
 from analytics import ReviewLogEntry
 from config import AnkiLensConfig
-from llm_summary import build_llm_summary, clear_llm_summary_cache
+from debrief import LlmDebriefError
+from llm_summary import build_llm_summary
 
 
 def _entry(card_id: int, ease: int, minute: int, *, text: str = "aortic stenosis murmur") -> ReviewLogEntry:
@@ -36,9 +38,6 @@ class _FakeResponse:
 
 
 class LlmSummaryTest(unittest.TestCase):
-    def setUp(self) -> None:
-        clear_llm_summary_cache()
-
     def test_disabled_summary_does_not_call_api(self) -> None:
         calls = []
 
@@ -67,6 +66,78 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertIsNone(result)
         self.assertEqual(calls, [])
 
+    def test_bad_api_key_returns_user_safe_error(self) -> None:
+        def opener(_request, *, timeout):
+            raise urllib.error.HTTPError(
+                url="https://openrouter.ai/api/v1/chat/completions",
+                code=401,
+                msg="Unauthorized",
+                hdrs={},
+                fp=None,
+            )
+
+        result = build_llm_summary(
+            [_entry(1, 1, 0)],
+            AnkiLensConfig(llm_summary_enabled=True, llm_api_key="bad-key"),
+            api_key_getter=lambda _name: None,
+            env_file_getter=lambda _name: None,
+            opener=opener,
+        )
+
+        self.assertEqual(result, LlmDebriefError("OpenRouter rejected the API key. Check the key and try again."))
+
+    def test_unusable_model_response_returns_user_safe_error(self) -> None:
+        payload = {"choices": [{"message": {"content": "{}"}}]}
+
+        result = build_llm_summary(
+            [_entry(1, 1, 0)],
+            AnkiLensConfig(llm_summary_enabled=True, llm_api_key="local-key"),
+            api_key_getter=lambda _name: None,
+            env_file_getter=lambda _name: None,
+            opener=lambda *_args, **_kwargs: _FakeResponse(payload),
+        )
+
+        self.assertEqual(
+            result,
+            LlmDebriefError("The model did not return a usable insight. Try again or use a different model."),
+        )
+
+    def test_uses_local_config_api_key_before_environment(self) -> None:
+        requests = []
+        payload = {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "improvements": [
+                                    {
+                                        "insight": "1 enzyme card appears in the missed-card evidence.",
+                                        "action": "Open the enzyme card and check whether it asks for several facts.",
+                                    }
+                                ],
+                            }
+                        )
+                    }
+                }
+            ]
+        }
+
+        def opener(request, *, timeout):
+            requests.append(request)
+            return _FakeResponse(payload)
+
+        result = build_llm_summary(
+            [_entry(1, 1, 0)],
+            AnkiLensConfig(llm_summary_enabled=True, llm_api_key="local-key"),
+            api_key_getter=lambda _name: "env-key",
+            env_file_getter=lambda _name: None,
+            opener=opener,
+        )
+
+        self.assertIsNotNone(result)
+        self.assertEqual(requests[0].get_header("Authorization"), "Bearer local-key")
+
     def test_sends_capped_missed_card_context_and_parses_json(self) -> None:
         requests = []
         payload = {
@@ -75,9 +146,6 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "positives": [
-                                    "1 reviewed card had no misses in this window.",
-                                ],
                                 "improvements": [
                                     {
                                         "insight": "2 missed valve cards cluster around nearby murmur physiology.",
@@ -112,7 +180,7 @@ class LlmSummaryTest(unittest.TestCase):
         )
 
         self.assertIsNotNone(result)
-        self.assertEqual(result.positives, ("1 reviewed card had no misses in this window.",))
+        self.assertEqual(result.positives, ())
         self.assertEqual(result.improvements[0].insight, "2 missed valve cards cluster around nearby murmur physiology.")
         self.assertEqual(result.improvements[0].action, "Search for murmur cards and review those before drug cards.")
         self.assertEqual(result.improvements[1].insight, "The repeated valve cards may be easier to separate in a smaller set.")
@@ -127,49 +195,44 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertEqual(body["temperature"], 0)
         self.assertEqual(body["response_format"]["type"], "json_schema")
         schema = body["response_format"]["json_schema"]["schema"]
-        self.assertEqual(schema["required"], ["positives", "improvements"])
-        self.assertEqual(schema["properties"]["positives"]["maxItems"], 3)
-        self.assertEqual(schema["properties"]["improvements"]["maxItems"], 4)
+        self.assertEqual(schema["required"], ["improvements"])
+        self.assertNotIn("positives", schema["properties"])
+        self.assertEqual(schema["properties"]["improvements"]["maxItems"], 3)
         self.assertEqual(schema["properties"]["improvements"]["items"]["required"], ["insight", "action"])
         self.assertNotIn("$defs", schema)
         system_prompt = body["messages"][0]["content"]
-        self.assertIn("two sections", system_prompt)
-        self.assertIn("memory-and-learning lens", system_prompt)
-        self.assertIn("cards with repeated misses", system_prompt)
-        self.assertIn("content that appears often in errors", system_prompt)
-        self.assertIn("Use a number in each bullet", system_prompt)
-        self.assertIn("Focus on content-driven insights", system_prompt)
-        self.assertIn("positive or calibrating insight", system_prompt)
-        self.assertIn("When only a capped missed-card subset is supplied", system_prompt)
-        self.assertIn("missed-card examples analyzed", system_prompt)
-        self.assertIn("Each positive bullet must make a distinct point", system_prompt)
-        self.assertIn("combine them into one bullet", system_prompt)
-        self.assertIn("review-method signals", system_prompt)
-        self.assertIn("leech-like repeated trouble", system_prompt)
-        self.assertIn("too much similar material at once", system_prompt)
-        self.assertIn("The insight should name one observation from the evidence", system_prompt)
-        self.assertIn("The action should be concrete enough to do immediately", system_prompt)
-        self.assertIn("Keep each bullet under 28 words", system_prompt)
-        self.assertIn("Avoid generic openings", system_prompt)
-        self.assertIn("Use varied sentence structure", system_prompt)
-        self.assertIn("directly usable action", system_prompt)
-        self.assertIn("Use plain classroom language", system_prompt)
-        self.assertIn("Avoid vague phrases", system_prompt)
-        self.assertIn("early review flags", system_prompt)
-        self.assertIn("retention", system_prompt)
-        self.assertIn("interference", system_prompt)
-        self.assertIn("murmur cards first, then drug side effects", system_prompt)
-        self.assertIn("Do not say what the student understands", system_prompt)
-        self.assertIn("retained, mastered", system_prompt)
-        self.assertIn("do not recommend changing Anki scheduling", system_prompt)
-        self.assertIn("Avoid implementation terms", system_prompt)
-        self.assertIn("dense label", system_prompt)
-        self.assertIn("weak wording", system_prompt)
-        self.assertIn("Do not say only \"review separately\"", system_prompt)
-        self.assertIn("may need a clearer prompt", system_prompt)
+        self.assertIn("friendly study assistant", system_prompt)
+        self.assertIn("Areas for improvement", system_prompt)
+        self.assertIn("what kind of card is causing trouble", system_prompt)
+        self.assertIn("what to change in Anki", system_prompt)
+        self.assertIn("ordered from most impactful fix to least impactful fix", system_prompt)
+        self.assertIn("Start with the problem, not a statistic", system_prompt)
+        self.assertIn("Use stats only when they make the impact obvious", system_prompt)
+        self.assertIn("Avoid exact ratios", system_prompt)
+        self.assertIn("Mention at most two example cards or topics", system_prompt)
+        self.assertIn("Avoid long parenthetical lists", system_prompt)
+        self.assertIn("Several missed cards ask for long lists of facts", system_prompt)
+        self.assertIn("Similar tissue cards are hard to tell apart", system_prompt)
+        self.assertIn("One protein-structure card asks about several levels at once", system_prompt)
+        self.assertIn("In the good insight examples, notice", system_prompt)
+        self.assertIn("Counts are omitted unless they make the problem clearer", system_prompt)
+        self.assertIn("The wording explains why the card is hard to answer", system_prompt)
+        self.assertIn("Start with a concrete verb", system_prompt)
+        self.assertIn("Open, Split, Rewrite, Search, or Put", system_prompt)
+        self.assertIn('not just "review more"', system_prompt)
+        self.assertIn("Review the tissue cards separately", system_prompt)
+        self.assertIn("Open the protein-structure card and split it", system_prompt)
+        self.assertIn("In the good action examples, notice", system_prompt)
+        self.assertIn("can be done inside Anki", system_prompt)
+        self.assertIn("avoids vague advice", system_prompt)
+        self.assertIn("card cluster", system_prompt)
+        self.assertIn("recall spoon", system_prompt)
+        self.assertIn("Do not say the student understands", system_prompt)
+        self.assertIn("Do not claim the card content is medically or factually correct", system_prompt)
         self.assertIn("Miss definition: only Again review buttons count as misses.", body["messages"][1]["content"])
         self.assertIn("Focus on content patterns in the missed-card evidence", body["messages"][1]["content"])
-        self.assertIn("Do not repeat the same positive in different words", body["messages"][1]["content"])
+        self.assertIn("numbered evidence below includes 2 missed-card examples", body["messages"][1]["content"])
+        self.assertIn("Do not mention a different analyzed-example count", body["messages"][1]["content"])
         self.assertNotIn("Window stats", body["messages"][1]["content"])
         self.assertNotIn("Review-order stats", body["messages"][1]["content"])
         self.assertNotIn("Unique cards reviewed", body["messages"][1]["content"])
@@ -178,14 +241,13 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertIn("review_events_for_card=", body["messages"][1]["content"])
         self.assertIn("content_labels=", body["messages"][1]["content"])
 
-    def test_missing_required_model_fields_drop_summary(self) -> None:
+    def test_missing_required_model_fields_return_error(self) -> None:
         payload = {
             "choices": [
                 {
                     "message": {
                         "content": json.dumps(
                             {
-                                "positives": ["A valid positive."],
                                 "improvements": [],
                             }
                         )
@@ -202,7 +264,42 @@ class LlmSummaryTest(unittest.TestCase):
             opener=lambda *_args, **_kwargs: _FakeResponse(payload),
         )
 
-        self.assertIsNone(result)
+        self.assertEqual(
+            result,
+            LlmDebriefError("The model did not return a usable insight. Try again or use a different model."),
+        )
+
+    def test_parser_caps_improvements_at_three(self) -> None:
+        payload = {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "improvements": [
+                                    {"insight": "First card has a long list.", "action": "Split the first card."},
+                                    {"insight": "Second card overlaps with the first.", "action": "Search both cards side by side."},
+                                    {"insight": "Third card mixes two concepts.", "action": "Rewrite it as two prompts."},
+                                    {"insight": "Fourth card should not render.", "action": "Do not show this."},
+                                ],
+                            }
+                        )
+                    }
+                }
+            ]
+        }
+
+        result = build_llm_summary(
+            [_entry(1, 1, 0)],
+            AnkiLensConfig(llm_summary_enabled=True),
+            api_key_getter=lambda _name: "test-key",
+            env_file_getter=lambda _name: None,
+            opener=lambda *_args, **_kwargs: _FakeResponse(payload),
+        )
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result.improvements), 3)
+        self.assertNotIn("Fourth card", " ".join(item.insight for item in result.improvements))
 
     def test_parser_rewrites_known_jargon(self) -> None:
         payload = {
@@ -211,9 +308,6 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "positives": [
-                                    "1 reviewed card had no misses outside this cue wording cluster, showing solid retention.",
-                                ],
                                 "improvements": [
                                     {
                                         "insight": "Multiple drug cards show repeated misses, suggesting overload or similarity issues.",
@@ -240,9 +334,7 @@ class LlmSummaryTest(unittest.TestCase):
         )
 
         self.assertIsNotNone(result)
-        rendered = " ".join(
-            result.positives + tuple(part for item in result.improvements for part in (item.insight, item.action))
-        ).lower()
+        rendered = " ".join(tuple(part for item in result.improvements for part in (item.insight, item.action))).lower()
         self.assertNotIn("cue", rendered)
         self.assertNotIn("tag", rendered)
         self.assertNotIn("source text", rendered)
@@ -263,7 +355,6 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "positives": [],
                                 "improvements": [
                                     {
                                         "insight": "The protein card was labeled 'dense' and has weak wording.",
@@ -306,7 +397,6 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "positives": [],
                                 "improvements": [
                                     {
                                         "insight": long_text,
@@ -342,7 +432,6 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "positives": [],
                                 "improvements": [
                                     {
                                         "insight": "1 enzyme card appears in the missed-card evidence.",
@@ -373,102 +462,6 @@ class LlmSummaryTest(unittest.TestCase):
         prompt = json.loads(requests[0].data.decode("utf-8"))["messages"][1]["content"]
         self.assertIn("Miss definition: Again and Hard review buttons count as misses.", prompt)
         self.assertIn("enzyme kinetics hard card", prompt)
-
-    def test_reuses_cached_summary_for_same_learning_state(self) -> None:
-        requests = []
-        payload = {
-            "choices": [
-                {
-                    "message": {
-                        "content": json.dumps(
-                            {
-                                "positives": [],
-                                "improvements": [
-                                    {
-                                        "insight": "1 enzyme card appears in the missed-card evidence.",
-                                        "action": "Open the enzyme card and check whether it asks for several facts.",
-                                    }
-                                ],
-                            }
-                        )
-                    }
-                }
-            ]
-        }
-
-        def opener(request, *, timeout):
-            requests.append(request)
-            return _FakeResponse(payload)
-
-        entries = [_entry(1, 1, 0, text="enzyme kinetics card")]
-        config = AnkiLensConfig(llm_summary_enabled=True)
-
-        first = build_llm_summary(
-            entries,
-            config,
-            api_key_getter=lambda _name: "test-key",
-            env_file_getter=lambda _name: None,
-            opener=opener,
-        )
-        second = build_llm_summary(
-            entries,
-            config,
-            api_key_getter=lambda _name: "test-key",
-            env_file_getter=lambda _name: None,
-            opener=opener,
-        )
-
-        self.assertIsNotNone(first)
-        self.assertEqual(second, first)
-        self.assertEqual(len(requests), 1)
-
-    def test_cache_refreshes_when_review_events_change(self) -> None:
-        requests = []
-        payload = {
-            "choices": [
-                {
-                    "message": {
-                        "content": json.dumps(
-                            {
-                                "positives": [],
-                                "improvements": [
-                                    {
-                                        "insight": "1 enzyme card appears in the missed-card evidence.",
-                                        "action": "Open the enzyme card and check whether it asks for several facts.",
-                                    }
-                                ],
-                            }
-                        )
-                    }
-                }
-            ]
-        }
-
-        def opener(request, *, timeout):
-            requests.append(request)
-            return _FakeResponse(payload)
-
-        config = AnkiLensConfig(llm_summary_enabled=True)
-        base_entries = [_entry(1, 1, 0, text="enzyme kinetics card")]
-        changed_entries = base_entries + [_entry(2, 3, 1, text="enzyme kinetics card")]
-
-        build_llm_summary(
-            base_entries,
-            config,
-            api_key_getter=lambda _name: "test-key",
-            env_file_getter=lambda _name: None,
-            opener=opener,
-        )
-        build_llm_summary(
-            changed_entries,
-            config,
-            api_key_getter=lambda _name: "test-key",
-            env_file_getter=lambda _name: None,
-            opener=opener,
-        )
-
-        self.assertEqual(len(requests), 2)
-
 
 if __name__ == "__main__":
     unittest.main()

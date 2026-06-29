@@ -65,6 +65,23 @@ class DebriefPageTest(unittest.TestCase):
         self.assertNotIn("Looking for patterns", html)
         self.assertNotIn("Check first", html)
 
+    def test_page_shows_api_key_setup_when_missing_key(self) -> None:
+        html = debrief_page_html(
+            _empty_debrief(),
+            lookback_days=30,
+            deck_options=("Cardiology",),
+            selected_deck="Cardiology",
+            llm_enabled=True,
+            api_key_configured=False,
+        )
+
+        self.assertIn("needs an OpenRouter API key", html)
+        self.assertIn("openrouter.ai/keys", html)
+        self.assertIn("Tools &gt; AnkiLens &gt; Set API key", html)
+        self.assertNotIn("llm_api_key", html)
+        self.assertNotIn("data-ankilens-api-key-form", html)
+        self.assertNotIn("Looking for patterns", html)
+
     def test_renders_llm_summary_panel(self) -> None:
         summary = LlmDebriefSummary(
             positives=("32 reviewed cards had no misses in this window.",),
@@ -88,11 +105,14 @@ class DebriefPageTest(unittest.TestCase):
         )
 
         self.assertNotIn("Review pattern", html)
-        self.assertIn("Based on analysis of the last 20 reviews:", html)
+        self.assertIn("20 reviews analyzed", html)
+        self.assertNotIn("missed cards checked", html)
+        self.assertNotIn("patterns to inspect", html)
         self.assertIn("What you&#x27;re doing well", html)
+        self.assertIn("you studied hard, be proud!!", html)
         self.assertIn("Areas for improvement", html)
         self.assertIn("ankilens-recommendations", html)
-        self.assertIn("32 reviewed cards had no misses", html)
+        self.assertNotIn("32 reviewed cards had no misses", html)
         self.assertIn("12 missed valve cards", html)
         self.assertIn("Try: Search for murmur cards", html)
         self.assertIn("ankilens-action", html)
@@ -101,6 +121,7 @@ class DebriefPageTest(unittest.TestCase):
         self.assertIn("data-ankilens-browse-query", html)
         self.assertIn("cid:20 or cid:10", html)
         self.assertNotIn("25%", html)
+        self.assertNotIn("Based on analysis of the last 20 reviews:", html)
         self.assertNotIn("Based on Cardiology, last 30 days.", html)
         self.assertNotIn("Pattern", html)
         self.assertNotIn("Focus", html)
@@ -118,6 +139,18 @@ class DebriefPageTest(unittest.TestCase):
         self.assertIn("window.ankilensSetLlmSummary", js)
         self.assertIn("&lt;unsafe&gt;", js)
         self.assertNotIn("<unsafe>", js)
+
+    def test_llm_summary_renders_frontend_positive_placeholder(self) -> None:
+        summary = LlmDebriefSummary(
+            positives=(),
+            improvements=(LlmImprovement(insight="A smooth ER card asks for several roles at once.", action="Split it into one card per role."),),
+        )
+
+        html = llm_summary_html(summary, DebriefEvidence(reviewed_cards=5, missed_cards=1, reviews=6, misses=1))
+
+        self.assertIn("What you&#x27;re doing well", html)
+        self.assertIn("you studied hard, be proud!!", html)
+        self.assertNotIn("4 of 5 reviewed cards had no misses", html)
 
     def test_llm_status_update_js_escapes_message(self) -> None:
         js = llm_summary_status_update_js("<missing key>")

@@ -36,6 +36,7 @@ def register_toolbar() -> None:
 
     gui_hooks.top_toolbar_did_init_links.append(_add_top_toolbar_link)
     gui_hooks.webview_did_receive_js_message.append(_handle_js_message)
+    _add_tools_menu()
 
 
 def _add_top_toolbar_link(links, toolbar) -> None:
@@ -48,6 +49,56 @@ def _add_top_toolbar_link(links, toolbar) -> None:
             id="ankilens-top-tab",
         )
     )
+
+
+def _add_tools_menu() -> None:
+    from aqt import mw
+    from aqt.qt import QAction, QMenu
+
+    menu = QMenu("AnkiLens", mw)
+    api_key_action = QAction("Set API key", mw)
+    api_key_action.triggered.connect(open_api_key_dialog)
+    menu.addAction(api_key_action)
+    mw.form.menuTools.addMenu(menu)
+
+
+def open_api_key_dialog() -> None:
+    from aqt import mw
+    from aqt.qt import QInputDialog, QLineEdit
+
+    api_key, accepted = QInputDialog.getText(
+        mw,
+        "AnkiLens API key",
+        "OpenRouter API key:",
+        QLineEdit.EchoMode.Password,
+        "",
+    )
+    if not accepted:
+        return
+    if not _save_api_key(api_key):
+        _show_info("No API key was saved.")
+        return
+    _show_info("AnkiLens API key saved.")
+    show_ankilens_page()
+
+
+def _show_info(message: str) -> None:
+    from aqt.utils import showInfo
+
+    showInfo(message)
+
+
+def _save_api_key(api_key: str) -> bool:
+    cleaned = api_key.strip()
+    if not cleaned:
+        return False
+    from aqt import mw
+
+    raw_config = mw.addonManager.getConfig(__package__) or {}
+    raw_config["llm_api_key"] = cleaned
+    raw_config["llm_summary_enabled"] = True
+    mw.addonManager.writeConfig(__package__, raw_config)
+    return True
 
 
 def _handle_js_message(handled, message: str, _context):
@@ -71,6 +122,7 @@ def show_ankilens_page() -> None:
     current_build_debrief = _load_debrief_builder()
     page = _load_debrief_page_module()
     config = load_config(mw.addonManager.getConfig(__package__))
+    api_key_configured = _api_key_configured(config)
     lookback_days = _valid_selected_lookback(config.debrief_lookback_days)
     now = datetime.now()
     entries = _debrief_entries(_load_review_entries(mw, config, now=now), lookback_days=lookback_days, now=now)
@@ -93,16 +145,18 @@ def show_ankilens_page() -> None:
             selected_deck=selected_deck,
             deck_label=_deck_display_label(selected_deck) if selected_deck else None,
             llm_enabled=config.llm_summary_enabled,
+            api_key_configured=api_key_configured,
         )
     )
-    _attach_llm_summary_to_page(
-        mw.web,
-        scoped_entries,
-        config,
-        debrief.evidence,
-        grounding=page.grounding_text(_deck_display_label(selected_deck) if selected_deck else None, lookback_days),
-        miss_eases=miss_eases,
-    )
+    if api_key_configured:
+        _attach_llm_summary_to_page(
+            mw.web,
+            scoped_entries,
+            config,
+            debrief.evidence,
+            grounding=page.grounding_text(_deck_display_label(selected_deck) if selected_deck else None, lookback_days),
+            miss_eases=miss_eases,
+        )
 
 
 def _load_debrief_builder():
@@ -157,8 +211,11 @@ def _attach_llm_summary_to_page(web, entries, config, evidence=None, *, groundin
     def update_page(summary) -> None:
         if getattr(web, "_ankilens_llm_request_id", None) != request_id:
             return
+        error_message = getattr(summary, "message", "")
         web.eval(
-            page.llm_summary_update_js(summary, evidence, grounding=grounding)
+            page.llm_summary_status_update_js(error_message, evidence, grounding=grounding)
+            if error_message
+            else page.llm_summary_update_js(summary, evidence, grounding=grounding)
             if summary
             else page.llm_summary_status_update_js("No LLM insight returned for this deck/window.", evidence, grounding=grounding)
         )
@@ -201,6 +258,23 @@ def _start_llm_summary_worker(parent, entries, config, callback, *, miss_eases: 
 
 def _miss_eases(config) -> tuple[int, ...]:
     return (AGAIN_EASE, HARD_EASE) if getattr(config, "count_hard_as_miss", False) else (AGAIN_EASE,)
+
+
+def _api_key_configured(config) -> bool:
+    if getattr(config, "llm_api_key", ""):
+        return True
+    if not getattr(config, "llm_api_key_env", ""):
+        return False
+    import os
+
+    if os.environ.get(config.llm_api_key_env):
+        return True
+    try:
+        from .llm_summary import _env_file_value
+    except ImportError:
+        from llm_summary import _env_file_value
+
+    return bool(_env_file_value(config.llm_api_key_env))
 
 
 def _debrief_entries(entries, config=None, *, lookback_days: int | None = None, now: datetime):

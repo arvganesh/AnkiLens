@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from hashlib import sha256
 import json
 import os
+import urllib.error
 import urllib.request
 from collections.abc import Callable
 from pathlib import Path
@@ -11,53 +11,78 @@ from typing import Any
 try:
     from .analytics import DEFAULT_MISS_EASES, HARD_EASE, ReviewLogEntry, summarize_missed_cards
     from .config import AnkiLensConfig
-    from .debrief import LlmDebriefSummary, LlmImprovement
+    from .debrief import LlmDebriefError, LlmDebriefSummary, LlmImprovement
 except ImportError:
     from analytics import DEFAULT_MISS_EASES, HARD_EASE, ReviewLogEntry, summarize_missed_cards
     from config import AnkiLensConfig
-    from debrief import LlmDebriefSummary, LlmImprovement
+    from debrief import LlmDebriefError, LlmDebriefSummary, LlmImprovement
 
 
-_SYSTEM_PROMPT = """You are a concise missed-card analytics assistant.
-Write a short, useful insight card about the supplied Anki missed-card labels and card text.
-Analyze the data through a memory-and-learning lens: look for cards with repeated misses, content that appears often in errors, and review-method signals such as overload, very similar cards, or many early-review misses.
+_SYSTEM_PROMPT = """You are a friendly study assistant helping someone make their Anki cards easier to improve.
+Write short, human, practical "Areas for improvement" bullets from the supplied missed-card evidence.
 Use only the supplied missed-card data. Do not infer medical, factual, or scheduling conclusions.
-Use a number in each bullet when the supplied stats support it, such as cards with misses, repeated misses, total misses, or reviewed cards without misses.
-Focus on content-driven insights from the missed-card evidence, not overall review volume.
-Include positive or calibrating insights when supported by the stats, such as material that did not appear in the missed-card set or the share of reviewed cards without misses.
-When only a capped missed-card subset is supplied, do not write positives like "out of 30 reviewed cards"; say "missed-card examples analyzed" or skip that positive.
-Each positive bullet must make a distinct point. Do not write two positives that both mean "most reviews went well."
-If two stats support the same point, combine them into one bullet instead of making separate bullets.
-Do not say what the student understands, forgot, failed to process, retained, mastered, or should study for a specific duration.
-Do not address the student as "you".
-Avoid implementation terms like tag, cue wording, source text, prompt pattern, JSON, deck artifact, content_labels, early review flags, stability, retention, interference, pacing, dense label, and successful.
-Never use the words "cue", "tag", "artifact", "source text", "retention", "interference", "stability", "successful", "labeled", "labelled", or "weak wording" in the output.
-Do not say the student is relying on phrases instead of understanding concepts.
-Do not claim the pattern caused the misses or created confusion.
-If the data suggests leech-like repeated trouble, mention the number of repeated misses and that the card may ask for too much at once; do not recommend changing Anki scheduling.
-If the data suggests too much similar material at once, name the similar cards and suggest reviewing one small group before another; do not prescribe a review duration.
-For content difficulty, name the specific relationship among the cards that is likely making the set hard to separate, without claiming the underlying facts are true.
-Do not list examples.
-Prefer plain study language over analytics language.
-Explain what the cluster means in practical terms.
-Write compact UI copy for a single card with two sections: what is going well and areas for improvement.
-Keep each bullet under 28 words.
-Each improvement must have an insight and a directly usable action.
-The insight should name one observation from the evidence.
-The action should be concrete enough to do immediately, such as "Search for murmur cards and review only those first" or "Open the repeated card and split the drug list if it has several facts."
-Use plain classroom language that a tired learner can act on quickly.
-Avoid vague phrases like "next pass", "subtopics", "dense overlap", "overload", "optimize pacing", "pacing concerns", "stabilize recognition", "retention", "interference", "stability", or "mental model".
-When suggesting bucketing, name the actual bucket examples, such as "murmur cards first, then drug side effects."
-When suggesting a card edit, say exactly what to check, such as "one card asking for three toxicities" or "a prompt that asks for spelling, sound, and example at once."
-Do not say only "review separately"; turn it into an immediate action, such as opening the card, rewriting the prompt, splitting a list, or searching two named cards side by side.
-If wording seems unclear, say "may need a clearer prompt" instead of "weak wording."
-Avoid generic openings like "Review", "Compare", "Inspect", "Focus on", or "Group" unless there is no clearer wording.
-Use varied sentence structure so the bullets do not feel templated.
+Do not write positive, reassuring, or calibrating bullets. The UI already handles that separately.
+
+The reader should immediately understand:
+1. what kind of card is causing trouble,
+2. why that card type is hard to answer,
+3. what to change in Anki.
+
+Return at most three improvements, ordered from most impactful fix to least impactful fix.
+Each improvement has two fields:
+- insight: the fixable problem in plain language.
+- action: one concrete next step the learner can do in Anki.
+
+Write the insight like this:
+- Start with the problem, not a statistic.
+- Use stats only when they make the impact obvious.
+- Avoid exact ratios like "3 times out of 5 reviews" unless the ratio is the point.
+- Mention at most two example cards or topics.
+- Avoid long parenthetical lists.
+
+Examples of good vs not good insight writing:
+Not good: "3 cards (mast cell, smooth ER role, amino acid components) each missed 3 of 5 reviews."
+Good: "Several missed cards ask for long lists of facts, like cell features or organelle roles."
+
+Not good: "Epithelium and connective tissue cards cluster together."
+Good: "Similar tissue cards are hard to tell apart because they ask for location, shape, and function in the same answer."
+
+Not good: "A protein card was missed 2 times and is dense."
+Good: "One protein-structure card asks about several levels at once, which makes the answer hard to pull apart."
+
+In the good insight examples, notice:
+- The sentence starts with the fixable card problem.
+- Counts are omitted unless they make the problem clearer.
+- Examples are short and only support the main point.
+- The wording explains why the card is hard to answer.
+
+Write the action like this:
+- Start with a concrete verb: Open, Split, Rewrite, Search, or Put.
+- Say exactly what to change, not just "review more" or "study separately."
+- Prefer card edits when a card asks for too many facts at once.
+
+Examples of good action writing:
+Not good: "Review the tissue cards separately."
+Good: "Search for the epithelium cards and put them next to each other before adding connective tissue cards."
+
+Not good: "Inspect the protein card."
+Good: "Open the protein-structure card and split it into one card for each structure level."
+
+Not good: "Focus on long lists."
+Good: "Open those list cards and split each one so it asks for one fact at a time."
+
+In the good action examples, notice:
+- The action says exactly what to open, split, rewrite, search for, or put together.
+- The action can be done inside Anki without needing extra context.
+- The action avoids vague advice like "study harder" or "review more."
+
+Avoid jargon, metaphors, and model-ish phrasing.
+Do not use phrases like "card cluster", "dense overlap", "pacing concerns", "stabilize recognition", "recall spoon", "memory bucket", or "mental model".
+Do not say the student understands, forgot, failed, mastered, or retained something.
+Do not claim the card content is medically or factually correct.
+
 Return only JSON with this shape:
 {
-  "positives": [
-    "short grounded positive or calibrating insight"
-  ],
   "improvements": [
     {
       "insight": "short grounded improvement",
@@ -67,7 +92,6 @@ Return only JSON with this shape:
 }"""
 
 _LLM_TEMPERATURE = 0
-_SUMMARY_CACHE: dict[str, LlmDebriefSummary] = {}
 
 
 def build_llm_summary(
@@ -78,21 +102,17 @@ def build_llm_summary(
     api_key_getter: Callable[[str], str | None] = os.environ.get,
     env_file_getter: Callable[[str], str | None] | None = None,
     opener: Callable[..., Any] = urllib.request.urlopen,
-) -> LlmDebriefSummary | None:
+) -> LlmDebriefSummary | LlmDebriefError | None:
     if not config.llm_summary_enabled:
         return None
     current_env_file_getter = env_file_getter or _env_file_value
-    api_key = api_key_getter(config.llm_api_key_env) or current_env_file_getter(config.llm_api_key_env)
+    api_key = config.llm_api_key or api_key_getter(config.llm_api_key_env) or current_env_file_getter(config.llm_api_key_env)
     if not api_key:
         return None
     summaries = summarize_missed_cards(entries, minimum_misses=1, limit=config.llm_max_cards, miss_eases=miss_eases)
     if not summaries:
         return None
     user_prompt = _missed_card_prompt(entries, summaries, max_chars=config.llm_max_chars, miss_eases=miss_eases)
-    cache_key = _summary_cache_key(config.llm_model, user_prompt, entries, miss_eases=miss_eases)
-    cached_summary = _SUMMARY_CACHE.get(cache_key)
-    if cached_summary is not None:
-        return cached_summary
 
     request = urllib.request.Request(
         config.llm_api_url,
@@ -108,16 +128,24 @@ def build_llm_summary(
     try:
         with opener(request, timeout=config.llm_timeout_seconds) as response:
             payload = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as error:
+        return LlmDebriefError(_http_error_message(error.code))
+    except (urllib.error.URLError, TimeoutError):
+        return LlmDebriefError("Could not reach OpenRouter. Check the connection and try again.")
     except Exception:
-        return None
+        return LlmDebriefError("Could not generate insights. Try again in a moment.")
     summary = _parse_response(payload, action_card_ids=tuple(summary.card_id for summary in summaries))
-    if summary is not None:
-        _SUMMARY_CACHE[cache_key] = summary
+    if summary is None:
+        return LlmDebriefError("The model did not return a usable insight. Try again or use a different model.")
     return summary
 
 
-def clear_llm_summary_cache() -> None:
-    _SUMMARY_CACHE.clear()
+def _http_error_message(status_code: int) -> str:
+    if status_code in (401, 403):
+        return "OpenRouter rejected the API key. Check the key and try again."
+    if status_code == 429:
+        return "OpenRouter rate-limited the request. Try again later."
+    return f"OpenRouter request failed with status {status_code}. Try again later."
 
 
 def _request_body(model: str, user_prompt: str) -> bytes:
@@ -137,12 +165,6 @@ def _request_body(model: str, user_prompt: str) -> bytes:
                     "schema": {
                         "type": "object",
                         "properties": {
-                            "positives": {
-                                "type": "array",
-                                "items": {"type": "string"},
-                                "minItems": 0,
-                                "maxItems": 3,
-                            },
                             "improvements": {
                                 "type": "array",
                                 "items": {
@@ -155,10 +177,10 @@ def _request_body(model: str, user_prompt: str) -> bytes:
                                     "additionalProperties": False,
                                 },
                                 "minItems": 1,
-                                "maxItems": 4,
+                                "maxItems": 3,
                             },
                         },
-                        "required": ["positives", "improvements"],
+                        "required": ["improvements"],
                         "additionalProperties": False,
                     },
                 },
@@ -167,44 +189,14 @@ def _request_body(model: str, user_prompt: str) -> bytes:
     ).encode("utf-8")
 
 
-def _summary_cache_key(
-    model: str,
-    user_prompt: str,
-    entries: list[ReviewLogEntry],
-    *,
-    miss_eases: tuple[int, ...],
-) -> str:
-    event_fingerprint = tuple(
-        sorted(
-            (
-                entry.card_id,
-                entry.ease,
-                entry.reviewed_at.isoformat(),
-                entry.deck_name,
-                entry.card_label,
-            )
-            for entry in entries
-        )
-    )
-    payload = {
-        "model": model,
-        "temperature": _LLM_TEMPERATURE,
-        "miss_eases": miss_eases,
-        "system_prompt": _SYSTEM_PROMPT,
-        "user_prompt": user_prompt,
-        "events": event_fingerprint,
-    }
-    return sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
-
-
 def _missed_card_prompt(entries, summaries, *, max_chars: int, miss_eases: tuple[int, ...] = DEFAULT_MISS_EASES) -> str:
     lines = [
         "Write student-facing insights about these missed Anki cards.",
         f"Miss definition: {_miss_definition(miss_eases)}.",
         "Focus on content patterns in the missed-card evidence, not overall review performance.",
         "Include supported counts in the bullets.",
-        "Include positives only when the stats support them.",
-        "Do not repeat the same positive in different words; combine overlapping stats into one bullet.",
+        f"The numbered evidence below includes {len(summaries)} missed-card examples before any prompt character cap.",
+        "Do not mention a different analyzed-example count unless it is directly visible in the numbered evidence.",
         "Do not include example card labels in the final answer.",
         "",
         "Missed-card evidence:",
@@ -243,23 +235,15 @@ def _parse_response(payload: dict[str, Any], *, action_card_ids: tuple[int, ...]
         data = json.loads(content)
     except json.JSONDecodeError:
         return None
-    positives = tuple(
-        item
-        for item in (
-            _plain_language_string(item, max_length=260)
-            for item in _list(data.get("positives"))[:3]
-        )
-        if item
-    )
     improvements = tuple(_improvements(data.get("improvements")))
     if not improvements:
         return None
-    return LlmDebriefSummary(positives=positives, improvements=improvements, action_card_ids=action_card_ids)
+    return LlmDebriefSummary(positives=(), improvements=improvements, action_card_ids=action_card_ids)
 
 
 def _improvements(value: Any) -> list[LlmImprovement]:
     improvements = []
-    for item in _list(value)[:4]:
+    for item in _list(value)[:3]:
         if not isinstance(item, dict):
             continue
         insight = _plain_language_string(item.get("insight"), max_length=220)
