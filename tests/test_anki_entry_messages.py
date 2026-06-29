@@ -270,7 +270,11 @@ class AnkiEntryMessagesTest(unittest.TestCase):
             anki_entry._selected_lookback_days = original_lookback
         self.assertEqual(
             anki_entry._deck_display_label("Zanki Step Decks::Zanki Biochemistry::Metabolism"),
-            "Zanki Biochemistry / Metabolism",
+            "Zanki Step Decks / Zanki Biochemistry / Metabolism",
+        )
+        self.assertEqual(
+            anki_entry._deck_display_label("AnKing Step Deck::C2P::Week 1::M"),
+            "AnKing Step Deck / Week 1 / M",
         )
 
     def test_debrief_loader_refreshes_model_dependencies_first(self) -> None:

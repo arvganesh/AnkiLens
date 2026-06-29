@@ -263,8 +263,10 @@ def _deck_display_label(deck_name: str | None) -> str | None:
     if not deck_name:
         return None
     parts = [part.strip() for part in deck_name.split("::") if part.strip()]
-    if len(parts) > 2:
-        return " / ".join(parts[-2:])
+    if len(parts) > 3:
+        return " / ".join((parts[0], *parts[-2:]))
+    if len(parts) > 1:
+        return " / ".join(parts)
     return deck_name
 
 
