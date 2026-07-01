@@ -32,12 +32,14 @@ Return at most three improvements, ordered from most impactful fix to least impa
 Each improvement has two fields:
 - insight: the fixable problem in plain language.
 - action: one concrete next step the learner can do in Anki.
+Keep each insight under 18 words.
+Keep each action under 20 words.
 
 Write the insight like this:
 - Start with the problem, not a statistic.
 - Use stats only when they make the impact obvious.
 - Avoid exact ratios like "3 times out of 5 reviews" unless the ratio is the point.
-- Mention at most two example cards or topics.
+- Mention at most one short example when it helps. Otherwise describe the pattern generally.
 - Avoid long parenthetical lists.
 
 Examples of good vs not good insight writing:
@@ -60,6 +62,7 @@ Write the action like this:
 - Start with a concrete verb: Open, Split, Rewrite, Search, or Put.
 - Say exactly what to change, not just "review more" or "study separately."
 - Prefer card edits when a card asks for too many facts at once.
+- Search by visible card topic or wording, not by tags or hidden metadata.
 
 Examples of good action writing:
 Not good: "Review the tissue cards separately."
@@ -78,6 +81,7 @@ In the good action examples, notice:
 
 Avoid jargon, metaphors, and model-ish phrasing.
 Do not use phrases like "card cluster", "dense overlap", "pacing concerns", "stabilize recognition", "recall spoon", "memory bucket", or "mental model".
+Do not mention tags, deck paths, internal labels, or hidden metadata.
 Do not say the student understands, forgot, failed, mastered, or retained something.
 Do not claim the card content is medically or factually correct.
 
@@ -170,8 +174,8 @@ def _request_body(model: str, user_prompt: str) -> bytes:
                                 "items": {
                                     "type": "object",
                                     "properties": {
-                                        "insight": {"type": "string"},
-                                        "action": {"type": "string"},
+                                        "insight": {"type": "string", "maxLength": 150},
+                                        "action": {"type": "string", "maxLength": 145},
                                     },
                                     "required": ["insight", "action"],
                                     "additionalProperties": False,
@@ -198,6 +202,7 @@ def _missed_card_prompt(entries, summaries, *, max_chars: int, miss_eases: tuple
         f"The numbered evidence below includes {len(summaries)} missed-card examples before any prompt character cap.",
         "Do not mention a different analyzed-example count unless it is directly visible in the numbered evidence.",
         "Do not include example card labels in the final answer.",
+        "Do not tell the user to search by tags or hidden metadata.",
         "",
         "Missed-card evidence:",
     ]
@@ -206,7 +211,7 @@ def _missed_card_prompt(entries, summaries, *, max_chars: int, miss_eases: tuple
         text = _compact_text(summary.source_text, 700)
         item = (
             f"{index}. label={summary.card_label!r}; deck={summary.deck_name!r}; "
-            f"misses={summary.misses}; review_events_for_card={summary.total_reviews}; tags={list(summary.tags)!r}; "
+            f"misses={summary.misses}; review_events_for_card={summary.total_reviews}; "
             f"content_labels={list(summary.content_labels)!r}; early={summary.is_early_exposure}; "
             f"content={text!r}"
         )
@@ -246,8 +251,8 @@ def _improvements(value: Any) -> list[LlmImprovement]:
     for item in _list(value)[:3]:
         if not isinstance(item, dict):
             continue
-        insight = _plain_language_string(item.get("insight"), max_length=220)
-        action = _plain_language_string(item.get("action"), max_length=180)
+        insight = _plain_language_string(item.get("insight"), max_length=150)
+        action = _plain_language_string(item.get("action"), max_length=145)
         if insight and action:
             improvements.append(LlmImprovement(insight=insight, action=action))
     return improvements
@@ -263,8 +268,17 @@ def _clean_string(value: Any, *, max_length: int) -> str:
     cleaned = " ".join(value.split())
     if len(cleaned) <= max_length:
         return cleaned
-    truncated = cleaned[:max_length].rsplit(" ", 1)[0].rstrip(".,;:")
-    return f"{truncated}..." if truncated else cleaned[:max_length]
+    truncated = _truncate_at_boundary(cleaned, max_length=max_length)
+    return truncated or cleaned[:max_length].rsplit(" ", 1)[0].rstrip(".,;:")
+
+
+def _truncate_at_boundary(text: str, *, max_length: int) -> str:
+    candidate = text[:max_length].rstrip()
+    for marker in (". ", "; ", ": ", ", and ", " and ", ", such as ", " such as ", ", like ", " like ", " ("):
+        index = candidate.rfind(marker)
+        if index >= max_length * 0.45:
+            return candidate[: index + (1 if marker in (". ", "; ", ": ") else 0)].rstrip(" .,;:")
+    return candidate.rsplit(" ", 1)[0].rstrip(" .,;:")
 
 
 def _plain_language_string(value: Any, *, max_length: int) -> str:

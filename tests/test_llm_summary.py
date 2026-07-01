@@ -199,17 +199,23 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertNotIn("positives", schema["properties"])
         self.assertEqual(schema["properties"]["improvements"]["maxItems"], 3)
         self.assertEqual(schema["properties"]["improvements"]["items"]["required"], ["insight", "action"])
+        item_schema = schema["properties"]["improvements"]["items"]["properties"]
+        self.assertEqual(item_schema["insight"]["maxLength"], 150)
+        self.assertEqual(item_schema["action"]["maxLength"], 145)
         self.assertNotIn("$defs", schema)
         system_prompt = body["messages"][0]["content"]
         self.assertIn("friendly study assistant", system_prompt)
         self.assertIn("Areas for improvement", system_prompt)
         self.assertIn("what kind of card is causing trouble", system_prompt)
         self.assertIn("what to change in Anki", system_prompt)
+        self.assertIn("Keep each insight under 18 words", system_prompt)
+        self.assertIn("Keep each action under 20 words", system_prompt)
         self.assertIn("ordered from most impactful fix to least impactful fix", system_prompt)
         self.assertIn("Start with the problem, not a statistic", system_prompt)
         self.assertIn("Use stats only when they make the impact obvious", system_prompt)
         self.assertIn("Avoid exact ratios", system_prompt)
-        self.assertIn("Mention at most two example cards or topics", system_prompt)
+        self.assertIn("Mention at most one short example when it helps", system_prompt)
+        self.assertIn("Otherwise describe the pattern generally", system_prompt)
         self.assertIn("Avoid long parenthetical lists", system_prompt)
         self.assertIn("Several missed cards ask for long lists of facts", system_prompt)
         self.assertIn("Similar tissue cards are hard to tell apart", system_prompt)
@@ -220,6 +226,7 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertIn("Start with a concrete verb", system_prompt)
         self.assertIn("Open, Split, Rewrite, Search, or Put", system_prompt)
         self.assertIn('not just "review more"', system_prompt)
+        self.assertIn("not by tags or hidden metadata", system_prompt)
         self.assertIn("Review the tissue cards separately", system_prompt)
         self.assertIn("Open the protein-structure card and split it", system_prompt)
         self.assertIn("In the good action examples, notice", system_prompt)
@@ -227,6 +234,7 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertIn("avoids vague advice", system_prompt)
         self.assertIn("card cluster", system_prompt)
         self.assertIn("recall spoon", system_prompt)
+        self.assertIn("Do not mention tags, deck paths, internal labels, or hidden metadata", system_prompt)
         self.assertIn("Do not say the student understands", system_prompt)
         self.assertIn("Do not claim the card content is medically or factually correct", system_prompt)
         self.assertIn("Miss definition: only Again review buttons count as misses.", body["messages"][1]["content"])
@@ -420,9 +428,11 @@ class LlmSummaryTest(unittest.TestCase):
 
         self.assertIsNotNone(result)
         recommendation = result.improvements[0].insight
-        self.assertLessEqual(len(recommendation), 263)
-        self.assertTrue(recommendation.endswith("..."))
-        self.assertNotIn("overloa...", recommendation)
+        action = result.improvements[0].action
+        self.assertLessEqual(len(recommendation), 150)
+        self.assertLessEqual(len(action), 145)
+        self.assertNotIn("...", recommendation)
+        self.assertNotIn("...", action)
 
     def test_prompt_can_count_hard_reviews_as_misses(self) -> None:
         requests = []
@@ -462,6 +472,8 @@ class LlmSummaryTest(unittest.TestCase):
         prompt = json.loads(requests[0].data.decode("utf-8"))["messages"][1]["content"]
         self.assertIn("Miss definition: Again and Hard review buttons count as misses.", prompt)
         self.assertIn("enzyme kinetics hard card", prompt)
+        self.assertIn("Do not tell the user to search by tags or hidden metadata.", prompt)
+        self.assertNotIn("tags=", prompt)
 
 if __name__ == "__main__":
     unittest.main()

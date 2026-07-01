@@ -107,6 +107,31 @@ make test
 
 The tests do not require a live Anki GUI.
 
+To check LLM output against realistic missed-card content without opening Anki:
+
+```sh
+OPENROUTER_API_KEY="your-key-here" make llm-check
+```
+
+You can also pass your own card sample:
+
+```sh
+OPENROUTER_API_KEY="your-key-here" python3 scripts/check_llm_output.py --input cards.json
+```
+
+The JSON file should be a list of cards:
+
+```json
+[
+  {
+    "label": "Smooth ER role",
+    "text": "Front: Smooth ER role. Back: lipid synthesis, detoxification, calcium storage.",
+    "misses": 3,
+    "reviews": 5
+  }
+]
+```
+
 Build an uploadable add-on package with:
 
 ```sh
@@ -125,5 +150,6 @@ The package is written to `dist/ankilens.ankiaddon`.
 - `addon/debrief_page.py` - the Insights page HTML/CSS/JS.
 - `addon/llm_summary.py` - prompt, API request, and response parsing.
 - `addon/demo_data.py` - local demo review history.
+- `scripts/check_llm_output.py` - queries the configured LLM with sample card content.
 - `tests/` - unit tests for the core behavior.
 - `docs/` - notes for verification and future work.
