@@ -18,7 +18,12 @@ class LlmImprovement:
 class LlmDebriefSummary:
     positives: tuple[str, ...]
     improvements: tuple[LlmImprovement, ...]
+    study_suggestions: tuple[LlmImprovement, ...] = ()
     action_card_ids: tuple[int, ...] = ()
+
+    @property
+    def card_improvements(self) -> tuple[LlmImprovement, ...]:
+        return self.improvements
 
 
 @dataclass(frozen=True)

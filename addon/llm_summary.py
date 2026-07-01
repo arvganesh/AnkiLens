@@ -18,18 +18,31 @@ except ImportError:
     from debrief import LlmDebriefError, LlmDebriefSummary, LlmImprovement
 
 
-_SYSTEM_PROMPT = """You are a friendly study assistant helping someone make their Anki cards easier to improve.
-Write short, human, practical "Areas for improvement" bullets from the supplied missed-card evidence.
+_SYSTEM_PROMPT = """You are a friendly study assistant helping someone make their Anki cards and studying easier to improve.
+Write short, human, practical insights from the supplied missed-card evidence.
 Use only the supplied missed-card data. Do not infer medical, factual, or scheduling conclusions.
 Do not write positive, reassuring, or calibrating bullets. The UI already handles that separately.
 
-The reader should immediately understand:
-1. what kind of card is causing trouble,
-2. why that card type is hard to answer,
-3. what to change in Anki.
+Split the output into two independent sections:
+1. card_improvements: flashcard-design problems visible in the missed cards inspected here.
+2. study_suggestions: content patterns the learner can study or compare without editing cards.
 
-Return at most three improvements, ordered from most impactful fix to least impactful fix.
-Each improvement has two fields:
+Do not judge the whole deck's card quality. Card improvements are only about the missed-card examples supplied.
+If the missed-card examples do not show a clear card-writing issue, return an empty card_improvements list.
+
+For card_improvements, the reader should immediately understand:
+- what kind of card is hard to answer,
+- why the card format is hard,
+- what to change in Anki.
+
+For study_suggestions, the reader should immediately understand:
+- which content is getting mixed up,
+- why those topics are easy to confuse,
+- what small comparison or study pass to do next.
+
+Return at most two card_improvements and at most two study_suggestions.
+Order each section from most impactful fix to least impactful fix.
+Each item has two fields:
 - insight: the fixable problem in plain language.
 - action: one concrete next step the learner can do in Anki.
 Keep each insight under 18 words.
@@ -87,10 +100,16 @@ Do not claim the card content is medically or factually correct.
 
 Return only JSON with this shape:
 {
-  "improvements": [
+  "card_improvements": [
     {
-      "insight": "short grounded improvement",
-      "action": "short concrete way to apply it"
+      "insight": "short grounded card-design issue",
+      "action": "short concrete card edit"
+    }
+  ],
+  "study_suggestions": [
+    {
+      "insight": "short grounded content pattern",
+      "action": "short concrete study step"
     }
   ]
 }"""
@@ -169,7 +188,7 @@ def _request_body(model: str, user_prompt: str) -> bytes:
                     "schema": {
                         "type": "object",
                         "properties": {
-                            "improvements": {
+                            "card_improvements": {
                                 "type": "array",
                                 "items": {
                                     "type": "object",
@@ -180,11 +199,25 @@ def _request_body(model: str, user_prompt: str) -> bytes:
                                     "required": ["insight", "action"],
                                     "additionalProperties": False,
                                 },
-                                "minItems": 1,
-                                "maxItems": 3,
+                                "minItems": 0,
+                                "maxItems": 2,
+                            },
+                            "study_suggestions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "insight": {"type": "string", "maxLength": 150},
+                                        "action": {"type": "string", "maxLength": 145},
+                                    },
+                                    "required": ["insight", "action"],
+                                    "additionalProperties": False,
+                                },
+                                "minItems": 0,
+                                "maxItems": 2,
                             },
                         },
-                        "required": ["improvements"],
+                        "required": ["card_improvements", "study_suggestions"],
                         "additionalProperties": False,
                     },
                 },
@@ -198,6 +231,7 @@ def _missed_card_prompt(entries, summaries, *, max_chars: int, miss_eases: tuple
         "Write student-facing insights about these missed Anki cards.",
         f"Miss definition: {_miss_definition(miss_eases)}.",
         "Focus on content patterns in the missed-card evidence, not overall review performance.",
+        "For card improvements, only comment on card-writing issues visible in the missed-card examples.",
         "Include supported counts in the bullets.",
         f"The numbered evidence below includes {len(summaries)} missed-card examples before any prompt character cap.",
         "Do not mention a different analyzed-example count unless it is directly visible in the numbered evidence.",
@@ -240,15 +274,23 @@ def _parse_response(payload: dict[str, Any], *, action_card_ids: tuple[int, ...]
         data = json.loads(content)
     except json.JSONDecodeError:
         return None
-    improvements = tuple(_improvements(data.get("improvements")))
-    if not improvements:
+    card_improvements = tuple(_improvements(data.get("card_improvements"), limit=2))
+    if not card_improvements:
+        card_improvements = tuple(_improvements(data.get("improvements"), limit=2))
+    study_suggestions = tuple(_improvements(data.get("study_suggestions"), limit=2))
+    if not card_improvements and not study_suggestions:
         return None
-    return LlmDebriefSummary(positives=(), improvements=improvements, action_card_ids=action_card_ids)
+    return LlmDebriefSummary(
+        positives=(),
+        improvements=card_improvements,
+        study_suggestions=study_suggestions,
+        action_card_ids=action_card_ids,
+    )
 
 
-def _improvements(value: Any) -> list[LlmImprovement]:
+def _improvements(value: Any, *, limit: int) -> list[LlmImprovement]:
     improvements = []
-    for item in _list(value)[:3]:
+    for item in _list(value)[:limit]:
         if not isinstance(item, dict):
             continue
         insight = _plain_language_string(item.get("insight"), max_length=150)

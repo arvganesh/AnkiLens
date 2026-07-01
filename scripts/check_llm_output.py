@@ -95,12 +95,18 @@ def main() -> None:
     print(f"Model: {config.llm_model}")
     print(f"Cards sent: {min(len(cards), config.llm_max_cards)}")
     print()
-    print("Areas for improvement")
-    for index, improvement in enumerate(result.improvements, start=1):
+    print("Card improvements")
+    for index, improvement in enumerate(result.card_improvements, start=1):
         print(f"{index}. {improvement.insight}")
         print(f"   Try: {improvement.action}")
+    if result.study_suggestions:
+        print()
+        print("Study suggestions")
+        for index, suggestion in enumerate(result.study_suggestions, start=1):
+            print(f"{index}. {suggestion.insight}")
+            print(f"   Try: {suggestion.action}")
 
-    warnings = _quality_warnings(result.improvements)
+    warnings = _quality_warnings((*result.card_improvements, *result.study_suggestions))
     print()
     if warnings:
         print("Quality warnings")

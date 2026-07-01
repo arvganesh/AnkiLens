@@ -14,7 +14,9 @@ except ImportError:
 DECK_SCOPE_MESSAGE_PREFIX = "ankilens:deck:"
 LOOKBACK_SCOPE_MESSAGE_PREFIX = "ankilens:lookback:"
 BROWSE_SEARCH_MESSAGE_PREFIX = "ankilens:browse:"
-POSITIVE_PLACEHOLDER = "you studied hard, be proud!!"
+CARD_IMPROVEMENTS_PLACEHOLDER = "The missed cards checked look okay for now."
+LOGO_URL = "/_addons/ankilens/assets/ankilens-dino-logo.png"
+MAGNIFIER_URL = "/_addons/ankilens/assets/ankilens-magnifier.png"
 
 
 def debrief_page_html(
@@ -52,7 +54,17 @@ def debrief_page_html(
   .ankilens-page h1 {{
     font-size: 28px;
     line-height: 1.15;
-    margin: 0 0 7px;
+    margin: 0;
+  }}
+  .ankilens-brand {{
+    align-items: center;
+    display: flex;
+    gap: 8px;
+  }}
+  .ankilens-logo {{
+    flex: 0 0 auto;
+    height: 36px;
+    width: 36px;
   }}
   .ankilens-title-row {{
     align-items: center;
@@ -60,14 +72,14 @@ def debrief_page_html(
     gap: 8px;
   }}
   .ankilens-alpha-badge {{
-    background: #eef0f3;
-    border: 1px solid #dadce0;
-    border-radius: 4px;
-    color: #5f6368;
+    background: #fff1bf;
+    border: 1px solid #f5d876;
+    border-radius: 999px;
+    color: #7a5a00;
     font-size: 11px;
     font-weight: 650;
     line-height: 1;
-    padding: 4px 6px;
+    padding: 4px 8px;
   }}
   .ankilens-header {{
     align-items: end;
@@ -140,9 +152,9 @@ def debrief_page_html(
   }}
   .ankilens-evidence {{
     border-bottom: 1px solid #e8eaed;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    color: #202124;
+    font-size: 13px;
+    line-height: 1.4;
     margin: 0 0 18px;
     padding-bottom: 13px;
   }}
@@ -183,6 +195,10 @@ def debrief_page_html(
   .ankilens-insight-section.improve h3 {{
     background: #fff3bf;
     color: #6b5200;
+  }}
+  .ankilens-insight-section.study h3 {{
+    background: #e8f0fe;
+    color: #1a4f8b;
   }}
   .ankilens-recommendations {{
     color: #202124;
@@ -245,20 +261,24 @@ def debrief_page_html(
     line-height: 1.4;
     margin: 0;
   }}
-  .ankilens-loading-ellipsis {{
-    color: #3c4043;
+  .ankilens-loading-lens {{
+    box-sizing: border-box;
     display: inline-block;
-    font-weight: 700;
-    min-width: 18px;
-    transform: translateX(-3px);
-    animation: ankilens-loading-ellipsis 900ms ease-in-out infinite alternate;
+    flex: 0 0 auto;
+    height: 19px;
+    margin-left: 0;
+    object-fit: contain;
+    position: relative;
+    transform: translateX(-3px) rotate(-12deg);
+    width: 19px;
+    animation: ankilens-loading-lens 950ms ease-in-out infinite alternate;
   }}
-  @keyframes ankilens-loading-ellipsis {{
+  @keyframes ankilens-loading-lens {{
     from {{
-      transform: translateX(-3px);
+      transform: translateX(-3px) translateY(1px) rotate(-18deg);
     }}
     to {{
-      transform: translateX(5px);
+      transform: translateX(7px) translateY(-1px) rotate(8deg);
     }}
   }}
   @media (prefers-color-scheme: dark) {{
@@ -281,18 +301,15 @@ def debrief_page_html(
       color: #e8eaed;
     }}
     .ankilens-alpha-badge {{
-      background: #303134;
-      border-color: #3c4043;
-      color: #bdc1c6;
+      background: #3e341c;
+      border-color: #6b5200;
+      color: #f2d982;
     }}
     .ankilens-secondary-text {{
       color: #bdc1c6;
     }}
     .ankilens-loading {{
       color: #bdc1c6;
-    }}
-    .ankilens-loading-ellipsis {{
-      color: #e8eaed;
     }}
     .ankilens-evidence,
     .ankilens-insight-section + .ankilens-insight-section,
@@ -303,6 +320,9 @@ def debrief_page_html(
       background: #202124;
       border-color: #3c4043;
       color: #bdc1c6;
+    }}
+    .ankilens-evidence {{
+      color: #e8eaed;
     }}
     .ankilens-card p,
     .ankilens-recommendations {{
@@ -315,6 +335,10 @@ def debrief_page_html(
     .ankilens-insight-section.improve h3 {{
       background: #3e341c;
       color: #f2d982;
+    }}
+    .ankilens-insight-section.study h3 {{
+      background: #1f2f46;
+      color: #aecbfa;
     }}
   }}
 </style>
@@ -337,8 +361,9 @@ def debrief_page_html(
 <main class="ankilens-page">
   <header class="ankilens-header">
     <div>
-      <div class="ankilens-title-row">
+      <div class="ankilens-brand">
         <h1>{escape(debrief_title())}</h1>
+        <img class="ankilens-logo" src="{LOGO_URL}" alt="" aria-hidden="true">
         <span class="ankilens-alpha-badge">Alpha</span>
       </div>
     </div>
@@ -436,30 +461,31 @@ def _paragraph(text: str) -> str:
 def _insight_context_html(evidence, *, checked_count: int = 0) -> str:
     if evidence is None:
         return ""
-    items = (
-        _count_label(evidence.reviews, "review analyzed", "reviews analyzed"),
-    )
-    return '<div class="ankilens-evidence">' + "".join(f'<span class="ankilens-evidence-item">{escape(item)}</span>' for item in items) + "</div>"
+    return f'<p class="ankilens-evidence">Based on {_count_label(evidence.reviews, "analyzed review", "analyzed reviews")}:</p>'
 
 
 def _insight_rows_html(summary: LlmDebriefSummary, evidence=None) -> str:
     sections = []
-    sections.append(_bullet_section_html("What you're doing well", (POSITIVE_PLACEHOLDER,)))
-    sections.append(_improvement_section_html("Areas for improvement", summary.improvements))
+    if summary.card_improvements:
+        sections.append(_improvement_section_html("Card improvements", summary.card_improvements, section_class="improve"))
+    else:
+        sections.append(_bullet_section_html("Card improvements", (CARD_IMPROVEMENTS_PLACEHOLDER,), section_class="improve"))
+    if summary.study_suggestions:
+        sections.append(_improvement_section_html("Topics to revisit", summary.study_suggestions, section_class="study"))
     return "".join(sections)
 
 
-def _bullet_section_html(title: str, items: tuple[str, ...]) -> str:
+def _bullet_section_html(title: str, items: tuple[str, ...], *, section_class: str = "good") -> str:
     item_html = "".join(f"<li>{escape(item)}</li>" for item in items)
-    return f'<section class="ankilens-insight-section good"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
+    return f'<section class="ankilens-insight-section {escape(section_class, quote=True)}"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
 
 
-def _improvement_section_html(title: str, items) -> str:
+def _improvement_section_html(title: str, items, *, section_class: str = "improve") -> str:
     item_html = "".join(
         f"<li>{escape(item.insight)} <span class=\"ankilens-action\">Try: {escape(item.action)}</span></li>"
-        for item in tuple(items)[:3]
+        for item in tuple(items)[:2]
     )
-    return f'<section class="ankilens-insight-section improve"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
+    return f'<section class="ankilens-insight-section {escape(section_class, quote=True)}"><h3>{escape(title)}</h3><ul class="ankilens-recommendations">{item_html}</ul></section>'
 
 
 def _insight_actions_html(summary: LlmDebriefSummary) -> str:
@@ -498,7 +524,7 @@ def _llm_loading_html(evidence=None, *, grounding: str = "") -> str:
         "",
         '<p class="ankilens-loading">'
         "<span>Looking for patterns in the missed cards</span>"
-        '<span class="ankilens-loading-ellipsis" aria-hidden="true">...</span>'
+        f'<img class="ankilens-loading-lens" src="{MAGNIFIER_URL}" alt="" aria-hidden="true">'
         "</p>",
         primary=True,
     )

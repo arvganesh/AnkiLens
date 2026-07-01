@@ -33,9 +33,13 @@ _llm_request_counter = 0
 
 def register_toolbar() -> None:
     from aqt import gui_hooks
+    from aqt import mw
 
     gui_hooks.top_toolbar_did_init_links.append(_add_top_toolbar_link)
     gui_hooks.webview_did_receive_js_message.append(_handle_js_message)
+    addon_manager = getattr(mw, "addonManager", None)
+    if addon_manager and hasattr(addon_manager, "setWebExports"):
+        addon_manager.setWebExports(__package__, r"assets/.*")
     _add_tools_menu()
 
 

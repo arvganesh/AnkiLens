@@ -24,8 +24,8 @@ class DebriefPageTest(unittest.TestCase):
         )
 
         self.assertIn("<main class=\"ankilens-page\">", html)
-        self.assertNotIn("ankilens-brand", html)
-        self.assertNotIn("ankilens-brand-mark", html)
+        self.assertIn("ankilens-brand", html)
+        self.assertIn("ankilens-logo", html)
         self.assertIn("<h1>AnkiLens</h1>", html)
         self.assertIn("ankilens-alpha-badge", html)
         self.assertIn(">Alpha</span>", html)
@@ -89,11 +89,13 @@ class DebriefPageTest(unittest.TestCase):
             positives=("32 reviewed cards had no misses in this window.",),
             improvements=(
                 LlmImprovement(
-                    insight="12 missed valve cards cluster around maneuver and physiology wording.",
-                    action="Search for murmur cards and review those before drug cards.",
+                    insight="Some valve cards ask for several physiology details at once.",
+                    action="Split each valve mechanism into one card.",
                 ),
+            ),
+            study_suggestions=(
                 LlmImprovement(
-                    insight="Repeated valve misses may be easier to separate in a smaller set.",
+                    insight="Murmur and pressure-volume cards cover similar loading changes.",
                     action="Put murmur changes first, then pressure-volume loop cards.",
                 ),
             ),
@@ -107,16 +109,19 @@ class DebriefPageTest(unittest.TestCase):
         )
 
         self.assertNotIn("Review pattern", html)
-        self.assertIn("20 reviews analyzed", html)
+        self.assertIn("Based on 20 analyzed reviews:", html)
         self.assertNotIn("missed cards checked", html)
         self.assertNotIn("patterns to inspect", html)
-        self.assertIn("What you&#x27;re doing well", html)
-        self.assertIn("you studied hard, be proud!!", html)
-        self.assertIn("Areas for improvement", html)
+        self.assertIn("Card improvements", html)
+        self.assertIn("Topics to revisit", html)
+        self.assertNotIn("What you&#x27;re doing well", html)
+        self.assertNotIn("you studied hard, be proud!!", html)
+        self.assertNotIn("Areas for improvement", html)
         self.assertIn("ankilens-recommendations", html)
         self.assertNotIn("32 reviewed cards had no misses", html)
-        self.assertIn("12 missed valve cards", html)
-        self.assertIn("Try: Search for murmur cards", html)
+        self.assertIn("Some valve cards ask", html)
+        self.assertIn("Murmur and pressure-volume", html)
+        self.assertIn("Try: Split each valve mechanism", html)
         self.assertIn("ankilens-action", html)
         self.assertNotIn("Cards to inspect", html)
         self.assertIn("Open 2 missed cards in Browse", html)
@@ -142,16 +147,25 @@ class DebriefPageTest(unittest.TestCase):
         self.assertIn("&lt;unsafe&gt;", js)
         self.assertNotIn("<unsafe>", js)
 
-    def test_llm_summary_renders_frontend_positive_placeholder(self) -> None:
+    def test_llm_summary_renders_card_quality_placeholder(self) -> None:
         summary = LlmDebriefSummary(
             positives=(),
-            improvements=(LlmImprovement(insight="A smooth ER card asks for several roles at once.", action="Split it into one card per role."),),
+            improvements=(),
+            study_suggestions=(
+                LlmImprovement(
+                    insight="Smooth ER and rough ER cards are easy to mix up.",
+                    action="Put those organelle cards next to each other and compare functions.",
+                ),
+            ),
         )
 
         html = llm_summary_html(summary, DebriefEvidence(reviewed_cards=5, missed_cards=1, reviews=6, misses=1))
 
-        self.assertIn("What you&#x27;re doing well", html)
-        self.assertIn("you studied hard, be proud!!", html)
+        self.assertIn("Card improvements", html)
+        self.assertIn("The missed cards checked look okay for now.", html)
+        self.assertIn("Topics to revisit", html)
+        self.assertIn("Smooth ER and rough ER", html)
+        self.assertNotIn("What you&#x27;re doing well", html)
         self.assertNotIn("4 of 5 reviewed cards had no misses", html)
 
     def test_llm_status_update_js_escapes_message(self) -> None:

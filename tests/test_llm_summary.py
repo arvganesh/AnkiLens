@@ -110,12 +110,13 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "improvements": [
+                                "card_improvements": [
                                     {
                                         "insight": "1 enzyme card appears in the missed-card evidence.",
                                         "action": "Open the enzyme card and check whether it asks for several facts.",
                                     }
                                 ],
+                                "study_suggestions": [],
                             }
                         )
                     }
@@ -146,13 +147,15 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "improvements": [
+                                "card_improvements": [
                                     {
-                                        "insight": "2 missed valve cards cluster around nearby murmur physiology.",
-                                        "action": "Search for murmur cards and review those before drug cards.",
+                                        "insight": "Some valve cards ask for several physiology details at once.",
+                                        "action": "Open the valve cards and split each mechanism into one card.",
                                     },
+                                ],
+                                "study_suggestions": [
                                     {
-                                        "insight": "The repeated valve cards may be easier to separate in a smaller set.",
+                                        "insight": "Murmur and pressure-volume cards cover similar loading changes.",
                                         "action": "Put murmur changes first, then pressure-volume loop cards.",
                                     },
                                 ],
@@ -181,10 +184,10 @@ class LlmSummaryTest(unittest.TestCase):
 
         self.assertIsNotNone(result)
         self.assertEqual(result.positives, ())
-        self.assertEqual(result.improvements[0].insight, "2 missed valve cards cluster around nearby murmur physiology.")
-        self.assertEqual(result.improvements[0].action, "Search for murmur cards and review those before drug cards.")
-        self.assertEqual(result.improvements[1].insight, "The repeated valve cards may be easier to separate in a smaller set.")
-        self.assertEqual(result.improvements[1].action, "Put murmur changes first, then pressure-volume loop cards.")
+        self.assertEqual(result.card_improvements[0].insight, "Some valve cards ask for several physiology details at once.")
+        self.assertEqual(result.card_improvements[0].action, "Open the valve cards and split each mechanism into one card.")
+        self.assertEqual(result.study_suggestions[0].insight, "Murmur and pressure-volume cards cover similar loading changes.")
+        self.assertEqual(result.study_suggestions[0].action, "Put murmur changes first, then pressure-volume loop cards.")
         self.assertEqual(result.action_card_ids, (2, 1))
         self.assertEqual(requests[0][1], 7)
         request = requests[0][0]
@@ -195,22 +198,29 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertEqual(body["temperature"], 0)
         self.assertEqual(body["response_format"]["type"], "json_schema")
         schema = body["response_format"]["json_schema"]["schema"]
-        self.assertEqual(schema["required"], ["improvements"])
+        self.assertEqual(schema["required"], ["card_improvements", "study_suggestions"])
         self.assertNotIn("positives", schema["properties"])
-        self.assertEqual(schema["properties"]["improvements"]["maxItems"], 3)
-        self.assertEqual(schema["properties"]["improvements"]["items"]["required"], ["insight", "action"])
-        item_schema = schema["properties"]["improvements"]["items"]["properties"]
+        self.assertNotIn("improvements", schema["properties"])
+        self.assertEqual(schema["properties"]["card_improvements"]["minItems"], 0)
+        self.assertEqual(schema["properties"]["card_improvements"]["maxItems"], 2)
+        self.assertEqual(schema["properties"]["study_suggestions"]["maxItems"], 2)
+        self.assertEqual(schema["properties"]["card_improvements"]["items"]["required"], ["insight", "action"])
+        self.assertEqual(schema["properties"]["study_suggestions"]["items"]["required"], ["insight", "action"])
+        item_schema = schema["properties"]["card_improvements"]["items"]["properties"]
         self.assertEqual(item_schema["insight"]["maxLength"], 150)
         self.assertEqual(item_schema["action"]["maxLength"], 145)
         self.assertNotIn("$defs", schema)
         system_prompt = body["messages"][0]["content"]
         self.assertIn("friendly study assistant", system_prompt)
-        self.assertIn("Areas for improvement", system_prompt)
-        self.assertIn("what kind of card is causing trouble", system_prompt)
+        self.assertIn("card_improvements", system_prompt)
+        self.assertIn("study_suggestions", system_prompt)
+        self.assertIn("Do not judge the whole deck's card quality", system_prompt)
+        self.assertIn("empty card_improvements list", system_prompt)
+        self.assertIn("what kind of card is hard to answer", system_prompt)
         self.assertIn("what to change in Anki", system_prompt)
         self.assertIn("Keep each insight under 18 words", system_prompt)
         self.assertIn("Keep each action under 20 words", system_prompt)
-        self.assertIn("ordered from most impactful fix to least impactful fix", system_prompt)
+        self.assertIn("Order each section from most impactful fix to least impactful fix", system_prompt)
         self.assertIn("Start with the problem, not a statistic", system_prompt)
         self.assertIn("Use stats only when they make the impact obvious", system_prompt)
         self.assertIn("Avoid exact ratios", system_prompt)
@@ -239,6 +249,7 @@ class LlmSummaryTest(unittest.TestCase):
         self.assertIn("Do not claim the card content is medically or factually correct", system_prompt)
         self.assertIn("Miss definition: only Again review buttons count as misses.", body["messages"][1]["content"])
         self.assertIn("Focus on content patterns in the missed-card evidence", body["messages"][1]["content"])
+        self.assertIn("only comment on card-writing issues visible in the missed-card examples", body["messages"][1]["content"])
         self.assertIn("numbered evidence below includes 2 missed-card examples", body["messages"][1]["content"])
         self.assertIn("Do not mention a different analyzed-example count", body["messages"][1]["content"])
         self.assertNotIn("Window stats", body["messages"][1]["content"])
@@ -256,7 +267,8 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "improvements": [],
+                                "card_improvements": [],
+                                "study_suggestions": [],
                             }
                         )
                     }
@@ -277,17 +289,21 @@ class LlmSummaryTest(unittest.TestCase):
             LlmDebriefError("The model did not return a usable insight. Try again or use a different model."),
         )
 
-    def test_parser_caps_improvements_at_three(self) -> None:
+    def test_parser_caps_each_section_at_two(self) -> None:
         payload = {
             "choices": [
                 {
                     "message": {
                         "content": json.dumps(
                             {
-                                "improvements": [
+                                "card_improvements": [
                                     {"insight": "First card has a long list.", "action": "Split the first card."},
                                     {"insight": "Second card overlaps with the first.", "action": "Search both cards side by side."},
                                     {"insight": "Third card mixes two concepts.", "action": "Rewrite it as two prompts."},
+                                ],
+                                "study_suggestions": [
+                                    {"insight": "First topic pair is easy to confuse.", "action": "Put both topic cards next to each other."},
+                                    {"insight": "Second topic group has similar wording.", "action": "Search for that topic and compare examples."},
                                     {"insight": "Fourth card should not render.", "action": "Do not show this."},
                                 ],
                             }
@@ -306,8 +322,11 @@ class LlmSummaryTest(unittest.TestCase):
         )
 
         self.assertIsNotNone(result)
-        self.assertEqual(len(result.improvements), 3)
-        self.assertNotIn("Fourth card", " ".join(item.insight for item in result.improvements))
+        self.assertEqual(len(result.card_improvements), 2)
+        self.assertEqual(len(result.study_suggestions), 2)
+        rendered = " ".join(item.insight for item in (*result.card_improvements, *result.study_suggestions))
+        self.assertNotIn("Third card", rendered)
+        self.assertNotIn("Fourth card", rendered)
 
     def test_parser_rewrites_known_jargon(self) -> None:
         payload = {
@@ -316,7 +335,7 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "improvements": [
+                                "card_improvements": [
                                     {
                                         "insight": "Multiple drug cards show repeated misses, suggesting overload or similarity issues.",
                                         "action": "Search the topic tag and review only that small set first.",
@@ -326,6 +345,7 @@ class LlmSummaryTest(unittest.TestCase):
                                         "action": "Delay repeats until stability is seen.",
                                     },
                                 ],
+                                "study_suggestions": [],
                             }
                         )
                     }
@@ -342,7 +362,7 @@ class LlmSummaryTest(unittest.TestCase):
         )
 
         self.assertIsNotNone(result)
-        rendered = " ".join(tuple(part for item in result.improvements for part in (item.insight, item.action))).lower()
+        rendered = " ".join(tuple(part for item in result.card_improvements for part in (item.insight, item.action))).lower()
         self.assertNotIn("cue", rendered)
         self.assertNotIn("tag", rendered)
         self.assertNotIn("source text", rendered)
@@ -363,12 +383,13 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "improvements": [
+                                "card_improvements": [
                                     {
                                         "insight": "The protein card was labeled 'dense' and has weak wording.",
                                         "action": "Review separately.",
                                     }
                                 ],
+                                "study_suggestions": [],
                             }
                         )
                     }
@@ -405,12 +426,13 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "improvements": [
+                                "card_improvements": [
                                     {
                                         "insight": long_text,
                                         "action": "Search hemodynamic cards and review that set before adding drug cards.",
                                     }
                                 ],
+                                "study_suggestions": [],
                             }
                         )
                     }
@@ -442,12 +464,13 @@ class LlmSummaryTest(unittest.TestCase):
                     "message": {
                         "content": json.dumps(
                             {
-                                "improvements": [
+                                "card_improvements": [
                                     {
                                         "insight": "1 enzyme card appears in the missed-card evidence.",
                                         "action": "Open the enzyme card and check whether it asks for several facts.",
                                     }
                                 ],
+                                "study_suggestions": [],
                             }
                         )
                     }
