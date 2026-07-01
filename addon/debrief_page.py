@@ -236,6 +236,31 @@ def debrief_page_html(
     line-height: 1.4;
     margin: 0;
   }}
+  .ankilens-loading {{
+    align-items: center;
+    color: #5f6368;
+    display: flex;
+    font-size: 13px;
+    gap: 7px;
+    line-height: 1.4;
+    margin: 0;
+  }}
+  .ankilens-loading-ellipsis {{
+    color: #3c4043;
+    display: inline-block;
+    font-weight: 700;
+    min-width: 18px;
+    transform: translateX(-3px);
+    animation: ankilens-loading-ellipsis 900ms ease-in-out infinite alternate;
+  }}
+  @keyframes ankilens-loading-ellipsis {{
+    from {{
+      transform: translateX(-3px);
+    }}
+    to {{
+      transform: translateX(5px);
+    }}
+  }}
   @media (prefers-color-scheme: dark) {{
     body {{
       background: #202124;
@@ -262,6 +287,12 @@ def debrief_page_html(
     }}
     .ankilens-secondary-text {{
       color: #bdc1c6;
+    }}
+    .ankilens-loading {{
+      color: #bdc1c6;
+    }}
+    .ankilens-loading-ellipsis {{
+      color: #e8eaed;
     }}
     .ankilens-evidence,
     .ankilens-insight-section + .ankilens-insight-section,
@@ -465,7 +496,10 @@ def grounding_text(deck_label: str | None, lookback_days: int) -> str:
 def _llm_loading_html(evidence=None, *, grounding: str = "") -> str:
     return _panel_html(
         "",
-        _paragraph("Looking for patterns in the missed cards..."),
+        '<p class="ankilens-loading">'
+        "<span>Looking for patterns in the missed cards</span>"
+        '<span class="ankilens-loading-ellipsis" aria-hidden="true">...</span>'
+        "</p>",
         primary=True,
     )
 
